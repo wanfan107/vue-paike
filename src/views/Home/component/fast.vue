@@ -30,6 +30,7 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { Wallet, WalletFilled, CreditCard, InfoFilled, Download } from '@element-plus/icons-vue'
 
 
 // 获取路由实例
@@ -38,22 +39,22 @@ const router = useRouter()
 // 定义快速访问项数据
 const fastItems = ref([
   { 
-    name: 'withdrawManagement', 
-    path: '/withdraw/withdrawManagement', 
-    elIcon: 'Ship', 
-    text: '提现订单', 
+    name: 'withdraw', 
+    path: '/withdraw', 
+    elIcon: 'Postcard', 
+    text: '下发订单', 
   },
   { 
-    name: 'collectionManagement', 
-    path: '/collection/collectionManagement', 
-    elIcon: 'RefreshLeft', 
-    text: '代收订单', 
+    name: 'ReceiptOrder', 
+    path: '/ReceiptOrder', 
+    elIcon: 'WalletFilled', 
+    text: '收款订单', 
   },
   { 
-    name: 'paymentManagement', 
-    path: '/payment/paymentManagement', 
-    elIcon: 'UploadFilled', 
-    text: '代付订单', 
+    name: 'payment', 
+    path: '/payment', 
+    elIcon: 'CreditCard', 
+    text: '付款订单', 
   },
   { 
     name: 'info', 
@@ -61,17 +62,17 @@ const fastItems = ref([
     elIcon: 'InfoFilled', 
     text: '基本信息', 
   },
+  // { 
+  //   name: 'config', 
+  //   path: '/account/config', 
+  //   elIcon: 'Setting', 
+  //   text: '应用配置', 
+  // },
   { 
-    name: 'config', 
-    path: '/account/config', 
-    elIcon: 'Setting', 
-    text: '应用配置', 
-  },
-  { 
-    name: 'createCollection', 
-    path: '/collection/collectionManagement', 
-    elIcon: 'Plus', 
-    text: '创建收款', 
+    name: 'exportRecord', 
+    path: '/ExportRecord', 
+    elIcon: 'Download', 
+    text: '导出记录', 
   }
 ])
 

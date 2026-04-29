@@ -2,10 +2,10 @@
   <el-row :gutter="20" class="project-container">
     <el-col
       :xs="24"
-      :sm="8"
-      :md="8"
-      :lg="8"
-      :xl="8"
+      :sm="6"
+      :md="6"
+      :lg="6"
+      :xl="6"
       v-for="(item, index) in projectList"
       :key="item.name"
     >
@@ -17,6 +17,7 @@
             <el-icon v-if="index === 0"><Plus /></el-icon>
             <el-icon v-if="index === 1"><Coin /></el-icon>
             <el-icon v-if="index === 2"><Minus /></el-icon>
+            <el-icon v-if="index === 3"><CreditCard /></el-icon>
           </div>
         </div>
         <div class="project-amount">
@@ -61,6 +62,7 @@ import { ref, onMounted, reactive, computed, nextTick } from 'vue';
 import { TransitionPresets, useTransition } from '@vueuse/core';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+import { Plus, Coin, Minus, CreditCard } from "@element-plus/icons-vue";
 
 // 接收父组件传递的showData属性
 const props = defineProps({
@@ -96,6 +98,14 @@ const projectList = reactive([
     name: "付款",
     amount: 0,
     desc: "成功付款数",
+    count: 0,
+    currency: "R$"
+  },
+  // 授信卡片
+  {
+    name: "可授信",
+    amount: 0,
+    desc: "待还金额",
     count: 0,
     currency: "R$"
   },
@@ -253,6 +263,13 @@ onMounted(() => {
 }
 .project-card1 .project-icon i {
   color: #a5dc3d;
+}
+
+.project-card3 .project-icon {
+  background-color: #63b3ed;
+}
+.project-card3 .project-icon i {
+  color: #fff;
 }
 
 .project-amount {

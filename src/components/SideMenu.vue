@@ -45,6 +45,7 @@
           </el-menu-item>
         </el-sub-menu>
       </template>
+
     </el-menu>
 
     <!-- 用户信息区域 -->
@@ -55,27 +56,129 @@
           <div class="user-details">
             <div class="user-name">卡琳娜</div>
             <div class="user-company">Zir 有限公司</div>
-            <div class="user-account">账户 11525 分行 0001</div>
+            <div class="user-account">账户 11525 </div>
+          </div>
+          <div class="user-dropdown-icon">
+            <el-icon><Switch /></el-icon>
           </div>
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="account">账户数据</el-dropdown-item>
+            <el-dropdown-item command="account">切换账户</el-dropdown-item>
             <el-dropdown-item command="logout">退出</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
     </div>
   </div>
+
+    <!-- 多用户选择 -->
+    <el-dialog
+      :z-index="1001"
+      top="10vh"
+      width="500px"
+      v-model="dialogValue1"
+      :close-on-click-modal="false"
+      append-to-body
+      custom-class="account-dialog"
+      :show-close="false"
+    >
+      <div class="dialog-close" @click="dialogValue1 = false">×</div>
+      <div class="dialog-header">
+        <div class="logo-container">
+          <img
+            src="../assets/image/logo.png"
+            alt="Logo"
+            class="dialog-logo"
+          />
+        </div>
+        <div class="dialog-title">Selecione a conta</div>
+        <div class="dialog-title">
+          <el-select
+            v-model="searchKey"
+            filterable
+            placeholder="请选择"
+            clearable
+          >
+            <el-option
+              v-for="item in accounts"
+              :key="item.id"
+              :label="item.id"
+              :value="item.id"
+            >
+            </el-option>
+          </el-select>
+        </div>
+      </div>
+      <div class="account-list">
+        <div
+          v-for="(account, index) in filteredAccounts"
+          :key="index"
+          class="account-item"
+          @click="confirmBind(account)"
+        >
+          <div class="left-column">
+            <div class="account-id">{{ account.id }}</div>
+            <div class="account-type">{{ account.type }}</div>
+          </div>
+          <div class="right-column">
+            <div class="account-company">{{ account.company }}</div>
+            <div class="account-number">{{ account.accountNumber }}</div>
+          </div>
+        </div>
+      </div>
+    </el-dialog>
 </template>
 <script setup>
   // 导入必要的图标组件
-  import { HomeFilled, Search, Operation, FolderOpened } from '@element-plus/icons-vue'
+  import { HomeFilled, Search, Operation, FolderOpened, ArrowDown, Switch } from '@element-plus/icons-vue'
+  import { ref, computed } from 'vue'
   import { useRoute } from 'vue-router'
   import router from '../router/index.js'
+  import useUserStore from '../stores/user.js'
+  import { ElMessage } from 'element-plus'
   
   // 获取当前路由
   const currentRoute = useRoute()
+  
+  // 获取用户store
+  const userStore = useUserStore()
+  
+  // 弹窗状态
+  const dialogValue1 = ref(false)
+  
+  // 搜索关键词
+  const searchKey = ref('')
+  
+  // 账户列表
+  const accounts = ref([
+    {
+      id: "11743",
+      type: "Univepay",
+      company: "NOVABET OFICIAL",
+      accountNumber: "61.962.430/0001-89",
+    },
+    {
+      id: "11825",
+      type: "Univepay",
+      company: "APEXBET LTDA",
+      accountNumber: "62.087.018/0001-20",
+    },
+  ])
+  
+  // 过滤后的账户列表
+  const filteredAccounts = computed(() => {
+    const keyword = searchKey.value.toLowerCase()
+    if (!keyword) {
+      return accounts.value
+    }
+    return accounts.value.filter(
+      (account) =>
+        account.id.includes(keyword) ||
+        account.company.toLowerCase().includes(keyword) ||
+        account.accountNumber.includes(keyword)
+    )
+  })
   
   // 从路由配置中动态获取菜单数据
   const getMenuItemsFromRoutes = () => {
@@ -123,13 +226,32 @@ const handleClose = (key, keyPath) => {
 };
 
 // 处理用户下拉菜单命令
-const handleUserCommand = (command) => {
+const handleUserCommand = async (command) => {
   if (command === 'account') {
-    // 跳转到账户信息页面
+    // 显示账户选择弹窗
+    dialogValue1.value = true;
     console.log('Dados da Conta clicked');
   } else if (command === 'logout') {
     // 执行退出登录逻辑
-    console.log('Sair clicked');
+    try {
+      await userStore.logout();
+      ElMessage.success('退出登录成功');
+      // 跳转到登录页面
+      router.push('/Login');
+    } catch (error) {
+      ElMessage.error('退出登录失败');
+      console.error('退出登录失败:', error);
+    }
+  }
+};
+
+// 确认绑定账户
+function confirmBind(account) {
+  if (account) {
+    // 处理账户选择逻辑
+    console.log('选择的账户:', account);
+    ElMessage.success(`已切换到账户 ${account.id}`);
+    dialogValue1.value = false;
   }
 };
 </script>
@@ -197,14 +319,14 @@ const handleUserCommand = (command) => {
 /* 父菜单选中效果 - 半圆 (仅当父菜单本身被选中时生效，子菜单选中时不会触发) */
 /* 由于父菜单使用数字索引，而子菜单使用路由路径，所以子菜单选中时父菜单不会被激活 */
 :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-  color: #f10808; /* 黑色字体 */
+  color: #db0011; /* 黑色字体 */
   background-color: #ffffff; /* 白色背景 */
   border-radius: 24px; /* 右边半圆 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 // -hover 效果
 :deep(.el-sub-menu.is-active > .el-sub-menu__title:hover) {
-  color: #f10808; /* 黑色字体 */
+  color: #db0011; /* 黑色字体 */
   background-color: #ffffff; /* 白色背景 */
   border-radius: 24px; /* 右边半圆 */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -212,7 +334,7 @@ const handleUserCommand = (command) => {
 
 /* 单级菜单选中效果 - 半圆 */
 :deep(.el-menu-item.is-active) {
-  color: #f10808; /* 黑色字体 */
+  color: #db0011; /* 黑色字体 */
   background-color: #ffffff; /* 白色背景 */
   border-radius: 24px; /* 右边半圆 */
     box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* 阴影 */
@@ -221,7 +343,7 @@ const handleUserCommand = (command) => {
 // -hover 效果
 /* 单级菜单选中效果 - 半圆 */    
 :deep(.el-menu-item:hover) {
-  color: #f10808; /* 黑色字体 */
+  color: #db0011; /* 黑色字体 */
   background-color: #ffffff; /* 白色背景 */
   border-radius: 24px; /* 右边半圆 */
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* 阴影 */
@@ -271,7 +393,7 @@ const handleUserCommand = (command) => {
   transform: translateY(-50%);
   width: 6px;
   height: 6px;
-  background-color: #ff0000; /* 主题色点 */
+  background-color: #db0011; /* 主题色点 */
   border-radius: 50%; /* 圆形 */
   z-index: 1;
 }
@@ -296,7 +418,7 @@ const handleUserCommand = (command) => {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: #ff0000;
+    background-color: #db0011;
   }
   
   .fast-icon {
@@ -308,7 +430,7 @@ const handleUserCommand = (command) => {
   }
 }
 // .fast-icon{
-//   // color: #ff0000 !important;
+//   // color: #db0011 !important;
 // }
 
 :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
@@ -319,7 +441,7 @@ const handleUserCommand = (command) => {
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: #ff0000;
+    background-color: #db0011;
   }
   
   .fast-icon {
@@ -347,6 +469,17 @@ const handleUserCommand = (command) => {
   border-radius: 12px;
 }
 
+.user-dropdown-icon {
+  margin-left: 10px;
+  color: #666;
+  transition: transform 0.3s ease;
+}
+
+.user-info:hover .user-dropdown-icon {
+  transform: rotate(180deg);
+  color: #db0011;
+}
+
 .user-info:hover {
   background-color: rgba(175, 76, 76, 0.1);
 }
@@ -355,7 +488,7 @@ const handleUserCommand = (command) => {
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  background-color: #ff0000;
+  background-color: #db0011;
   color: white;
   display: flex;
   align-items: center;
@@ -401,5 +534,105 @@ const handleUserCommand = (command) => {
 :deep(.el-dropdown-item:hover) {
   background-color: rgba(76, 175, 80, 0.1);
   color: #af4c4c;
+}
+
+/* 账户选择弹窗样式 */
+.account-dialog {
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border: none;
+  padding-bottom: 20px;
+}
+
+.dialog-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0;
+  margin-bottom: 20px;
+}
+
+.logo-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.dialog-logo {
+  width: 120px;
+  border-radius: 8px;
+}
+
+.dialog-title {
+  font-size: 16px;
+  color: #666;
+  font-weight: 500;
+  text-align: center;
+}
+
+.account-list {
+  padding: 0;
+  margin: 0;
+}
+
+.account-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e8e8e8;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+
+  &:hover {
+    background-color: #f9f9f9;
+  }
+}
+
+.left-column,
+.right-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.account-id {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.account-type {
+  font-size: 14px;
+  color: #888;
+}
+
+.account-company {
+  font-size: 16px;
+  font-weight: bold;
+  color: #333;
+}
+
+.account-number {
+  font-size: 14px;
+  color: #888;
+}
+
+.dialog-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 30px;
+  cursor: pointer;
+  color: #999;
+}
+
+:deep(.el-dialog__body) {
+  padding: 0 20px;
+}
+
+:deep(.el-dialog__footer) {
+  padding: 0;
+  padding-right: 40px;
+  padding-bottom: 20px;
 }
 </style>

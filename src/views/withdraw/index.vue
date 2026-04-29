@@ -12,18 +12,19 @@
           <el-form :inline="false" :model="searchForm" class="search-form">
             <el-form-item label="订单时间">
               <el-date-picker
-                v-model="searchForm.time"
+                v-model="searchForm.orderTime"
                 type="datetimerange"
                 :shortcuts="shortcuts"
                 range-separator="To"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
+                value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
 
             <el-form-item label="平台订单号">
               <el-input
-                v-model="searchForm.orderNo"
+                v-model="searchForm.platformOrderNo"
                 placeholder="请输入"
                 clearable
                 style="width: 155px"
@@ -32,7 +33,7 @@
 
             <el-form-item label="账户">
               <el-input
-                v-model="searchForm.merchantOrderNo"
+                v-model="searchForm.account"
                 placeholder="请输入"
                 clearable
                 style="width: 155px"
@@ -40,7 +41,7 @@
             </el-form-item>
             <el-form-item label="状态">
               <el-select
-                v-model="searchForm.type"
+                v-model="searchForm.status"
                 placeholder="请选择交易类型"
                 clearable
                 style="width: 140px">
@@ -71,9 +72,9 @@
                 刷新
               </el-button>
               <el-button
-                :icon="Bottom"
+                :icon="Download"
                 @click="onExport"
-                type="warning"
+                type="primary"
                 :loading="exportLoading"
               >
                 导出
@@ -90,33 +91,35 @@
               <TimeRangeSelector
                 @change="onTimeRangeChange"
                 :timeRangeOptions="timeRangeOptions"
-                :defaultValue="'yesterday'"
+                :defaultValue="currentTimeRange"
               />
               <!-- 表格 -->
-              <el-table :data="tableData" stripe>
-                <el-table-column prop="merchantorderno" label="商户单号" />
+              <el-table :data="tableData" stripe @row-click="showDetail">
+                <el-table-column prop="merchantOrderNo" label="商户单号" align="center" />
                 <el-table-column
-                  prop="orderno"
+                  prop="platformOrderNo"
                   label="平台订单号"
                   show-overflow-tooltip
+                  width="150"
+                  align="center"
                 />
-                <el-table-column prop="orderamount" label="订单金额" />
-                <el-table-column prop="realamount" label="预期金额" />
-                <el-table-column prop="balance" label="实际支付">
-                </el-table-column>
-                <el-table-column prop="createtime" label="手续费" />
-                <el-table-column prop="createtime" label="银行（类型）" />
-                <el-table-column prop="createtime" label="客户姓名" />
-                <el-table-column prop="createtime" label="客户电话" />
-                <el-table-column prop="createtime" label="客户邮箱" />
-                <el-table-column prop="createtime" label="申请时间" />
-                <el-table-column prop="createtime" label="状态" />
-                <el-table-column prop="createtime" label="信息" />
-                <el-table-column prop="type" label="类型">
+                <el-table-column prop="orderAmount" label="订单金额" align="center" />
+                <el-table-column prop="expectAmount" label="预期金额" align="center" />
+                <el-table-column prop="actualPay" label="实际支付" align="center"/>
+                <el-table-column prop="fee" label="手续费" align="center" />
+                <el-table-column prop="status" label="状态" align="center">
                   <template #default="{ row }">
-                    <el-tag :type="tagTypeColor[row.type] || row.type">
-                      {{ mapping[row.type] || row.type }}
+                    <el-tag :type="row.status === 'PENDING' ? 'warning' : row.status === 'SUCCESS' ? 'success' : 'danger'">
+                      {{ row.status }}
                     </el-tag>
+                  </template>
+                </el-table-column>
+                <el-table-column prop="applyTime" label="申请时间" align="center" />
+                <el-table-column label="操作" align="center" width="100">
+                  <template #default="{ row }">
+                    <el-button type="primary" size="small" @click.stop="handleCallback(row)" >
+                      回调
+                    </el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -129,7 +132,7 @@
           <el-pagination
             v-model:current-page="pagination.currentPage"
             v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 30, 40, 50]"
+            :page-sizes="[10, 20, 30, 50, 100]"
             :total="pagination.total"
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
@@ -138,11 +141,47 @@
         </div>
       </div>
     </main>
+
+    <!-- 详情弹窗 -->
+    <el-drawer
+      v-model="detailVisible"
+      title="订单详情"
+      direction="rtl"
+      size="30%"
+      :before-close="closeDetail"
+    >
+      <div class="detail-content">
+        <div v-if="Object.keys(currentRow).length === 0" class="empty-detail">
+          <el-empty description="暂无数据" />
+        </div>
+        <el-descriptions v-else :column="1" border>
+          <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="平台订单号">{{ currentRow.platformOrderNo || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="订单金额">{{ currentRow.orderAmount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="预期金额">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="实际支付">{{ currentRow.actualPay || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="银行（类型）">{{ currentRow.bank || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户姓名">{{ currentRow.customerName || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="客户电话">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户邮箱">{{ currentRow.customerEmail || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="申请时间">{{ currentRow.applyTime || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="处理时间">{{ currentRow.handleTime || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="状态">
+            <el-tag :type="currentRow.status === 'PENDING' ? 'warning' : currentRow.status === 'SUCCESS' ? 'success' : 'danger'" v-if="currentRow.status">
+              {{ currentRow.status }}
+            </el-tag>
+            <span v-else>-</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item>
+        </el-descriptions>
+      </div>
+    </el-drawer>
   </div>
 </template>
 
 <script setup>
-import { Search, Refresh, Bottom } from "@element-plus/icons-vue";
+import { Search, Refresh, Download } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -161,57 +200,17 @@ const mapping = {
   ALL: -1,
   PENDING: 0,
   SUCCESS: 1,
-  FAILED: 2,
+  "FAILED/REFUND": 3,
   // REFUND: "REFUND",
   // PART_SUC: "PART_SUC",
 };
 
-const options = [
-  {
-    label: "ALL",
-    value: -1,
-  },
-  {
-    label: "未通知",
-    value: 0,
-  },
-  {
-    label: "通知成功",
-    value: 1,
-  },
-  {
-    label: "通知失败",
-    value: 2,
-  },
-];
-
-const tagTypeColor = {
-  K00001: "danger",
-  K00002: "success",
-  K00003: "danger",
-  K00004: "danger",
-  K00005: "success",
-  K00006: "danger",
-  K00007: "success",
-  K00008: "success",
-  K00009: "success",
-  K00010: "danger",
-  K00011: "danger",
-  K00012: "success",
-  K00013: "danger",
-  K00014: "success",
-  K00015: "danger",
-  K00016: "danger",
-  K00017: "success",
-  K00018: "danger",
-};
-
 // 搜索表单
 const searchForm = reactive({
-  type: "",
-  time: [],
-  orderNo: "",
-  merchantOrderNo: "",
+  platformOrderNo: "",
+  account: "",
+  status: -1,
+  orderTime: [],
 });
 //  today yesterday  3days 7days  
 const timeRangeOptions = [
@@ -219,6 +218,9 @@ const timeRangeOptions = [
   { label: "3天", value: "3days" },
   { label: "7天", value: "7days" },
 ];
+
+// 当前选中的时间范围
+const currentTimeRange = ref('today');
 
 // 分页信息
 const pagination = reactive({
@@ -231,6 +233,8 @@ const pagination = reactive({
 const loading = ref(false);
 const tableData = ref([]);
 const exportLoading = ref(false);
+const detailVisible = ref(false);
+const currentRow = ref({});
 
 // 路由实例
 const router = useRouter();
@@ -238,7 +242,9 @@ const router = useRouter();
 // 时间范围选择器回调
 const onTimeRangeChange = (data) => {
   console.log(data);
-  searchForm.time = [data.timeRange[0], data.timeRange[1]];
+  currentTimeRange.value = data.range;
+  searchForm.orderTime = [data.timeRange[0], data.timeRange[1]];
+  handleSearch();
 };
 
 // 使用 Pinia Store
@@ -355,10 +361,9 @@ const shortcuts = computed(() => [
 
 // 刷新方法
 const clearSearch = () => {
-  searchForm.time = [];
-  searchForm.merchantOrderNo = "";
-  searchForm.orderNo = "";
-  pagination.currentPage = 1;
+      searchForm.platformOrderNo= "",
+  searchForm.account= "",
+  searchForm.status= -1,
   handleSearch();
 };
 // 搜索方法
@@ -366,15 +371,15 @@ const handleSearch = async () => {
   loading.value = true;
   try {
     // 模拟API调用 - 实际项目中替换为真实API调用
-    const res = await http.financePage({
-      billEndTime: searchForm.time[1],
-      billStartTime: searchForm.time[0],
-      id: userStore.userInfo.id,
-      merchantOrderNo: searchForm.merchantOrderNo,
-      orderNo: searchForm.orderNo,
-      pageNo: pagination.currentPage,
-      pageSize: pagination.pageSize,
-      type: searchForm.type,
+    const res = await http.withdrawPage({
+    "pageNo": pagination.currentPage,
+    "pageSize": pagination.pageSize,
+    "id": userStore.userInfo.id,
+    "platformOrderNo": searchForm.platformOrderNo,
+    "account": searchForm.account,
+    "status": searchForm.status,
+    "orderStartTime": searchForm.orderTime[0],
+    "orderEndTime": searchForm.orderTime[1]
     });
 
     tableData.value = res.data.list;
@@ -397,20 +402,59 @@ const handleCurrentChange = (val) => {
   handleSearch(); // 重新搜索
 };
 
+// 显示详情弹窗
+const showDetail = (row) => {
+  console.log('显示详情弹窗，row数据:', row);
+  currentRow.value = row;
+  detailVisible.value = true;
+  console.log('currentRow已设置:', currentRow.value);
+};
+
+// 关闭详情弹窗
+const closeDetail = () => {
+  detailVisible.value = false;
+  currentRow.value = {};
+};
+
+// 单个回调
+const handleCallback = (row) => {
+  console.log('回调操作，row数据:', row);
+  ElMessage.success(`已对订单 ${row.merchantOrderNo || row.platformOrderNo} 进行回调`);
+  
+  // 这里可以添加实际的回调逻辑
+  // 例如：调用回调API，传递订单号
+};
+
 // 初始化数据
 onMounted(() => {
+  // 初始化时设置默认时间范围
+  if (searchForm.orderTime.length === 0) {
+    // 设置为今天的时间范围
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    
+    // 格式化时间
+    const formatDate = (date) => {
+      const pad = (num) => String(num).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    };
+    
+    searchForm.orderTime = [formatDate(startOfDay), formatDate(endOfDay)];
+  }
+  
   handleSearch();
 });
 
 // 获取查询参数
 const getQueryParams = () => {
   return {
-    billEndTime: searchForm.time[1],
-    billStartTime: searchForm.time[0],
+    billEndTime: searchForm.orderTime[1],
+    billStartTime: searchForm.orderTime[0],
     id: userStore.userInfo.id,
-    merchantOrderNo: searchForm.merchantOrderNo,
-    orderNo: searchForm.orderNo,
-    type: searchForm.type,
+    merchantOrderNo: '',
+    orderNo: '',
+    type: '',
   };
 };
 
@@ -550,6 +594,11 @@ const onExport = async () => {
 
   .el-table__row {
     transition: background-color 0.3s;
+    cursor: pointer;
+  }
+  
+  .el-table__row:hover {
+    cursor: pointer;
   }
 }
 
@@ -569,6 +618,42 @@ const onExport = async () => {
     .el-form-item__content {
       width: 100%;
     }
+  }
+}
+
+// 详情弹窗样式
+.detail-content {
+  padding: 20px;
+  min-height: 400px;
+}
+
+.empty-detail {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 300px;
+}
+
+:deep(.el-descriptions) {
+  .el-descriptions__label {
+    font-weight: 500;
+    color: #606266;
+  }
+  
+  .el-descriptions__content {
+    color: #303133;
+  }
+}
+
+:deep(.el-drawer) {
+  .el-drawer__header {
+    margin-bottom: 0;
+    padding: 20px;
+    border-bottom: 1px solid #e4e7ed;
+  }
+  
+  .el-drawer__body {
+    padding: 0;
   }
 }
 </style>

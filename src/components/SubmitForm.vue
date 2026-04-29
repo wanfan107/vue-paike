@@ -120,6 +120,7 @@
                 :show-password="item.showPassword || false"
                 @blur="() => defaultBlur(item.prop, ruleForm[item.prop])"
                 @change="(val) => defaultChange(item.prop, val)"
+                @input="(val) => handleInput(item.prop, val)"
               />
               <el-input-number
                 v-else-if="item.name === 'el-input-number'"
@@ -338,6 +339,13 @@ const formatDisabled = (disabled) => {
     return disabled;
   }
 };
+
+// 处理输入事件，去除所有空格
+const handleInput = (prop, val) => {
+  if (val) {
+    props.ruleForm[prop] = val.replace(/\s/g, '');
+  }
+};
 </script>
 <style lang="scss" scoped>
 .submit-form {
@@ -431,7 +439,6 @@ h2 {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  -webkit-text-fill-color: #000;
   background-color: #fff !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;

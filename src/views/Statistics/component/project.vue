@@ -9,7 +9,7 @@
       v-for="(item, index) in projectList"
       :key="item.name"
     >
-      <el-card :class="['project-card', 'project-card' + index]" shadow="hover">
+      <el-card :class="['project-card', 'project-card' + index]" >
         <div class="project-card-header">
           <div class="project-name">{{ item.name }}</div>
           <div class="project-icon" :class="['icon' + index]">
@@ -21,11 +21,16 @@
         </div>
         <div class="project-amount">
           <el-statistic 
-            prefix="R$" 
-            decimal-separator="," 
-            group-separator="." 
             :value="animatedValues[index].value" 
             class="amount-value"
+            :formatter="(value) => {
+              if (item.type === 'count') {
+                return Math.round(value);
+              } else if (item.type === 'rate') {
+                return value.toFixed(1) + '%';
+              }
+              return value;
+            }"
           />
         </div>
 
@@ -40,25 +45,19 @@ import { TransitionPresets,useTransition } from '@vueuse/core';
 
 const projectList = [
   {
-    name: "收款",
-    amount: 98651452,
-    desc: "成功收款数",
-    count: 89898,
+    name: "创建订单",
+    amount: 12500,
+    type: "count"
   },
- 
-  // 提现/转账、成功单数
   {
-    name: "可用余额",
-    amount: 587155656,
-    desc: "待结算余额",
-    count: 52163,
+    name: "成功订单",
+    amount: 9800,
+    type: "count"
   },
-   // 打款、成功打款数
   {
-    name: "付款",
-    amount: 485665,
-    desc: "成功付款数",
-    count: 26546,
+    name: "成功率",
+    amount: 92.5,
+    type: "rate"
   },
 ];
 
@@ -90,8 +89,8 @@ onMounted(() => {
 .project-card {
   transition: all 0.3s ease;
   border-radius: 10px;
-  border: none;
-  background: #fff;
+  border: 1px solid #eaeefb;
+  background: #f9fafc;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
   overflow: hidden;
 }

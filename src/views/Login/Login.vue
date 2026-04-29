@@ -26,6 +26,7 @@
               size="default"
               type="text"
               placeholder="邮箱账户或商户号"
+              @input="handleInput('username')"
             ></el-input>
           </el-form-item>
           <el-form-item label="PassWord" prop="password">
@@ -35,13 +36,17 @@
               type="password"
               show-password
               placeholder="密码"
+              @input="handleInput('password')"
             ></el-input>
           </el-form-item>
 
           <!-- // aws验证码 -->
           <AwsCaptcha />
 
-          <el-form-item style="margin-top: 30px">
+          <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+            <el-link type="primary" @click="showForgotPasswordDialog = true">忘记密码？</el-link>
+          </div>
+          <el-form-item style="margin-top: 10px">
             <el-button
               style="width: 100%"
               type="primary"
@@ -69,12 +74,14 @@
       :close-on-click-modal="false"
       custom-class="account-dialog"
       append-to-body
+      :show-close="false"
     >
+    <div class="dialog-close"  @click="dialogValue = false">×</div>
       <div style="display: flex; flex-direction: column; align-items: center">
         <el-image :src="qrcode" style="width: 200px; height: 200px"></el-image>
-        <div style="margin: 20px 0">请扫码绑定后重新登陆</div>
+        <div style="margin: 20px 0">请扫码重新登陆确保登录</div>
         <div style="text-align: center">
-          <el-button type="primary" @click="dialogValue = false">重新登陆</el-button>
+          <el-button type="primary" @click="dialogValue = false">重新输入验证码</el-button>
         </div>
       </div>
     </el-dialog>
@@ -93,6 +100,7 @@
       style="padding: 0 20px"
       @opened="handleDialogOpen"
     >
+    <div class="dialog-close"  @click="closeDialog">×</div>
       <div class="dialog-header">
         <div class="logo-container">
           <img
@@ -103,35 +111,27 @@
         </div>
         <div class="dialog-title1">请输入MFA2身份验证码</div>
         <div class="dialog-title1">
-          <el-form
-              label-position="top"
-              :model="loginForm"
-              :rules="rules"
-               @submit.native.prevent
-             
-            >
-              <el-form-item prop="code">
-                <el-input
-                  ref="codeInput"
-                  v-model="loginForm.code"
-                  size="default"
-                  type="text"
-                   @keyup.enter.native="submitForm"
-                  placeholder="如未绑定请输入：000000"
-                ></el-input>
-              </el-form-item>
-            </el-form>
+          <div class="verification-code-container">
+            <div class="code-inputs">
+              <input
+                v-for="(item, index) in 6"
+                :key="index"
+                type="text"
+                class="code-input"
+                maxlength="1"
+                @input="handleCodeInput($event, index)"
+                @keydown="handleCodeKeydown($event, index)"
+                @paste="handleCodePaste($event)"
+              />
+            </div>
+            <div class="code-hint">如未绑定请输入：000000</div>
+          </div>
         </div>
       </div>
-      <div class="dialog-footer" style="text-align: right;padding-bottom: 20px;" >
-    
-  <el-button @click="(isVerifyPass = false), (loginForm.code = '')"
-          >返 回</el-button
-        >
-        <el-button :loading="loading" type="primary" @click="submitForm"
-          >登 录</el-button
-        >
-        
+      <!-- 登录动画 -->
+      <div class="login-animation" v-if="loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">正在登录...</div>
       </div>
     </el-dialog>
 
@@ -191,6 +191,61 @@
         </div>
       </div>
     </el-dialog>
+
+    <!-- 忘记密码对话框 -->
+    <el-dialog
+      :z-index="1003"
+      top="10vh"
+      width="500px"
+      title="忘记密码"
+      v-model="showForgotPasswordDialog"
+      :close-on-click-modal="false"
+      append-to-body
+      custom-class="account-dialog"
+      :show-close="false"
+    >
+      <div class="dialog-close" @click="showForgotPasswordDialog = false">×</div>
+      <el-form
+        ref="forgotPasswordFormRef"
+        :model="forgotPasswordForm"
+        :rules="forgotPasswordRules"
+      >
+        <el-form-item label="邮箱" prop="email">
+          <el-input
+            v-model="forgotPasswordForm.email"
+            placeholder="请输入注册邮箱"
+            clearable
+          ></el-input>
+        </el-form-item>
+        <el-form-item label="验证码" prop="verificationCode">
+          <el-input
+            v-model="forgotPasswordForm.verificationCode"
+            placeholder="请输入验证码"
+            clearable
+          >
+            <template #append>
+              <el-button
+                type="primary"
+                :disabled="countdown > 0"
+                @click="sendVerificationCode"
+              >
+                {{ countdown > 0 ? `${countdown}秒后重发` : '发送验证码' }}
+              </el-button>
+            </template>
+          </el-input>
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="showForgotPasswordDialog = false">取消</el-button>
+        <el-button
+          type="primary"
+          :loading="resettingPassword"
+          @click="resetPassword"
+        >
+          重置密码
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 <!-- <script
@@ -232,30 +287,189 @@ const isLoading = ref(false);
 const dialogValue1 = ref(false);
 const isFirstVisit = ref(true);
 const wafToken = ref(null);
+const showForgotPasswordDialog = ref(false);
+const resettingPassword = ref(false);
+const countdown = ref(0);
+const forgotPasswordFormRef = ref(null);
+
+// 忘记密码表单数据
+const forgotPasswordForm = ref({
+  email: '',
+  verificationCode: ''
+});
+
+// 忘记密码验证规则
+const forgotPasswordRules = ref({
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  verificationCode: [
+    { required: true, message: '请输入验证码', trigger: 'blur' },
+    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+  ]
+});
 
 // 对话框打开时设置焦点
 function handleDialogOpen() {
   // 使用nextTick确保对话框内容完全渲染
   nextTick(() => {
-    if (codeInput.value && codeInput.value.focus) {
-      codeInput.value.focus();
+    const firstInput = document.querySelector('.code-input');
+    if (firstInput) {
+      firstInput.focus();
     }
   });
+}
+
+// 验证码输入处理
+const codeInputs = ref([]);
+
+// 处理验证码输入
+function handleCodeInput(event, index) {
+  const input = event.target;
+  const value = input.value;
+  
+  // 只允许输入数字
+  if (!/^[0-9]$/.test(value) && value !== '') {
+    input.value = '';
+    return;
+  }
+  
+  // 自动跳转到下一个输入框
+  if (value !== '' && index < 5) {
+    const nextInput = input.nextElementSibling;
+    if (nextInput) {
+      nextInput.focus();
+    }
+  }
+  
+  // 更新 loginForm.code
+  updateLoginCode();
+}
+
+// 处理键盘事件
+function handleCodeKeydown(event, index) {
+  const input = event.target;
+  
+  // 处理退格键
+  if (event.key === 'Backspace') {
+    if (input.value !== '') {
+      // 如果当前输入框有内容，清空它
+      input.value = '';
+      updateLoginCode();
+    } else if (index > 0) {
+      // 如果当前输入框为空且不是第一个，移动到前一个输入框
+      const prevInput = input.previousElementSibling;
+      if (prevInput) {
+        prevInput.focus();
+      }
+    }
+  }
+  
+  // 处理左右箭头
+  if (event.key === 'ArrowLeft') {
+    if (index > 0) {
+      const prevInput = input.previousElementSibling;
+      if (prevInput) {
+        prevInput.focus();
+        // 确保光标在数字后面
+        setTimeout(() => {
+          prevInput.setSelectionRange(prevInput.value.length, prevInput.value.length);
+        }, 0);
+      }
+    }
+  }
+  
+  if (event.key === 'ArrowRight' && index < 5) {
+    const nextInput = input.nextElementSibling;
+    if (nextInput) {
+      nextInput.focus();
+    }
+  }
+  
+  // 处理回车键
+  if (event.key === 'Enter') {
+    // 这里可以添加验证码提交逻辑
+    submitForm();
+  }
+}
+
+// 处理粘贴事件
+function handleCodePaste(event) {
+  event.preventDefault();
+  const pasteData = event.clipboardData.getData('text');
+  const code = pasteData.replace(/\D/g, '').substring(0, 6);
+  
+  for (let i = 0; i < code.length; i++) {
+    const input = document.querySelectorAll('.code-input')[i];
+    if (input) {
+      input.value = code[i];
+    }
+  }
+  
+  // 更新 loginForm.code
+  updateLoginCode();
+  
+  // 聚焦到最后一个非空输入框的下一个
+  const lastFilledIndex = code.length - 1;
+  if (lastFilledIndex < 5) {
+    const nextInput = document.querySelectorAll('.code-input')[lastFilledIndex + 1];
+    if (nextInput) {
+      nextInput.focus();
+    }
+  }
+}
+
+// 更新 loginForm.code
+function updateLoginCode() {
+  const inputs = document.querySelectorAll('.code-input');
+  let code = '';
+  inputs.forEach(input => {
+    code += input.value;
+  });
+  loginForm.value.code = code;
+  
+  // 当验证码长度达到6位时自动调用登录
+  if (code.length === 6) {
+    submitForm();
+  }
+}
+
+// 关闭对话框并清空验证码
+function closeDialog() {
+  // 关闭对话框
+  isVerifyPass.value = false;
+  
+  // 清空所有验证码输入框
+  const inputs = document.querySelectorAll('.code-input');
+  inputs.forEach(input => {
+    input.value = '';
+  });
+  
+  // 清空loginForm.code
+  loginForm.value.code = '';
+}
+
+// 处理输入事件，去除所有空格
+function handleInput(field) {
+  if (loginForm.value[field]) {
+    loginForm.value[field] = loginForm.value[field].replace(/\s/g, '');
+  }
 }
 
 // 账户列表
 const accounts = ref([
   {
-    id: "11743",
-    type: "Univepay",
-    company: "NOVABET OFICIAL",
-    accountNumber: "61.962.430/0001-89",
+    id: "C11743",
+    type: "个人网站名",
+    company: "别名1",
+    accountNumber: "2026-05-01 17:00:00",
   },
   {
-    id: "11825",
+    id: "C11744",
     type: "Univepay",
-    company: "APEXBET LTDA",
-    accountNumber: "62.087.018/0001-20",
+    company: "别名2",
+    accountNumber: "2026-05-01 17:00:00",
   },
 ]);
 
@@ -274,14 +488,10 @@ const rules = ref({
       message: "请输入您的商户号或邮箱",
       trigger: "blur",
     },
-    /* { type: "email", message: "请输入正确的邮箱", trigger: "blur" },*/
   ],
   password: [
     { required: true, message: "请输入您的密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能小于6位", trigger: "blur" },
-  ],
-  code: [
-    { required: true, message: "请输入MFA2验证码", trigger: "blur" },
+    { min: 6, message: "密码长度不能小于 6 位", trigger: "blur" },
   ],
 });
 
@@ -319,7 +529,7 @@ onMounted(() => {
   isVerifyPass.value = false;
   loading.value = false;
   isLoading.value = false;
-  dialogValue1.value = false;
+  dialogValue1.value = true;
 });
 
 // 方法
@@ -392,6 +602,7 @@ async function submitForm() {
 
 // 点击按钮触发验证/登录
 async function checkHuman() {
+  //  isVerifyPass.value = true;
   try {
     isLoading.value = true;
     const res = await http.prelogin(loginForm.value);
@@ -420,6 +631,56 @@ function confirmBind(account) {
     // 处理MFA绑定确认
     dialogValue.value = false;
     loginForm.value.code = "";
+  }
+}
+
+// 发送验证码
+async function sendVerificationCode() {
+  try {
+    // 验证邮箱格式
+    await forgotPasswordFormRef.value.validateField('email');
+    
+    // 模拟发送验证码
+    ElMessage.info('验证码已发送到您的邮箱');
+    
+    // 开始倒计时
+    countdown.value = 60;
+    const timer = setInterval(() => {
+      countdown.value--;
+      if (countdown.value <= 0) {
+        clearInterval(timer);
+      }
+    }, 1000);
+  } catch (error) {
+    // 验证失败，不发送验证码
+  }
+}
+
+// 重置密码
+async function resetPassword() {
+  try {
+    await forgotPasswordFormRef.value.validate();
+    
+    resettingPassword.value = true;
+    
+    // 模拟后端API调用延迟
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // 重置成功
+    ElMessage.success('密码重置成功，请查看邮箱获取新密码');
+    showForgotPasswordDialog.value = false;
+    
+    // 重置表单
+    forgotPasswordForm.value = {
+      email: '',
+      verificationCode: ''
+    };
+  } catch (error) {
+    if (error !== 'cancel') {
+      ElMessage.error('请填写完整信息');
+    }
+  } finally {
+    resettingPassword.value = false;
   }
 }
 </script>
@@ -469,6 +730,51 @@ function confirmBind(account) {
   margin-top: 10px;
   font-size: 12px;
   // font-weight: 500;
+}
+
+/* 验证码输入样式 */
+.verification-code-container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.code-inputs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.code-input {
+  width: 50px;
+  height: 50px;
+  border: 1px solid #e6dcdc;
+  border-radius: 5px;
+  font-size: 24px;
+  font-weight: 600;
+  text-align: center;
+  transition: all 0.3s ease;
+  outline: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &:focus {
+    border-color: #db0011;
+    box-shadow: 0 0 0 2px rgba(255, 64, 64, 0.2);
+    transform: translateY(-1px);
+  }
+
+  &:hover {
+    border-color: #ffc6c6;
+  }
+}
+
+.code-hint {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 10px;
+  text-align: center;
 }
 
 .login-form {
@@ -543,6 +849,49 @@ function confirmBind(account) {
   font-size: 12px;
   color: #303030;
   // font-weight: 700;
+}
+
+/* 登录动画 */
+.login-animation {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 0;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid rgba(0, 0, 0, 0.1);
+  border-left-color: #db0011;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 15px;
+}
+
+.loading-text {
+  font-size: 14px;
+  color: #606266;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.dialog-title1 {
   // text-align: center;
   width: 100%;
   input {

@@ -3,7 +3,7 @@
     <button
       v-for="item in timeRangeOptions"
       :key="item.value"
-      :class="['time-btn', { active: activeRange === item.value }]"
+      :class="['time-btn', { active: activeRange == item.value }]"
       @click="selectRange(item.value)"
     >
       {{ item.label }}
@@ -12,7 +12,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import useUserStore from '@/stores/user';
 
 // 定义组件属性
@@ -123,11 +123,18 @@ const formatDate = (date, format) => {
     .replace("ss", seconds);
 };
 
+// 监听defaultValue变化
+watch(() => props.defaultValue, (newValue) => {
+  if (newValue) {
+    activeRange.value = newValue;
+  }
+});
+
 // 如果需要在组件挂载时执行某些逻辑，可以使用
 onMounted(() => {
   // 组件挂载后执行的逻辑
-  // 例如，触发一次初始的 change 事件
-  selectRange(activeRange.value);
+  // 不再自动触发初始事件，避免无限循环
+  // selectRange(activeRange.value);
 });
 </script>
 

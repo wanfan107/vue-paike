@@ -17,8 +17,9 @@ export default defineConfig({
     // open: false,
     proxy: {
       '/api': {
-          //  target: 'https://brmc.univepay.com/',
-           target: 'http://3.236.96.173:9501',
+           target: 'https://usmc.univepay.com/',
+          //  target: 'https://192.168.0.210:5432/',
+          //  target: 'http://3.236.96.173:9501',
           //  target: 'http://192.168.0.210:5020',
         changeOrigin: true,
         pathRewrite: {

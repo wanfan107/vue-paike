@@ -11,14 +11,14 @@
           :form-list="formList"
           :rule-form="ruleForm"
           :loading="loading"
-          :footer="false"
-          :footer2="true"
+          :footer="true"
+          :footer2="false"
           @save="submit"
           @close="close"
         >
-          <template #secretKey>
+          <!-- <template #secretKey> -->
             <!--          默认掩藏，提示输入MFA2验证码查看 -->
-            <div
+            <!-- <div
               v-if="isGogleCode"
               :style="{
                 color: '#00000040',
@@ -45,8 +45,8 @@
             >
               ***************************************
               <el-button type="text" @click="openCode">查看</el-button>
-            </div>
-          </template>
+            </div> -->
+          <!-- </template> -->
         </SubmitForm>
       </div>
     </el-card>
@@ -80,11 +80,11 @@ const formList = ref([
     label: "账户信息",
     prop: "accountId",
   },
-  {
-    label: "商户密钥",
-    prop: "secretKey",
-    slot: true,
-  },
+  // {
+  //   label: "商户密钥",
+  //   prop: "secretKey",
+  //   slot: true,
+  // },
 
   {
     label: "付款设置",
@@ -105,7 +105,7 @@ const formList = ref([
     placeholder: "多个IP以#隔开",
     name: "input",
     type: "textarea",
-    disabled: true, // 修改函数返回值为布尔类型   禁用
+    disabled: false,  // 修改函数返回值为布尔类型   启用
     rules: [{ required: true, message: "登陆IP白名单", trigger: "blur" }],
   },
 ]);
@@ -163,9 +163,9 @@ const submit = () => {
     });
 };
 
-// 关闭表单
+// 关闭表单536901
 const close = () => {
-  ruleForm.value.paymentIP = "";
+  ruleForm.value.paymentIP1 = "";
   ruleForm.value.code = "";
 };
 </script>
@@ -220,18 +220,18 @@ const close = () => {
   padding: 24px;
 }
 
-::v-deep .el-form-item {
+::v-deep(.el-form-item)  {
   margin-bottom: 20px;
 }
 
-::v-deep .el-form-item__label {
+::v-deep(.el-form-item__label)  {
   font-weight: 500;
   color: #333;
   font-size: 14px;
 }
 
-::v-deep .el-input__inner,
-::v-deep .el-textarea__inner {
+::v-deep(.el-input__inner),
+::v-deep(.el-textarea__inner) {
   height: 40px;
   border-radius: 6px;
   border: 1px solid #dcdfe6;
@@ -239,14 +239,14 @@ const close = () => {
   font-size: 14px;
 }
 
-::v-deep .el-textarea__inner {
+::v-deep(.el-textarea__inner) {
   height: auto;
   min-height: 80px;
 }
 
 
 
-::v-deep .el-button--primary {
+::v-deep(.el-button--primary) {
   // background-color: #409eff;
   // border-color: #409eff;
   // border-radius: 6px;
@@ -257,14 +257,14 @@ const close = () => {
 
 
 
-::v-deep .el-button {
+::v-deep(.el-button) {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.3s;
 }
 
 /* 针对标题样式的优化 */
-::v-deep .el-form-item__label[for=""] {
+::v-deep(.el-form-item__label[for=""]) {
   font-size: 16px;
   font-weight: 600;
   color: #333;

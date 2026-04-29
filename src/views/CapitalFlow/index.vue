@@ -18,6 +18,7 @@
                 range-separator="To"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
+                value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
             <el-form-item label="平台订单号">
@@ -69,9 +70,9 @@
                 刷新
               </el-button>
               <el-button
-                :icon="Bottom"
+                :icon="Download"
                 @click="onExport"
-                type="warning"
+                type="primary"
                 :loading="exportLoading"
               >
                 导出
@@ -88,24 +89,25 @@
               <TimeRangeSelector
                 @change="onTimeRangeChange"
                 :timeRangeOptions="timeRangeOptions"
-                :defaultValue="'yesterday'"
+                :defaultValue="currentTimeRange"
               />
               <!-- 表格 -->
-              <el-table :data="tableData" stripe>
-                <el-table-column prop="merchantorderno" label="商户单号" />
-                <el-table-column prop="orderno" label="平台订单号" show-overflow-tooltip />
-                <el-table-column prop="orderamount" label="订单金额" />
-                <el-table-column prop="realamount" label="入账金额" />
-                <el-table-column prop="balance" label="变后金额">
+              <el-table :data="tableData" stripe >
+                <el-table-column prop="merchantorderno" label="商户单号" align="center" />
+                <el-table-column prop="orderno" label="平台订单号" show-overflow-tooltip align="center" />
+                <el-table-column prop="orderamount" label="订单金额" align="center" />
+                <el-table-column prop="realamount" label="入账金额" align="center" />
+                <el-table-column prop="balance" label="变后金额" align="center">
                 </el-table-column>
-                <el-table-column prop="createtime" label="入账时间" />
-                <el-table-column prop="type" label="类型">
+                <el-table-column prop="createtime" label="入账时间" align="center" />
+                <el-table-column prop="type" label="类型" align="center">
                   <template #default="{ row }">
                               <el-tag :type="tagTypeColor[row.type] || row.type">
       {{ mapping[row.type] || row.type }}
     </el-tag>
                   </template>
                 </el-table-column>
+                <el-table-column prop="memo" label="类型说明" show-overflow-tooltip align="center" />
               </el-table>
 
    
@@ -118,7 +120,7 @@
           <el-pagination
             v-model:current-page="pagination.currentPage"
             v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 30, 40, 50]"
+            :page-sizes="[10, 20, 30, 50, 100]"
             :total="pagination.total"
             layout="total, sizes, prev, pager, next, jumper"
             @size-change="handleSizeChange"
@@ -131,7 +133,7 @@
 </template>
 
 <script setup>
-import { Search, Refresh,Bottom } from "@element-plus/icons-vue";
+import { Search, Refresh,Download } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from "element-plus";
@@ -196,10 +198,13 @@ const searchForm = reactive({
   merchantOrderNo: "",
 });
 const timeRangeOptions = [
-  { label: "昨天", value: "yesterday" },
+  { label: "今天", value: "today" },
   { label: "3天", value: "3days" },
   { label: "7天", value: "7days" },
 ];
+
+// 当前选中的时间范围
+const currentTimeRange = ref('today');
 
 // 分页信息
 const pagination = reactive({
@@ -219,7 +224,9 @@ const router = useRouter();
 // 时间范围选择器回调
 const onTimeRangeChange = (data) => {
   console.log(data);
+  currentTimeRange.value = data.range;
   searchForm.time = [data.timeRange[0], data.timeRange[1]];
+   handleSearch();
 };
 
 // 使用 Pinia Store
@@ -336,7 +343,6 @@ const shortcuts = computed(() => [
 
 // 刷新方法
 const clearSearch = () => {
-  searchForm.time = [];
   searchForm.merchantOrderNo = "";
   searchForm.orderNo = "";
   pagination.currentPage = 1;
@@ -383,6 +389,23 @@ const handleCurrentChange = (val) => {
 
 // 初始化数据
 onMounted(() => {
+  // 初始化时设置默认时间范围
+  if (searchForm.time.length === 0) {
+    // 设置为今天的时间范围
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+    
+    // 格式化时间
+    const formatDate = (date) => {
+      const pad = (num) => String(num).padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    };
+    
+    searchForm.time = [formatDate(startOfDay), formatDate(endOfDay)];
+  }
+  
+  // 执行初始搜索
   handleSearch();
 });
 

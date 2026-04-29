@@ -5,20 +5,38 @@
         <h1>Univepay | 首 页</h1>
         <div class="user-actions">
           <!-- 简洁风格按钮 -->
-                 <el-popover
-        :title="showData ? '隐藏金额' : '查看金额'"
-        placement="bottom"
-        effect="dark"
-        :width="50"
-      >
-        <template #reference> <el-button class="simple-button" :icon="showData ? Hide: View " size="small" plain @click="toggleShowData" style="margin-left: 0 !important;"></el-button></template>
-      </el-popover>
-          <!-- <el-button class="simple-button" :icon="showData ? Hide: View " size="small" plain @click="toggleShowData" style="margin-left: 0 !important;">
-            {{ showData ? '隐藏' : '查看' }}
-          </el-button> -->
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            :content="showData ? '隐藏金额' : '查看金额'"
+            placement="bottom"
+          >
+            <el-button 
+              class="simple-button" 
+              :icon="showData ? Hide: View " 
+              size="small" 
+              plain 
+              @click="toggleShowData" 
+              style="margin-left: 0 !important;"
+            ></el-button>
+          </el-tooltip>
 
-          <el-button class="simple-button" :icon="Refresh" size="small" plain @click="refreshData" :loading="loading" style="margin-right: 20px;">
-          </el-button>
+          <el-tooltip
+            class="box-item"
+            effect="dark"
+            content="刷新数据"
+            placement="bottom"
+          >
+            <el-button 
+              class="simple-button" 
+              :icon="Refresh" 
+              size="small" 
+              plain 
+              @click="refreshData" 
+              :loading="loading" 
+              style="margin-right: 20px;"
+            ></el-button>
+          </el-tooltip>
         </div>
       </header>
 
@@ -79,6 +97,7 @@ import { ref, onMounted } from 'vue';
 import ProjectBox from "./component/project.vue";
 import FastBox from "./component/fast.vue";
 import { View, Hide, Refresh } from "@element-plus/icons-vue";
+import useUserStore from '../../stores/user';
 import { http } from '@/api'; // 假设http是从api/index.js导入的
 
 // 定义响应式变量
@@ -86,6 +105,8 @@ const loading = ref(false);
 const tableData = ref([]);
 const showData = ref(true); // 控制project.vue数据显示/隐藏的状态
 const projectBoxRef = ref(null); // 用于访问ProjectBox组件的方法
+// 初始化store
+const userStore = useUserStore();
 const columns = [
   { prop: "merchantorderno", label: "商户单号" },
   { prop: "orderno", label: "平台订单号" },
@@ -201,7 +222,7 @@ async function getdata() {
     let res = await http.financePage({
       billStartTime: formattedStart,
       billEndTime: formattedEnd,
-      id: '',
+      id: userStore.merchantInfo.id,
       merchantOrderNo: "",
       orderNo: "",
       pageNo: 1,
