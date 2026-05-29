@@ -13,23 +13,6 @@
           </div>
           <div class="form-container">
           <el-form :model="transferForm" :rules="rules" ref="transferFormRef" label-width="120px">
-            <el-form-item label="转出账户" prop="fromAccount">
-              <el-select v-model="transferForm.fromAccount" disabled>
-                <el-option :label="currentAccount.name" :value="currentAccount.id"></el-option>
-              </el-select>
-            </el-form-item>
-            
-            <el-form-item label="转入账户" prop="toAccount">
-              <el-select v-model="transferForm.toAccount" placeholder="请选择转入账户">
-                <el-option 
-                  v-for="account in availableAccounts" 
-                  :key="account.id" 
-                  :label="account.name" 
-                  :value="account.id"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-            
             <el-form-item label="转账金额" prop="amount">
               <el-input 
                 v-model.number="transferForm.amount" 
@@ -37,41 +20,39 @@
                 type="number"
                 :min="0.01"
                 :step="0.01"
-                @input="convertAmountToU"
               >
                 <template #prefix>¥</template>
               </el-input>
-              <div class="amount-tips">
-                最小转账金额: ¥0.01
-              </div>
             </el-form-item>
             
-            <el-form-item label="转账U数" prop="uAmount">
+            <el-form-item label="到账商户号" prop="toMerchant">
               <el-input 
-                v-model.number="transferForm.uAmount" 
-                placeholder="单位：USDT" 
-                type="number"
-                :min="0.01"
-                :step="0.01"
-                @input="convertUToAmount"
-              >
-              </el-input>
+                v-model="transferForm.toMerchant" 
+                placeholder="到账商户号" 
+              ></el-input>
             </el-form-item>
             
-            <el-form-item label="转账备注">
+            <el-form-item label="支付密码" prop="password">
               <el-input 
-                v-model="transferForm.remark" 
-                placeholder="请输入转账备注（选填）"
-                type="textarea"
-                :rows="2"
+                v-model="transferForm.password" 
+                type="password"
+                placeholder="请输入支付密码"
+                :show-password="true"
+              ></el-input>
+            </el-form-item>
+            
+            <el-form-item label="MFA2验证码" prop="mfaCode">
+              <el-input 
+                v-model="transferForm.mfaCode" 
+                placeholder="请输入MFA2验证码"
               ></el-input>
             </el-form-item>
             
             <el-form-item>
               <div class="form-actions">
                 <el-button @click="resetForm">重置</el-button>
-                <el-button type="primary" @click="submitTransfer" :loading="loading">
-                  确认转账
+                <el-button type="primary" :disabled="true" title="暂未开放">
+                  提交（暂未开放）
                 </el-button>
               </div>
             </el-form-item>
@@ -166,6 +147,7 @@ import {  Warning } from "@element-plus/icons-vue";
 import { ref, reactive } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import UserStore from '@/stores/user';
 
 // 账户互转
 const props = defineProps({
@@ -196,37 +178,20 @@ const handleDialogClose = () => {
 
 // 当前账户信息
 const currentAccount = reactive({
-  id: '11525',
-  name: 'C95647',
-  balance: 100000.00
+  name: UserStore().merchantInfo.name,
+  balance: UserStore().merchantInfo.Balance,
 });
-
-// 可用的转入账户
-const availableAccounts = reactive([
-  {
-    id: '11743',
-    name: 'E00001'
-  },
-  {
-    id: '11825',
-    name: 'E00002'
-  }
-]);
 
 // 转账表单
 const transferForm = reactive({
-  fromAccount: currentAccount.id,
-  toAccount: '',
   amount: '',
-  uAmount: '',
-  remark: ''
+  toMerchant: '',
+  password: '',
+  mfaCode: ''
 });
 
 // 表单验证规则
 const rules = {
-  toAccount: [
-    { required: true, message: '请选择转入账户', trigger: 'change' }
-  ],
   amount: [
     { required: true, message: '请输入转账金额', trigger: 'blur' },
     { type: 'number', min: 0.01, message: '转账金额不能小于0.01', trigger: 'blur' },
@@ -241,40 +206,17 @@ const rules = {
       trigger: 'blur'
     }
   ],
-  uAmount: [
-    { required: true, message: '请输入转账U数', trigger: 'blur' },
-    { type: 'number', min: 0.01, message: '转账U数不能小于0.01', trigger: 'blur' }
+  password: [
+    { required: true, message: '请输入支付密码', trigger: 'blur' }
+  ],
+  mfaCode: [
+    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
   ]
-};
-
-// 金额转换为U数
-const convertAmountToU = () => {
-  if (transferForm.amount && !isNaN(transferForm.amount) && Number(transferForm.amount) > 0) {
-    // 模拟汇率，实际应该从API获取
-    const rate = 7.25;
-    let amount = Number(transferForm.amount);
-    transferForm.uAmount = (amount / rate).toFixed(4);
-  } else {
-    transferForm.uAmount = '';
-  }
-};
-
-// U数转换为金额
-const convertUToAmount = () => {
-  if (transferForm.uAmount && !isNaN(transferForm.uAmount) && Number(transferForm.uAmount) > 0) {
-    // 模拟汇率，实际应该从API获取
-    const rate = 7.25;
-    let uAmount = Number(transferForm.uAmount);
-    transferForm.amount = (uAmount * rate).toFixed(2);
-  } else {
-    transferForm.amount = '';
-  }
 };
 
 // 重置表单
 const resetForm = () => {
   transferFormRef.value.resetFields();
-  transferForm.uAmount = '';
 };
 
 // 提交转账
@@ -306,6 +248,7 @@ const submitTransfer = async () => {
   });
 };
 
+
 // 转账记录相关
 const historyTimeRange = ref([]);
 const historyLoading = ref(false);
@@ -332,78 +275,78 @@ const getTransferHistory = async () => {
     
     // 模拟转账记录数据
     transferHistory.value = [
-      {
-        orderNo: 'TRF' + (Date.now() - 86400000),
-        fromAccount: 'C95647',
-        toAccount: 'E00001',
-        amount: 5000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '测试转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      }
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 86400000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00001',
+      //   amount: 5000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '测试转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // }
     ];
   } catch (error) {
     ElMessage.error('获取转账记录失败');
@@ -414,6 +357,7 @@ const getTransferHistory = async () => {
 
 // 页面挂载时初始化
 import { onMounted } from 'vue';
+import { http } from "@/request";
 onMounted(() => {
   initTimeRange();
   getTransferHistory();
@@ -736,5 +680,14 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   width: 100%;
+}
+:deep(.el-input__inner:-webkit-autofill),
+:deep(.el-input__inner:-webkit-autofill:hover),
+:deep(.el-input__inner:-webkit-autofill:focus),
+:deep(.el-input__inner:-webkit-autofill:active) {
+  -webkit-background-clip: text;
+  background-color: #fff !important;
+  background-clip: text;
+  transition: background-color 5000s ease-in-out 0s;
 }
 </style>

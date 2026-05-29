@@ -11,7 +11,34 @@
           <div class="login-subtitle">Finance</div>
         </div>
       </div>
-      <div class="login-form">
+
+      <div v-if="isLoading" class="login-form">
+        <div class="loading-text">Verifying... / 验证中...</div>
+      </div>
+
+      <div v-else-if="tokenError" class="login-form">
+        <div class="error-icon">!</div>
+        <h2 class="error-title">{{ tokenError }}</h2>
+        <p class="error-hint">请联系集团管理员重新发送邀请</p>
+        <el-button    style="width: 100%"
+              type="primary"
+              size="default"
+              :loading="isLoading"
+               @click="goToLogin">前往登录</el-button>
+      </div>
+
+      <div v-else-if="success" class="login-form">
+        <div class="success-icon">&#10003;</div>
+        <h2 class="success-title">密码设置成功</h2>
+        <p class="success-hint">您的账户已激活，现在可以登录</p>
+        <el-button  style="width: 100%"
+              type="primary"
+              size="default"
+              :loading="isLoading"
+              @click="goToLogin">前往登录</el-button>
+      </div>
+
+      <div v-else class="login-form">
         <el-form
           ref="passwordFormRef"
           label-position="top"
@@ -19,25 +46,18 @@
           @keyup.enter.native="submitForm"
           :rules="rules"
         >
-          <div class="form-title">{{ pageTitle }}</div>
+          <div class="form-title">用户设置密码</div>
+          <p class="form-subtitle" v-if="tokenData">
+            {{ tokenData.tokenType === 'ResetPassword' ? '重置您的账户密码' : '激活您的账户并设置密码' }}
+          </p>
           
-          <el-form-item label="邮箱" prop="email">
-            <el-input
-              v-model="passwordForm.email"
-              size="default"
-              type="text"
-              placeholder="请输入邮箱"
-              :disabled="true"
-            ></el-input>
-          </el-form-item>
-
           <el-form-item label="新密码" prop="newPassword">
             <el-input
               v-model="passwordForm.newPassword"
               size="default"
               type="password"
               show-password
-              placeholder="请输入新密码"
+              placeholder="6-16位，字母或数字开头，至少包含3种字符类型"
             ></el-input>
             <div v-if="passwordForm.newPassword" class="password-strength-container">
               <div class="password-strength-boxes">
@@ -60,11 +80,9 @@
               size="default"
               type="password"
               show-password
-              placeholder="请确认新密码"
+              placeholder="再次输入密码"
             ></el-input>
           </el-form-item>
-
-
 
           <el-form-item>
             <el-button
@@ -79,6 +97,7 @@
           </el-form-item>
         </el-form>
       </div>
+
       <div class="css-zg4aas">
         <div class="css-1s7xaob">
           <p class="chakra-text css-i8munm">Univepay Finance © 2026</p>
@@ -98,21 +117,21 @@ const route = useRoute();
 const router = useRouter();
 
 const passwordFormRef = ref(null);
-const isLoading = ref(false);
+const isLoading = ref(true);
 const passwordStrength = ref(0);
 const passwordStrengthColor = ref('#ff0000');
+const passwordStrengthWidth = ref('0%');
+const passwordStrengthText = ref('');
+const tokenError = ref('');
+const tokenData = ref(null);
+const success = ref(false);
 
 const passwordForm = ref({
-  email: '',
   newPassword: '',
   confirmPassword: ''
 });
 
 const rules = ref({
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-  ],
   newPassword: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
     {
@@ -121,7 +140,9 @@ const rules = ref({
           callback(new Error('请输入新密码'));
         } else if (value.length < 6) {
           callback(new Error('密码长度至少6位'));
-        } else if (!/[a-zA-Z]/.test(value)) {
+        } else if (/\s/.test(value)) {  // 新增：检查是否包含空格
+      callback(new Error('密码不能包含空格'));
+    } else if (!/[a-zA-Z]/.test(value)) {
           callback(new Error('密码必须包含字母'));
         } else if (!/\d/.test(value)) {
           callback(new Error('密码必须包含数字'));
@@ -154,32 +175,41 @@ const rules = ref({
 const calculatePasswordStrength = (password) => {
   let strength = 0;
   let color = '#ff0000';
+  let text = '强度低';
 
   if (!password) {
     passwordStrength.value = 0;
     passwordStrengthColor.value = '#ff0000';
+    passwordStrengthWidth.value = '0%';
+    passwordStrengthText.value = '';
     return;
   }
 
-  if (password.length >= 6) strength += 0;
+  if (password.length >= 6) strength += 1;
   if (/[a-z]/.test(password)) strength += 1;
   if (/[A-Z]/.test(password)) strength += 1;
   if (/\d/.test(password)) strength += 1;
   if (/[^A-Za-z0-9]/.test(password)) strength += 1;
 
   passwordStrength.value = strength;
+  passwordStrengthWidth.value = (strength / 4) * 100 + '%';
 
   if (strength <= 1) {
+    text = '强度低';
     color = '#ff0000';
   } else if (strength <= 2) {
+    text = '强度中';
     color = '#ff8800';
   } else if (strength <= 3) {
+    text = '强度中高';
     color = '#aabb00';
   } else {
-    color = '#00ff00';
+    text = '强度高';
+    color = '#1a7f37';
   }
 
   passwordStrengthColor.value = color;
+  passwordStrengthText.value = text;
 };
 
 watch(
@@ -189,21 +219,38 @@ watch(
   }
 );
 
-const pageTitle = computed(() => {
-  const type = route.query.type || 'merchant';
-  if (type === 'operator') {
-    return '操作员首次设置密码';
-  }
-  return '商户首次设置密码';
-});
+
 
 const submitButtonText = computed(() => {
   return '确认设置密码';
 });
 
 onMounted(() => {
-  passwordForm.value.email = route.query.email || '';
+  
+  verifyToken(); // 验证token
 });
+
+  async function verifyToken() {
+  isLoading.value = true;
+  const token = route.query.token || '';
+  if (!token) {
+    tokenError.value = '无效链接：缺少令牌';
+    isLoading.value = false;
+    return;
+  }
+  try {
+    const res = await http.verifySetPasswordToken({ token: token });
+    if (res.code === 200) {
+      tokenData.value = res.data;
+    } else {
+      tokenError.value = res.msg || '无效链接';
+    }
+  } catch (e) {
+    tokenError.value = '验证失败，请稍后重试';
+  }
+  isLoading.value = false;
+}
+
 
 async function submitForm() {
   try {
@@ -211,18 +258,28 @@ async function submitForm() {
     
     isLoading.value = true;
     
-    await new Promise(resolve => setTimeout(resolve, 800));
+    const res = await http.setGroupUserPassword({
+      token: route.query.token,
+      password: passwordForm.value.newPassword,
+    });
     
-    ElMessage.success('密码设置成功！');
-    
-    router.push('/login');
+    if (res.code === 200) {
+      success.value = true;
+      ElMessage.success(res.msg || '密码设置成功');
+    } else {
+      ElMessage.error(res.msg || '设置失败');
+    }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('请填写完整信息');
+      ElMessage.error('设置密码失败');
     }
   } finally {
     isLoading.value = false;
   }
+}
+
+function goToLogin() {
+  router.push('/Login');
 }
 </script>
 
@@ -320,6 +377,60 @@ async function submitForm() {
   &:first-child {
     margin-left: 0;
   }
+}
+
+.loading-text {
+  text-align: center;
+  color: #57606a;
+  font-size: 14px;
+  padding: 20px 0;
+}
+
+.error-icon,
+.success-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.error-icon {
+  background-color: #ffebe9;
+  color: #cf222e;
+}
+
+.success-icon {
+  background-color: #dafbe1;
+  color: #1a7f37;
+}
+
+.error-title,
+.success-title {
+  text-align: center;
+  font-size: 18px;
+  color: #24292f;
+  margin: 0 0 8px;
+}
+
+.error-hint,
+.success-hint {
+  text-align: center;
+  font-size: 14px;
+  color: #57606a;
+  margin: 0 0 20px;
+  line-height: 1.5;
+}
+
+.form-subtitle {
+  text-align: center;
+  font-size: 13px;
+  color: #57606a;
+  margin: 0 0 20px;
 }
 
 .css-zg4aas {

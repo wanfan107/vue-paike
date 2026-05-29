@@ -25,12 +25,14 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import SubmitForm from '@/components/SubmitForm.vue';
+import SuccessDialog from '@/components/SuccessDialog.vue';
 
 // 获取用户 store 和 router
 const userStore = useUserStore();
 const router = useRouter();
 
 // 定义响应式数据
+const showSuccessDialog = ref(false);
 const loading = ref(false);
 const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
@@ -240,11 +242,15 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.code === 200) {
-        ElMessage.success("修改成功");
-        userStore.logout();
-        router.replace("/login");
+        showSuccessDialog.value = true;
       }
     });
+};
+
+const handleSuccessConfirm = () => {
+  showSuccessDialog.value = false;
+  userStore.logout();
+  router.replace("/login");
 };
 
 // 关闭表单

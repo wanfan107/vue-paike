@@ -32,6 +32,14 @@
                 value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
+                        <el-form-item label="商户订单号">
+              <el-input
+                v-model="searchForm.merchantOrderNo"
+                placeholder="请输入"
+                clearable
+                style="width: 155px"
+              />
+            </el-form-item>
             <el-form-item label="平台订单号">
               <el-input
                 v-model="searchForm.platformOrderNo"
@@ -40,14 +48,7 @@
                 style="width: 155px"
               />
             </el-form-item>
-            <el-form-item label="商户订单号">
-              <el-input
-                v-model="searchForm.merchantOrderNo"
-                placeholder="请输入"
-                clearable
-                style="width: 155px"
-              />
-            </el-form-item>
+
             <el-form-item label="状态">
               <el-select
                 v-model="searchForm.status"
@@ -117,10 +118,10 @@
               />
               
               <!-- 批量操作栏 -->
-              <div v-if="selectedRows.length > 0" class="batch-operation-bar">
+              <div  class="batch-operation-bar">
                 <span>已选择 {{ selectedRows.length }} 项</span>
                 <el-button type="primary" size="small" @click="handleBatchExport">
-                  批量回调
+                  批量补发回调
                 </el-button>
               </div>
               
@@ -145,7 +146,7 @@
                   align="center"
                 />
                 <el-table-column prop="amount" label="订单金额" align="center" />
-                <el-table-column prop="expectAmount" label="预计到账" align="center" />
+                <el-table-column prop="merchantProfit" label="商户分账" align="center"/>
                 <el-table-column prop="actualAmount" label="实际支付" align="center" />
                 <el-table-column prop="fee" label="手续费" align="center" />
 
@@ -160,7 +161,7 @@
                 <el-table-column label="操作" align="center" width="100">
                   <template #default="{ row }">
                     <el-button type="primary" size="small" @click.stop="handleCallback(row)" >
-                      回调
+                      补发回调
                     </el-button>
                   </template>
                 </el-table-column>
@@ -199,12 +200,17 @@
         <el-descriptions v-else :column="1" border>
           <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item>
           <el-descriptions-item label="平台订单号">{{ currentRow.platformOrderNo || '-' }}</el-descriptions-item>
+          <!-- 银行单号-巴西是E单号-其他国家叫法不同，改成统一的银行单号 -->
+          <el-descriptions-item label="银行单号">{{ currentRow.billingCity || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="币种">{{ currentRow.currency || '-' }}</el-descriptions-item>
           <el-descriptions-item label="订单金额">{{ currentRow.amount || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="预计到账">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="商户分账">{{ currentRow.merchantProfit || '-' }}</el-descriptions-item>
           <el-descriptions-item label="实际支付">{{ currentRow.actualAmount || '-' }}</el-descriptions-item>
           <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="银行（类型）">{{ currentRow.bank || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="支付类型">{{ currentRow.bank || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="创建IP">{{ currentRow.createdIp || '-' }}</el-descriptions-item>
           <el-descriptions-item label="客户姓名">{{ currentRow.name || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户证件号">{{ currentRow.billingCountry || '-' }}</el-descriptions-item>
           <!-- <el-descriptions-item label="客户电话">{{ currentRow.phone || '-' }}</el-descriptions-item>
           <el-descriptions-item label="客户邮箱">{{ currentRow.email || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="申请时间">{{ currentRow.createTime || '-' }}</el-descriptions-item>
@@ -215,10 +221,15 @@
             </el-tag>
             <span v-else>-</span>
           </el-descriptions-item>
-          <el-descriptions-item label="通知状态">{{ currentRow.notifyStatus || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="通知地址">{{ currentRow.notifyUrl || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="通知状态">
+            <span>{{ currentRow.notifyStatus || '-' }}</span>
+          </el-descriptions-item>
+          <el-descriptions-item label="通知地址">
+            <span class="wrap-text">{{ currentRow.notifyUrl || '-' }}</span>
+          </el-descriptions-item>
           <!-- <el-descriptions-item label="回调">{{ currentRow.callback || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item>
+           <!-- 可能是备注 -->
+          <!-- <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item> -->
         </el-descriptions>
       </div>
     </el-drawer>
@@ -502,27 +513,41 @@ const handleSelectionChange = (selection) => {
 
 
 
-// 批量导出
+// 批量回调
 const handleBatchExport = () => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择要回调的数据');
+    ElMessage.warning('请先选择要补发回调的数据');
     return;
   }
   
-  console.log('批量导出选中的数据:', selectedRows.value);
-  ElMessage.success(`已选择 ${selectedRows.value.length} 条数据进行回调`);
-  
-  // 这里可以添加实际的批量导出逻辑
-  // 例如：调用批量导出API，传递选中的订单号数组
+  http
+    .reissueCallback({
+      idList: selectedRows.value.map((item) => item.platformOrderNo),
+    })
+    .then((res) => {
+      if (res.code === 200) {
+        ElMessage.success(res.msg);
+        handleSearch();
+      }else{
+        ElMessage.error(res.msg);
+      }
+    });
 };
 
 // 单个回调
 const handleCallback = (row) => {
-  console.log('回调操作，row数据:', row);
-  ElMessage.success(`已对订单 ${row.merchantOrderNo || row.platformOrderNo} 进行回调`);
-  
-  // 这里可以添加实际的回调逻辑
-  // 例如：调用回调API，传递订单号
+  http
+    .reissueCallback({
+      idList: [row.platformOrderNo],
+    })
+    .then((res) => {
+      if (res.code === 200) {
+        ElMessage.success(res.msg);
+        handleSearch();
+      }else{
+         ElMessage.error(res.msg);
+      }
+    });
 };
 
 // 初始化数据
@@ -595,6 +620,12 @@ const onExport = async () => {
 
 <style scoped lang="scss"> 
 @use "../../styles/variables.scss" as *;
+
+/* 放大表格选择框 */
+:deep(.el-table .el-checkbox) {
+  transform: scale(1.4);
+  margin: 8px;
+}
 
 .page-container {
   background-color: #fff;
@@ -727,6 +758,13 @@ const onExport = async () => {
 .detail-content {
   padding: 20px;
   min-height: 400px;
+}
+
+.wrap-text {
+  display: inline-block;
+  max-width: 250px;
+  word-break: break-all;
+  white-space: normal;
 }
 
 .empty-detail {

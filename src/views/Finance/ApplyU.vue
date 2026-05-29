@@ -409,13 +409,13 @@ const formList = computed(() => {
 const checkPrepayStatus = async () => {
   try {
     // 调用检查授信款状态的接口
-    const res = await http.checkPrepayStatus({
+    const res = await http.merchant({
       id: userStore.merchantInfo.id,
     });
     
     // 根据接口返回结果判断是否需要弹窗
-    // 假设接口返回 { hasUnpaidPrepay: true } 表示有未还清的授信款
-    if (res.data && res.data.hasUnpaidPrepay) {
+    // 授信已用额度（>0的数就是待还金额，说明有预付未还清。=0已还清，<=0不用理会）
+    if (res.data && res.data.CreditUsed > 0) {
       showPrepayDialog.value = true;
     }
   } catch (error) {

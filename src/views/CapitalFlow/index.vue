@@ -21,17 +21,17 @@
                 value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
-            <el-form-item label="平台订单号">
+                        <el-form-item label="商户订单号">
               <el-input
-                v-model="searchForm.orderNo"
+                v-model="searchForm.merchantOrderNo"
                 placeholder="请输入"
                 clearable
                 style="width: 155px"
               />
             </el-form-item>
-            <el-form-item label="商户订单号">
+            <el-form-item label="平台订单号">
               <el-input
-                v-model="searchForm.merchantOrderNo"
+                v-model="searchForm.orderNo"
                 placeholder="请输入"
                 clearable
                 style="width: 155px"
@@ -353,6 +353,8 @@ const handleSearch = async () => {
   loading.value = true;
   try {
     // 模拟API调用 - 实际项目中替换为真实API调用
+    console.log(userStore.userInfo.id);
+    
     const res = await http.financePage({
       billEndTime: searchForm.time[1],
       billStartTime: searchForm.time[0],

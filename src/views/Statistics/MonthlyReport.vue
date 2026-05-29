@@ -116,7 +116,7 @@
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
-                          label="收款成功率"
+                          label="成功率"
                           align="center"
                         >
                         </el-table-column>
@@ -134,7 +134,7 @@
                         </el-table-column>
                             <el-table-column
                           prop="SuccessRatePayout"
-                          label="付款成功率"
+                          label="成功率"
                           align="center"
                         >
                         </el-table-column>
@@ -166,7 +166,7 @@
                     <span v-else-if="item.percentage">{{
                       toPercent(scope.row[item.prop])
                     }}</span>
-                    <span v-else>{{ scope.row[item.prop] }}</span>
+                    <span v-else>{{ formatNumber(scope.row[item.prop]) }}</span>
                   </template>
                 </el-table-column>
               </el-table>
@@ -605,7 +605,9 @@ const onExpandChange = (row, expandedRows) => {
       // 创建新的items数组，而不是直接修改原数组
       const updatedItems = row.items.map(item => ({
         ...item,
-        SuccessRatePayin: toPercent(item.SuccessRatePayin)
+        SuccessRatePayin: toPercent(item.SuccessRatePayin),
+        SuccessRatePayout: toPercent(item.SuccessRatePayout),
+        // SuccessOrderFee: formatNumber(item.SuccessOrderFee),
       }));
 
       // 添加手续费和违规订单数据
@@ -1282,101 +1284,113 @@ const clearSearch = () => {
   handleSearch();
 };
 // 生成假数据
-const generateMockData = (count = 10) => {
-  const mockList = [];
-  const statusMap = {
-    0: '未通知',
-    1: '通知成功',
-    2: '通知失败'
-  };
-  const typeKeys = Object.keys(tagTypeColor);
+// const generateMockData = (count = 10) => {
+//   const mockList = [];
+//   const statusMap = {
+//     0: '未通知',
+//     1: '通知成功',
+//     2: '通知失败'
+//   };
+//   const typeKeys = Object.keys(tagTypeColor);
   
-  for (let i = 0; i < count; i++) {
-    mockList.push({
-      merchantorderno: `MCH${Date.now()}${i.toString().padStart(4, '0')}`,
-      orderno: `ORD${Date.now()}${i.toString().padStart(4, '0')}`,
-      orderamount: (Math.random() * 10000).toFixed(2),
-      realamount: (Math.random() * 10000).toFixed(2),
-      balance: (Math.random() * 10000).toFixed(2),
-      createtime: new Date(Date.now() - Math.random() * 7 * 24 * 3600 * 1000).toLocaleString(),
-      bankType: `银行${String.fromCharCode(65 + i % 26)}`,
-      customerName: `用户${i + 1}`,
-      customerPhone: `138${String(Math.random()).slice(2, 6)}${String(Math.random()).slice(2, 6)}`,
-      customerEmail: `user${i + 1}@example.com`,
-      applyTime: new Date(Date.now() - Math.random() * 24 * 3600 * 1000).toLocaleString(),
-      status: statusMap[Math.floor(Math.random() * 3)],
-      info: `备注信息${i + 1}`,
-      type: typeKeys[Math.floor(Math.random() * typeKeys.length)]
-    });
-  }
-  return mockList;
-};
+//   for (let i = 0; i < count; i++) {
+//     mockList.push({
+//       merchantorderno: `MCH${Date.now()}${i.toString().padStart(4, '0')}`,
+//       orderno: `ORD${Date.now()}${i.toString().padStart(4, '0')}`,
+//       orderamount: (Math.random() * 10000).toFixed(2),
+//       realamount: (Math.random() * 10000).toFixed(2),
+//       balance: (Math.random() * 10000).toFixed(2),
+//       createtime: new Date(Date.now() - Math.random() * 7 * 24 * 3600 * 1000).toLocaleString(),
+//       bankType: `银行${String.fromCharCode(65 + i % 26)}`,
+//       customerName: `用户${i + 1}`,
+//       customerPhone: `138${String(Math.random()).slice(2, 6)}${String(Math.random()).slice(2, 6)}`,
+//       customerEmail: `user${i + 1}@example.com`,
+//       applyTime: new Date(Date.now() - Math.random() * 24 * 3600 * 1000).toLocaleString(),
+//       status: statusMap[Math.floor(Math.random() * 3)],
+//       info: `备注信息${i + 1}`,
+//       type: typeKeys[Math.floor(Math.random() * typeKeys.length)]
+//     });
+//   }
+//   return mockList;
+// };
 // 生成月报表假数据
-const generateReportMockData = (startDate, endDate) => {
-  const mockList = [];
-  const start = new Date(startDate);
-  const end = new Date(endDate);
+// const generateReportMockData = (startDate, endDate) => {
+//   const mockList = [];
+//   const start = new Date(startDate);
+//   const end = new Date(endDate);
   
-  // 计算月份数
-  let months = [];
-  let current = new Date(start.getFullYear(), start.getMonth(), 1);
-  let endMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0);
+//   // 计算月份数
+//   let months = [];
+//   let current = new Date(start.getFullYear(), start.getMonth(), 1);
+//   let endMonth = new Date(end.getFullYear(), end.getMonth() + 1, 0);
   
-  while (current <= endMonth) {
-    months.push(new Date(current));
-    current.setMonth(current.getMonth() + 1);
-  }
+//   while (current <= endMonth) {
+//     months.push(new Date(current));
+//     current.setMonth(current.getMonth() + 1);
+//   }
   
-  for (let i = 0; i < months.length; i++) {
-    const currentMonth = months[i];
-    const year = currentMonth.getFullYear();
-    const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
-    const dateStr = `${year}-${month}`;
+//   for (let i = 0; i < months.length; i++) {
+//     const currentMonth = months[i];
+//     const year = currentMonth.getFullYear();
+//     const month = String(currentMonth.getMonth() + 1).padStart(2, '0');
+//     const dateStr = `${year}-${month}`;
     
-    const successAmountPayin = Math.floor(Math.random() * 1000000) + 100000;
-    const successAmountPayout = Math.floor(Math.random() * 500000) + 50000;
-    const previousMonthEndBalance = Math.floor(Math.random() * 2000000) + 500000;
-    const currentMonthEndBalance = previousMonthEndBalance + successAmountPayin - successAmountPayout;
+//     const successAmountPayin = Math.floor(Math.random() * 1000000) + 100000;
+//     const successAmountPayout = Math.floor(Math.random() * 500000) + 50000;
+//     const previousMonthEndBalance = Math.floor(Math.random() * 2000000) + 500000;
+//     const currentMonthEndBalance = previousMonthEndBalance + successAmountPayin - successAmountPayout;
     
-    mockList.push({
-      OrderDate: dateStr,
-      PreviousDayEndBalance: previousMonthEndBalance,
-      SuccessAmountPayin: successAmountPayin,
-      SuccessAmountPayout: successAmountPayout,
-      Totalamountreceived: successAmountPayin - successAmountPayout,
-      CurrentDayEndBalance: currentMonthEndBalance,
-      SuccessOrderFee: Math.floor(successAmountPayin * 0.01),
-      items: [
-        {
-          typeName: '信用卡',
-          SuccessCountPayin: Math.floor(Math.random() * 500) + 100,
-          SuccessAmountPayin: Math.floor(successAmountPayin * 0.6),
-          SuccessRatePayin: 0.95,
-          SuccessCountPayout: Math.floor(Math.random() * 200) + 50,
-          SuccessAmountPayout: Math.floor(successAmountPayout * 0.5)
-        },
-        {
-          typeName: '借记卡',
-          SuccessCountPayin: Math.floor(Math.random() * 300) + 50,
-          SuccessAmountPayin: Math.floor(successAmountPayin * 0.3),
-          SuccessRatePayin: 0.98,
-          SuccessCountPayout: Math.floor(Math.random() * 150) + 30,
-          SuccessAmountPayout: Math.floor(successAmountPayout * 0.3)
-        },
-        {
-          typeName: '第三方支付',
-          SuccessCountPayin: Math.floor(Math.random() * 200) + 30,
-          SuccessAmountPayin: Math.floor(successAmountPayin * 0.1),
-          SuccessRatePayin: 0.92,
-          SuccessCountPayout: Math.floor(Math.random() * 100) + 20,
-          SuccessAmountPayout: Math.floor(successAmountPayout * 0.2)
-        }
-      ]
-    });
-  }
+//     mockList.push({
+//       OrderDate: dateStr,
+//       PreviousDayEndBalance: previousMonthEndBalance,
+//       SuccessAmountPayin: successAmountPayin,
+//       SuccessAmountPayout: successAmountPayout,
+//       Totalamountreceived: successAmountPayin - successAmountPayout,
+//       CurrentDayEndBalance: currentMonthEndBalance,
+//       SuccessOrderFee: Math.floor(successAmountPayin * 0.01),
+//       items: [
+//         {
+//           typeName: '信用卡',
+//           SuccessCountPayin: Math.floor(Math.random() * 500) + 100,
+//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.6),
+//           SuccessRatePayin: 0.95,
+//           SuccessCountPayout: Math.floor(Math.random() * 200) + 50,
+//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.5)
+//         },
+//         {
+//           typeName: '借记卡',
+//           SuccessCountPayin: Math.floor(Math.random() * 300) + 50,
+//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.3),
+//           SuccessRatePayin: 0.98,
+//           SuccessCountPayout: Math.floor(Math.random() * 150) + 30,
+//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.3)
+//         },
+//         {
+//           typeName: '第三方支付',
+//           SuccessCountPayin: Math.floor(Math.random() * 200) + 30,
+//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.1),
+//           SuccessRatePayin: 0.92,
+//           SuccessCountPayout: Math.floor(Math.random() * 100) + 20,
+//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.2)
+//         }
+//       ]
+//     });
+//   }
   
-  return mockList;
+//   return mockList;
+// };
+
+// 格式化时间为 YYYY-MM
+const formatTime = (date) => {
+  // 如果是字符串，先转换为 Date 对象
+  const d = typeof date === 'string' ? new Date(date.replace(/-/g, '/')) : date;
+  if (!(d instanceof Date) || isNaN(d.getTime())) {
+    return '';
+  }
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}`;
 };
+
 
 // 搜索方法
 const handleSearch = async () => {
@@ -1389,13 +1403,14 @@ const handleSearch = async () => {
   loading.value = true;
   try {
     // 使用假数据
-    tableData.value = generateReportMockData(searchForm.time[0], searchForm.time[1]);
+    // tableData.value = generateReportMockData(searchForm.time[0], searchForm.time[1]);
     
     // 实际 API 调用（注释掉）
-    /*
+    console.log(searchForm.value);
+    
     let res = await http.financeReportByDay({
-      startDate: searchForm.time[0],
-      endDate: searchForm.time[1],
+      startDate: formatTime(searchForm.time[0]),
+      endDate: formatTime(searchForm.time[1]),
     });
     if (res.code === 200) {
       if (res.data.list && res.data.list.length > 0) {
@@ -1411,7 +1426,7 @@ const handleSearch = async () => {
     } else {
       ElMessage.error(res.message || '查询失败');
     }
-    */
+    
   } catch (error) {
     console.error('查询失败:', error);
     ElMessage.error('查询失败，请稍后重试');
@@ -1428,6 +1443,15 @@ const toPercent = (num) => {
     return num.toFixed(2) + "%";
   }
   return (num * 100).toFixed(2) + "%";
+};
+
+
+// 格式化数字，保留2位小数
+const formatNumber = (num) => {
+  if (num === null || num === undefined || num === '' || isNaN(num)) {
+    return '0.00';
+  }
+  return parseFloat(num).toFixed(2);
 };
 
 // 分页相关方法
@@ -1532,11 +1556,11 @@ const updateMainCharts = () => {
 
 // 初始化数据
 onMounted(async () => {
-  // 设置默认日期范围为昨天
+  // 设置默认日期范围为最近两个月
   const now = new Date();
-  const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
-  const start = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 0, 0, 0, 0);
-  const end = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate(), 23, 59, 59, 999);
+  const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+  const start = new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), twoMonthsAgo.getDate(), 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
   
   // 格式化为 yyyy-MM-dd 格式
   const formatDate = (date) => {

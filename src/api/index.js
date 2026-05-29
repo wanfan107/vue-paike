@@ -11,10 +11,50 @@ const defaultApi = (apiName) => {
 }
 export const http = {
     form: defaultApi('form'),
+    // 集团预登录
+    groupPrelogin: (data) => request.post("/Auth/group/prelogin", data),
+    // 集团登录
+    groupLogin: (data) => request.post("/Auth/group/login", data),
+    // 集团选择商户
+    selectMerchant: (data, headers) => request.post("/Auth/group/selectMerchant", data, { headers }),
+    // 集团菜单权限
+    getGroupMenus: () => request.get("/Auth/group/menus"),  // 未用
+    // 集团可访问商户
+    getGroupMerchants: () => request.get("/Auth/group/merchants"),
+    // 集团用户列表 （查询）
+    getGroupUsers: () => request.post("/Auth/group/users"),
+    // 创建集团用户 （创建）
+    createGroupUser: (data) => request.post("/Auth/group/users/create", data),
+    // 修改集团用户 （修改）
+    updateGroupUser: (data) => request.post("/Auth/group/users/update", data),
+    // 删除集团用户 （删除）
+    deleteGroupUser: (data) => request.post("/Auth/group/users/delete", data),
+    // 重置集团用户密码 （重置密码）
+    resetGroupUserPassword: (data) => request.post("/Auth/group/users/resetPassword", data),
+    // 集团登录记录
+    groupLoginLogs: (params) => request.post("/Auth/group/loginlogs", params),
+    // 验证设置密码Token
+    verifySetPasswordToken: (data) => request.post("/Auth/group/verify-token", data),
+    // 通过Token设置密码
+    setGroupUserPassword: (data) => request.post("/Auth/group/set-password", data),
+    // 支付密码修改（使用集团MFA2验证）
+    updateGroupPayPassword: (data, headers) => request.post("/Auth/group/paypassword", data, { headers }),
+    // 集团商户互转余额查询
+    groupTransferBalance: (params, headers) => request.get("/Auth/group/transfer/balance", { params, headers }),
+    // 集团商户互转
+    groupMerchantTransfer: (data, headers) => request.post("/Auth/group/transfer", data, { headers }),
+    // 集团订单模糊查询
+    groupOrderQuery: (data, headers) => request.post("/Auth/group/orderQuery", data, { headers }),
+    // 即时报表
+    // 代付成功率统计
+    paySuccessRatio: (params) => request.get('/pay/successratio', { params }),
+    // 代收成功率统计
+    collectSuccessRatio: (params) => request.get('/collect/successratio', { params }),
+
     login: (data) => request.post('/Auth/login', data),
     prelogin: (data) => request.post('/Auth/prelogin', data),
     // 商户信息
-    merchant: (params) =>  request.get('/User/merchantinfo', { params }),
+    merchant: (params) => request.get('/User/merchantinfo', { params }),
     // 资金流水明细
     financePage: (params) => request.post('/Finance/recordnew', params),
     updatePassword: data => request.post('/User/password', data),
@@ -31,6 +71,9 @@ export const http = {
     usdttransfer: data => request.post('/USDT/transfer', data),
     // 统计报表
     financeReport: (params) => request.post('/Finance/dailyorderstats', params),
+  // 统计报表查每天，每月
+  financeReportByDay: (params) => request.get("/Collect/statisticsByDayBoth",{ params}),
+   financeReportByMonth : (params) => request.get("Collect/statisticsByMonthMulti",{ params}),
     // 查询汇率
     exchangeRate: (params) => request.get('/USDT/rate', { params }),
     // 资金记录导出
@@ -44,8 +87,10 @@ export const http = {
     payOrderPage: (params) => request.post('/Pay/record', params),
     // 提现记录
     withdrawPage: (params) => request.post('/Transfer/record', params),
-    // 补发回调
+    // 补发回调-代收
     reissueCallback: data => request.post('/Collect/callback', data),
+    // 补发回调-代付
+    reissueCallbackPay: data => request.post('/Pay/callback', data),
     // 代收导出
     exportCollect: (params) => request.post('/Collect/Export', params),
     /**
@@ -68,6 +113,8 @@ export const http = {
     totalPay: (params) => request.get('/Finance/totalPay', { params }),
     // 当日提现统计 /Finance/totalUSDT
     totalUSDT: (params) => request.get('/Finance/totalUSDT', { params }),
+    // 按天统计代收代付汇总数据  api/Collect/statisticsByDayBoth
+    statisticsByDayBoth: (params) => request.get('/Collect/statisticsByDayBoth', { params }),
     // 导出记录
     exportList: (params) => request.post('/Transfer/exportlist', params),
 }

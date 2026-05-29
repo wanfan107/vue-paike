@@ -27,6 +27,7 @@
               size="default"
               type="text"
               placeholder="请输入注册邮箱"
+              disabled
             ></el-input>
           </el-form-item>
 
@@ -306,18 +307,19 @@ function goToLogin() {
     margin-bottom: 20px;
   }
 
-  .el-input__inner {
-    height: 44px;
-    border-radius: 24px;
-    font-size: 14px;
-    padding: 0 15px;
-  }
+  // .el-input__inner {
+  //   height: 44px;
+  //   border-radius: 24px;
+  //   font-size: 14px;
+  //   padding: 0 15px;
+  // }
 
   .el-button {
-    height: 44px;
-    font-size: 16px;
+    // height: 44px;
+    font-size: 13px;
     font-weight: 500;
     border-radius: 24px;
+    padding: 0 15px;
   }
 }
 

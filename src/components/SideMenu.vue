@@ -52,11 +52,15 @@
     <div class="user-info-container">
       <el-dropdown @command="handleUserCommand">
         <div class="user-info">
-          <div class="user-avatar">ZL</div>
+          <div class="user-avatar" v-if=" isGroupLogin && userStore.roleName==='管理员'">管理</div>
+          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='运营'" style="background-color: #f0f9eb; color: #67c33b;">运营</div>
+          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='财务'" style="background-color: #fcf6ec; color: #e3a43f;">财务</div> 
+          <div class="user-avatar" v-else style="background-color: #ff4949;">商户</div> 
+
           <div class="user-details">
-            <div class="user-name">卡琳娜</div>
-            <div class="user-company">Zir 有限公司</div>
-            <div class="user-account">账户 11525 </div>
+            <div class="user-name">{{ userStore.merchantId || userStore.userInfo?.username }}</div>
+            <!-- <div class="user-company">Zir 有限公司</div> -->
+            <!-- <div class="user-account">账户 11525 </div> -->
           </div>
           <div class="user-dropdown-icon">
             <el-icon><Switch /></el-icon>
@@ -115,15 +119,21 @@
           v-for="(account, index) in filteredAccounts"
           :key="index"
           class="account-item"
+          :class="{ 'current-account': account.id === userStore.currentMerchantCode }"
           @click="confirmBind(account)"
         >
           <div class="left-column">
-            <div class="account-id">{{ account.id }}</div>
+            <div class="account-id">
+              {{ account.id }}
+              <el-tag v-if="account.id === userStore.currentMerchantCode " type="success" size="small">当前</el-tag>
+            </div>
             <div class="account-type">{{ account.type }}</div>
           </div>
           <div class="right-column">
-            <div class="account-company">{{ account.company }}</div>
-            <div class="account-number">{{ account.accountNumber }}</div>
+            <!-- <div class="account-company"><span>余额：</span>{{ account.balance || ' ' }}</div> -->
+             <!-- // 修改后 -->
+<div class="account-company"><span>余额：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
+            <div class="account-number">创建时间：{{ account.createdOn }}</div>
           </div>
         </div>
       </div>
@@ -132,11 +142,12 @@
 <script setup>
   // 导入必要的图标组件
   import { HomeFilled, Search, Operation, FolderOpened, ArrowDown, Switch } from '@element-plus/icons-vue'
-  import { ref, computed } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useRoute } from 'vue-router'
   import router from '../router/index.js'
   import useUserStore from '../stores/user.js'
-  import { ElMessage } from 'element-plus'
+  import { ElMessage,ElMessageBox } from 'element-plus'
+
   
   // 获取当前路由
   const currentRoute = useRoute()
@@ -151,34 +162,119 @@
   const searchKey = ref('')
   
   // 账户列表
-  const accounts = ref([
-    {
-      id: "11743",
-      type: "Univepay",
-      company: "NOVABET OFICIAL",
-      accountNumber: "61.962.430/0001-89",
-    },
-    {
-      id: "11825",
-      type: "Univepay",
-      company: "APEXBET LTDA",
-      accountNumber: "62.087.018/0001-20",
-    },
-  ])
+  const accounts = ref([])
+
+  // 获取用户列表（集团用户的商户列表）
+function getUserList() {
+  if (!userStore.merchants || !Array.isArray(userStore.merchants)) {
+    accounts.value = [];
+    return;
+  }
+  console.log(userStore);
+  
+  accounts.value = userStore.merchants.filter(m => !m.code?.startsWith('G')).map(m => ({
+    id: m.code,
+    code: m.code,
+    siteUrl: m.siteUrl || '',
+    type: m.isGroup ? '集团' : '商户',
+    balance: m.balance || '0.00',
+    createdOn: formatDateTime(m.createdOn) || '',
+  }));
+}
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '';
+  // 如果是字符串，先转换为 Date 对象
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  
+  const pad = (n) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+// 计算属性
+const isGroupLogin = computed(() => {
+  return !!userStore.groupToken && (userStore.merchants?.length || 0) > 0;
+});
+
+const roleTagType = computed(() => {
+  switch (userStore.roleCode) {
+    case "admin": return "danger";
+    case "finance": return "warning";
+    case "operator": return "info";
+    default: return "";
+  }
+});
+// 组件挂载时初始化账户列表
+onMounted(() => {
+  getUserList();
+});
+
   
   // 过滤后的账户列表
   const filteredAccounts = computed(() => {
-    const keyword = searchKey.value.toLowerCase()
+    const keyword = (searchKey.value || '').trim().toLowerCase()
     if (!keyword) {
       return accounts.value
     }
     return accounts.value.filter(
       (account) =>
-        account.id.includes(keyword) ||
+        account.id.toLowerCase().includes(keyword) ||
         account.company.toLowerCase().includes(keyword) ||
-        account.accountNumber.includes(keyword)
+        account.accountNumber.toLowerCase().includes(keyword)
     )
   })
+
+
+  // admin 管理员角色    
+  // merchant 商户角色    
+  // operator 操作员    
+  // finance 财务角色    
+
+
+  // 获取当前用户角色
+  const getUserRole = () => {
+    const roleCode = userStore.roleCode
+    console.log(roleCode);
+    
+    if (!roleCode) return 'merchant'
+    return roleCode || 'merchant'
+  }
+  
+  // 检查用户是否有权限访问菜单项
+  const hasPermission = (roles) => {
+    if (!roles || roles.length === 0) return true
+    const userRole = getUserRole()
+    return roles.includes(userRole)
+  }
+  
+  // 过滤菜单项，只保留用户有权限访问的
+  const filterMenuByPermission = (menuItems) => {
+    return menuItems.filter(item => {
+      // 检查当前菜单项是否有权限
+      if (!hasPermission(item.roles)) {
+        return false
+      }
+      
+      // 如果有子菜单，过滤子菜单
+      if (item.children && item.children.length > 0) {
+        const filteredChildren = item.children.filter(child => hasPermission(child.roles))
+        if (filteredChildren.length > 0) {
+          item.children = filteredChildren
+          return true
+        }
+        return false
+      }
+      
+      return true
+    })
+  }
   
   // 从路由配置中动态获取菜单数据
   const getMenuItemsFromRoutes = () => {
@@ -188,26 +284,31 @@
     }
     
     // 处理菜单数据，确保格式正确
-    return mainLayoutRoute.children.map(route => {
+    const menuItems = mainLayoutRoute.children.map(route => {
       // 创建基础菜单项
       const menuItem = {
         path: route.path === '' ? '/' : `/${route.path}`,
         name: route.name,
         title: route.title,
-        icon: route.icon
+        icon: route.icon,
+        roles: route.meta?.roles
       }
       
       // 如果有子菜单，处理子菜单
       if (route.children && route.children.length > 0) {
         menuItem.children = route.children.map(childRoute => ({
-          path: `${menuItem.path}/${childRoute.path}`, // 子菜单路径需要包含父路径
+          path: `${menuItem.path}/${childRoute.path}`,
           name: childRoute.name,
-          title: childRoute.title
+          title: childRoute.title,
+          roles: childRoute.meta?.roles
         }))
       }
       
       return menuItem
     })
+    
+    // 根据用户权限过滤菜单
+    return filterMenuByPermission(menuItems)
   }
   
   // 调用函数获取菜单数据
@@ -235,9 +336,10 @@ const handleUserCommand = async (command) => {
     // 执行退出登录逻辑
     try {
       await userStore.logout();
-      ElMessage.success('退出登录成功');
+      
       // 跳转到登录页面
       router.push('/Login');
+      ElMessage.success('退出登录成功');
     } catch (error) {
       ElMessage.error('退出登录失败');
       console.error('退出登录失败:', error);
@@ -246,11 +348,31 @@ const handleUserCommand = async (command) => {
 };
 
 // 确认绑定账户
+
 function confirmBind(account) {
   if (account) {
-    // 处理账户选择逻辑
-    console.log('选择的账户:', account);
-    ElMessage.success(`已切换到账户 ${account.id}`);
+    const merchantCode = account.code || account.id;
+    
+    ElMessageBox.confirm(
+      `确定切换到商户 ${merchantCode} 吗?`,
+      '切换商户',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info'
+      }
+    ).then(async () => {
+      try {
+        await userStore.selectMerchant(merchantCode);
+        ElMessage.success(`已切换到商户 ${merchantCode}`);
+        window.location.reload();
+      } catch (err) {
+        ElMessage.error(err.msg || '切换失败');
+      }
+    }).catch(() => {
+      // 用户取消操作
+    });
+    
     dialogValue1.value = false;
   }
 };
@@ -456,6 +578,7 @@ function confirmBind(account) {
 /* 用户信息区域样式 */
 .user-info-container {
   padding: 15px;
+  text-align: center;
   border-top: 1px solid #e0e0e0;
   // background-color: #ffffff;
 }
@@ -467,6 +590,7 @@ function confirmBind(account) {
   transition: all 0.3s ease;
   padding: 10px;
   border-radius: 12px;
+    background-color: rgba(175, 76, 76, 0.1);
 }
 
 .user-dropdown-icon {
@@ -480,9 +604,9 @@ function confirmBind(account) {
   color: #db0011;
 }
 
-.user-info:hover {
-  background-color: rgba(175, 76, 76, 0.1);
-}
+// .user-info:hover {
+//   background-color: rgba(175, 76, 76, 0.1);
+// }
 
 .user-avatar {
   width: 50px;
@@ -634,5 +758,10 @@ function confirmBind(account) {
   padding: 0;
   padding-right: 40px;
   padding-bottom: 20px;
+}
+
+.balance-value {
+  color: #67c23a;  // Element Plus 绿色主题色
+  font-weight: 600;
 }
 </style>

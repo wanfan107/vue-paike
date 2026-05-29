@@ -26,6 +26,7 @@
               size="default"
               type="text"
               placeholder="邮箱账户或商户号"
+              autocomplete="new-username"
               @input="handleInput('username')"
             ></el-input>
           </el-form-item>
@@ -36,6 +37,7 @@
               type="password"
               show-password
               placeholder="密码"
+              autocomplete="new-password"
               @input="handleInput('password')"
             ></el-input>
           </el-form-item>
@@ -43,9 +45,9 @@
           <!-- // aws验证码 -->
           <AwsCaptcha />
 
-          <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+          <!-- <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
             <el-link type="primary" @click="showForgotPasswordDialog = true">忘记密码？</el-link>
-          </div>
+          </div> -->
           <el-form-item style="margin-top: 10px">
             <el-button
               style="width: 100%"
@@ -60,7 +62,7 @@
       </div>
       <div class="css-zg4aas">
         <div class="css-1s7xaob">
-          <p class="chakra-text css-i8munm">Univepay Finance © 2025</p>
+          <p class="chakra-text css-i8munm">Univepay Finance © 2026</p>
         </div>
       </div>
     </div>
@@ -76,12 +78,26 @@
       append-to-body
       :show-close="false"
     >
-    <div class="dialog-close"  @click="dialogValue = false">×</div>
+    <div class="dialog-close"  @click="closeDialog">×</div>
       <div style="display: flex; flex-direction: column; align-items: center">
         <el-image :src="qrcode" style="width: 200px; height: 200px"></el-image>
-        <div style="margin: 20px 0">请扫码重新登陆确保登录</div>
+        <div style="margin: 10px 0">扫码绑定MFA2验证码确保登录</div>
         <div style="text-align: center">
-          <el-button type="primary" @click="dialogValue = false">重新输入验证码</el-button>
+          <!-- MFA2验证码输入框 -->
+            <div class="code-inputs">
+              <input
+                v-for="(item, index) in 6"
+                :key="index"
+                type="text"
+                class="code-input"
+                maxlength="1"
+                @input="handleCodeInput($event, index)"
+                @keydown="handleCodeKeydown($event, index)"
+                @paste="handleCodePaste($event)"
+              />
+            </div>
+            <!-- <div class="code-hint">如未绑定请输入：000000</div> -->
+          <!-- <el-button type="primary" @click="dialogValue = false,isVerifyPass = true">重新输入验证码</el-button> -->
         </div>
       </div>
     </el-dialog>
@@ -124,7 +140,7 @@
                 @paste="handleCodePaste($event)"
               />
             </div>
-            <div class="code-hint">如未绑定请输入：000000</div>
+            <!-- <div class="code-hint">如未绑定请输入：000000</div> -->
           </div>
         </div>
       </div>
@@ -185,8 +201,8 @@
             <div class="account-type">{{ account.type }}</div>
           </div>
           <div class="right-column">
-            <div class="account-company">{{ account.company }}</div>
-            <div class="account-number">{{ account.accountNumber }}</div>
+<div class="account-company"><span>余额：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
+            <div class="account-number">创建时间：{{ account.createdOn }}</div>
           </div>
         </div>
       </div>
@@ -196,7 +212,7 @@
     <el-dialog
       :z-index="1003"
       top="10vh"
-      width="500px"
+      width="400px"
       title="忘记密码"
       v-model="showForgotPasswordDialog"
       :close-on-click-modal="false"
@@ -214,7 +230,7 @@
           <el-input
             v-model="forgotPasswordForm.email"
             placeholder="请输入注册邮箱"
-            clearable
+            disabled
           ></el-input>
         </el-form-item>
         <el-form-item label="验证码" prop="verificationCode">
@@ -280,17 +296,17 @@ const codeInput = ref(null);
 // 响应式状态
 const searchKey = ref('');
 const qrcode = ref('');
-const dialogValue = ref(false);
-const isVerifyPass = ref(false);
-const loading = ref(false);
-const isLoading = ref(false);
-const dialogValue1 = ref(false);
-const isFirstVisit = ref(true);
-const wafToken = ref(null);
-const showForgotPasswordDialog = ref(false);
-const resettingPassword = ref(false);
-const countdown = ref(0);
-const forgotPasswordFormRef = ref(null);
+const dialogValue = ref(false); // 登录对话框是否显示
+const isVerifyPass = ref(false); // 是否需要验证密码
+const loading = ref(false);  // 登录加载中
+const isLoading = ref(false);  // 是否正在加载中
+const dialogValue1 = ref(false); // 多个商户选择对话框是否显示
+const isFirstVisit = ref(true); // 是否是首次访问
+const showForgotPasswordDialog = ref(false); // 是否显示忘记密码对话框
+const resettingPassword = ref(false); // 是否正在重置密码
+const countdown = ref(0); // 验证码倒计时
+const forgotPasswordFormRef = ref(null); // 忘记密码表单引用
+const groupNeedBindGoogle = ref(false); // 是否需要绑定Google验证码
 
 // 忘记密码表单数据
 const forgotPasswordForm = ref({
@@ -439,7 +455,7 @@ function updateLoginCode() {
 function closeDialog() {
   // 关闭对话框
   isVerifyPass.value = false;
-  
+  dialogValue.value = false;
   // 清空所有验证码输入框
   const inputs = document.querySelectorAll('.code-input');
   inputs.forEach(input => {
@@ -457,20 +473,10 @@ function handleInput(field) {
   }
 }
 
+
 // 账户列表
 const accounts = ref([
-  {
-    id: "C11743",
-    type: "个人网站名",
-    company: "别名1",
-    accountNumber: "2026-05-01 17:00:00",
-  },
-  {
-    id: "C11744",
-    type: "Univepay",
-    company: "别名2",
-    accountNumber: "2026-05-01 17:00:00",
-  },
+ 
 ]);
 
 // 登录表单数据
@@ -497,21 +503,22 @@ const rules = ref({
 
 // 计算属性
 const filteredAccounts = computed(() => {
-  const keyword = searchKey.value.toLowerCase();
+  const keyword = (searchKey.value || '').trim().toLowerCase();
+  
   if (!keyword) {
     return accounts.value;
   }
+  
   return accounts.value.filter(
     (account) =>
-      account.id.includes(keyword) ||
-      account.company.toLowerCase().includes(keyword) ||
-      account.accountNumber.includes(keyword)
+      account &&
+      (account.id?.toLowerCase().includes(keyword) ||
+        account.company?.toLowerCase().includes(keyword) ||
+        account.accountNumber?.toLowerCase().includes(keyword))
   );
 });
 
-const formReady = computed(() => {
-  return wafToken.value;
-});
+
 
 // 生命周期钩子
 onMounted(() => {
@@ -529,7 +536,9 @@ onMounted(() => {
   isVerifyPass.value = false;
   loading.value = false;
   isLoading.value = false;
-  dialogValue1.value = true;
+  dialogValue1.value = false;
+  
+ 
 });
 
 // 方法
@@ -558,35 +567,106 @@ async function compareOnEnter() {
   });
 }
 
+
+
+
+
+// 单商户登录提交
 async function _login() {
   loading.value = true;
   try {
-    // 直接调用userStore中的login方法，传递完整的表单数据
-    await userStore.login(loginForm.value).then((res) => {
-          // 登录成功后跳转到首页
- router.push({
-      path: "/home",
-    });
-    });
-
+    await userStore.login(loginForm.value);
+    router.push({ path: "/home" });
   } catch (error) {
     console.log("-------------", error);
- if (error.code === 401 && error.data && error.data.googledata) {
+    if (error.code === 401 && error.data && error.data.googledata) {
       const { IsBinding, qrCodeImageUrl } = error.data.googledata;
-      if (IsBinding == false) {
-        console.log("isBinding", IsBinding);
-        console.log("IsBinding", IsBinding);
+      if (!IsBinding) {
         qrcode.value = qrCodeImageUrl;
         dialogValue.value = true;
       }
-    } 
+    }
   } finally {
     loading.value = false;
   }
 }
 
+// 集团登录提交（带设备信息）
+async function _groupLogin() {
+  loading.value = true;
+  try {
+    const { fingerprint, deviceInfo } = await getDeviceInfo();
+    
+   const res =  await userStore.groupLogin({
+      email: loginForm.value.username,
+      password: loginForm.value.password,
+      code: loginForm.value.code,
+      deviceFingerprint: fingerprint,
+      deviceInfo: deviceInfo
+    });
+    if (res.autoSelected) {
+         // 单商户，自动登录成功
+         router.push({ path: "/home" });
+    } else {
+      // 多个商户，等待用户选择
+     // 转换为账号列表格式
+        accounts.value = res.merchants.filter(m => !m.code?.startsWith('G')).map(m => ({
+                  id: m.code,
+                  code: m.code,
+                  siteUrl: m.siteUrl || '',
+                  type: m.isGroup ? '集团' : '商户',
+                      balance: m.balance || '0.00',
+    createdOn: formatDateTime(m.createdOn) || '',
+                }));
+                // dialogValue.value = false; // 关闭谷歌验证码弹窗
+                closeDialog(); // 关闭谷歌验证码弹窗
+      dialogValue1.value = true;  // 显示选择商户弹窗
+     loading.value = false;
+    }
+    
+    router.push({ path: "/home" });
+  } catch (error) {
+    console.log("-------------", error);
+    if (error.code === 401 && error.data && error.data.googledata) {
+      const { IsBinding, isVerified, qrCodeImageUrl } = error.data.googledata;
+      if (!IsBinding) {
+        qrcode.value = qrCodeImageUrl;  // 赋值给二维码图片
+        groupNeedBindGoogle.value = true;
+        dialogValue.value = true;  // dialogValue.value 为 true 时，显示谷歌验证码弹窗
+      } else if (isVerified === false) {
+        ElMessage.error("谷歌验证码错误，请重新输入");
+      }
+    }
+    //  else if (error.code === 401) {
+    //   ElMessage.error(error.msg || "谷歌验证码1错误");
+    // }
+  } finally {
+    loading.value = false;
+  }
+}
+
+const formatDateTime = (dateStr) => {
+  if (!dateStr) return '';
+  // 如果是字符串，先转换为 Date 对象
+  const date = new Date(dateStr);
+  if (isNaN(date.getTime())) return dateStr;
+  
+  const pad = (n) => String(n).padStart(2, '0');
+  const year = date.getFullYear();
+  const month = pad(date.getMonth() + 1);
+  const day = pad(date.getDate());
+  const hours = pad(date.getHours());
+  const minutes = pad(date.getMinutes());
+  const seconds = pad(date.getSeconds());
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+//  集团登录提交
+
+
+// 单商户登录提交
 async function submitForm() {
-  // 先执行指纹对比（仅非首次访问）
   if (!isFirstVisit.value) {
     await compareOnEnter();
   }
@@ -596,13 +676,32 @@ async function submitForm() {
       return false;
     }
     loading.value = true;
-    _login();
+    
+    // 根据用户名判断登录类型
+    if (loginForm.value.username.includes('@')) {
+      _groupLogin();
+    } else {
+      // 单商户登录
+      _login();
+    }
   });
 }
 
 // 点击按钮触发验证/登录
 async function checkHuman() {
-  //  isVerifyPass.value = true;
+// 判断是单商户登录还是集团商户登录
+if (loginForm.value.username.includes('@')) {
+  // 集团商户登录
+  groupLoginLogin();
+} else {
+  // 单商户登录
+  singleLoginLogin();
+}
+}
+
+
+//  单商户登录
+async function singleLoginLogin() {
   try {
     isLoading.value = true;
     const res = await http.prelogin(loginForm.value);
@@ -611,10 +710,54 @@ async function checkHuman() {
     if (res.code == 200) {
       isVerifyPass.value = true;
       // 焦点设置已通过watch监听isVerifyPass变化实现
+    }if (res.code === 401 && res.data && res.data.googledata) {
+      const { IsBinding, qrCodeImageUrl } = res.data.googledata;
+      if (!IsBinding) {
+        qrcode.value = qrCodeImageUrl;
+        dialogValue.value = true;
+      }
     }
   } catch (error) {
     console.log("aws-----aws--------", error);
     // 专门处理用户取消CAPTCHA的情况
+    if (error && error.isCaptchaCancel) {
+      ElMessage.info("已取消安全验证"); 
+    }
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+
+//  集团商户登录
+async function groupLoginLogin() {
+  try {
+    isLoading.value = true;
+
+    const { fingerprint, deviceInfo } = await getDeviceInfo();
+
+    const res = await http.groupPrelogin({
+      email: loginForm.value.username,
+      password: loginForm.value.password,
+      code: loginForm.value.code,
+      deviceFingerprint: fingerprint,
+      deviceInfo: deviceInfo
+    });
+
+    console.log("集团登录响应:",res);
+    if (res.code == 200) {
+      isVerifyPass.value = true;
+    } if (res.code === 401 && res.data && res.data.googledata) {
+      const { IsBinding, qrCodeImageUrl } = res.data.googledata;
+      if (!IsBinding) {
+        qrcode.value = qrCodeImageUrl;
+        dialogValue.value = true;
+      }
+    }
+  } 
+  
+  catch (error) {
+    console.log("aws-----aws--------", error);
     if (error && error.isCaptchaCancel) {
       ElMessage.info("已取消安全验证");
     }
@@ -623,14 +766,88 @@ async function checkHuman() {
   }
 }
 
-function confirmBind(account) {
-  if (account) {
-    // 如果传入了account对象，处理多账户选择
-    // 这里可以根据实际需求处理账户选择逻辑
-  } else {
-    // 处理MFA绑定确认
-    dialogValue.value = false;
-    loginForm.value.code = "";
+
+
+
+// -----------------------获取设备信息-----------------------
+async function getDeviceInfo() {
+  return new Promise((resolve) => {
+    Fingerprint.get((components) => {
+      const fingerprint = md5(components.map((c) => c.value).join("|"));
+      
+      const deviceInfo = {
+        os: getOS(),
+        browser: getBrowser(),
+        device: getDeviceType(),
+        userAgent: navigator.userAgent
+      };
+
+      resolve({
+        fingerprint,
+        deviceInfo
+      });
+    });
+  });
+}
+
+function getOS() {
+  const userAgent = navigator.userAgent;
+  if (userAgent.indexOf("Win") !== -1) return "Windows";
+  if (userAgent.indexOf("Mac") !== -1) return "MacOS";
+  if (userAgent.indexOf("Linux") !== -1) return "Linux";
+  if (userAgent.indexOf("Android") !== -1) return "Android";
+  if (userAgent.indexOf("iOS") !== -1) return "iOS";
+  return "Unknown";
+}
+
+function getBrowser() {
+  const userAgent = navigator.userAgent;
+  if (userAgent.indexOf("Chrome") !== -1) return "Chrome";
+  if (userAgent.indexOf("Safari") !== -1) return "Safari";
+  if (userAgent.indexOf("Firefox") !== -1) return "Firefox";
+  if (userAgent.indexOf("Edge") !== -1) return "Edge";
+  if (userAgent.indexOf("IE") !== -1) return "IE";
+  return "Unknown";
+}
+
+function getDeviceType() {
+  const userAgent = navigator.userAgent;
+  if (/mobile/i.test(userAgent)) return "Mobile";
+  if (/tablet/i.test(userAgent)) return "Tablet";
+  return "Desktop";
+}
+
+
+
+
+//  选择商户
+async function confirmBind(account) {
+  dialogValue.value = false;
+  dialogValue1.value = false;
+  loginForm.value.code = "";
+
+  if (groupNeedBindGoogle.value) {
+    groupNeedBindGoogle.value = false;
+    isVerifyPass.value = true;
+    nextTick(() => {
+      codeInput.value.focus();
+    });
+    return;
+  }
+
+  if (account && account.code) {
+    try {
+     const res =  await userStore.selectMerchant(account.code);
+     console.log("登录选择用户");
+     
+     if(res.code == 200){
+      router.push({ path: "/home" });
+     }else{
+      ElMessage.error(res.msg || "选择商户失败");
+     }
+    } catch (err) {
+      ElMessage.error(err.msg || "选择商户失败");
+    }
   }
 }
 
@@ -685,7 +902,7 @@ async function resetPassword() {
 }
 </script>
 <style scoped lang="scss">
-  :deep(.el-input__inner) {
+  :deep(.login-form .el-input__inner) {
       height: 44px;
       border-radius: 4px;
       font-size: 14px;
@@ -954,11 +1171,11 @@ async function resetPassword() {
   cursor: pointer;
   color: #999;
 }
-:deep(.el-form-item__label) {
+:deep(.login-form .el-form-item__label) {
   font-size: 13px !important;
   line-height: 16px !important;
 }
-:deep(.el-form-item__label::before) {
+:deep(.login-form .el-form-item__label::before) {
   content: "" !important;
   color: transparent !important;
   margin-right: 0px;
@@ -1007,5 +1224,10 @@ async function resetPassword() {
   background-color: #fff !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
+}
+
+.balance-value {
+  color: #67c23a;  // Element Plus 绿色主题色
+  font-weight: 600;
 }
 </style>

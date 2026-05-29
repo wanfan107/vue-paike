@@ -6,7 +6,7 @@
       :md="8"
       :lg="8"
       :xl="8"
-      v-for="(item, index) in projectList"
+      v-for="(item, index) in displayList"
       :key="item.name"
     >
       <el-card :class="['project-card', 'project-card' + index]" >
@@ -40,43 +40,77 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { TransitionPresets,useTransition } from '@vueuse/core';
+import { ref, computed, watch, onMounted } from 'vue';
+import { TransitionPresets, useTransition } from '@vueuse/core';
+import { FolderAdd, Select, Histogram } from '@element-plus/icons-vue';
 
-const projectList = [
+const props = defineProps({
+  data: {
+    type: Object,
+    default: () => ({
+      orderCount: 0,
+      successCount: 0,
+      successRate: 0
+    })
+  }
+});
+
+// 根据props数据生成显示列表
+const displayList = computed(() => [
   {
     name: "创建订单",
-    amount: 12500,
+    amount: props.data.orderCount || 0,
     type: "count"
   },
   {
     name: "成功订单",
-    amount: 9800,
+    amount: props.data.successCount || 0,
     type: "count"
   },
   {
     name: "成功率",
-    amount: 92.5,
+    amount: parseFloat(props.data.successRate || 0),
     type: "rate"
   },
-];
+]);
 
 // 为每个金额创建独立的响应式ref，初始值为0
-const sourceRefs = projectList.map(() => ref(0));
+const sourceRefs = ref(displayList.value.map(() => ref(0)));
 
 // 为每个ref应用useTransition
-const animatedValues = sourceRefs.map(sourceRef => {
-  return useTransition(sourceRef, { 
-    duration: 1000 ,
- easing: TransitionPresets.easeInOutCubic,  
+const animatedValues = computed(() => {
+  return sourceRefs.value.map(sourceRef => {
+    return useTransition(sourceRef, { 
+      duration: 1000,
+      easing: TransitionPresets.easeInOutCubic,  
+    });
   });
 });
 
+// 更新动画值
+const updateValues = () => {
+  displayList.value.forEach((item, index) => {
+    if (sourceRefs.value[index]) {
+      sourceRefs.value[index].value = item.amount;
+    }
+  });
+};
+
+// 监听数据变化
+watch(() => props.data, () => {
+  sourceRefs.value = displayList.value.map((item, index) => {
+    const currentValue = sourceRefs.value[index]?.value || 0;
+    const newRef = ref(currentValue);
+    setTimeout(() => {
+      newRef.value = item.amount;
+    }, 50);
+    return newRef;
+  });
+}, { deep: true });
+
 onMounted(() => {
   // 组件挂载后，将目标值赋给响应式ref，触发动画
-  projectList.forEach((item, index) => {
-    sourceRefs[index].value = item.amount;
-  });
+  updateValues();
 });
 </script>
 

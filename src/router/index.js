@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { HomeFilled, Search, Operation,DataLine,FolderOpened,DataAnalysis,CreditCard,Files,Wallet,WalletFilled,Download,Postcard } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
 
 // 布局组件
 const MainLayout = () => import('../components/MainLayout.vue')
@@ -8,8 +9,12 @@ const MainLayout = () => import('../components/MainLayout.vue')
 const HomeView = () => import('../views/Home/HomeView.vue')
 // 登录
 const Login = () => import('../views/Login/Login.vue')
+// 设置密码
+const SetPassword = () => import('../views/Login/SetPassword.vue')
+// 重置密码
+const ResetPassword = () => import('../views/Login/ResetPassword.vue')
 // 交易查询
-const TransactionInquiry = () => import('../views/TransactionInquiry/index.vue')
+// const TransactionInquiry = () => import('../views/TransactionInquiry/index.vue')
 // 资金流水
 const CapitalFlow = () => import('../views/CapitalFlow/index.vue')
 // 统计报表
@@ -30,7 +35,7 @@ const withdraw = () => import('../views/withdraw/index.vue')
 // 申请下发
 const ApplyU = () => import('../views/Finance/ApplyU.vue')
 // 商户费率
-const  RateInquiry = () => import('../views/RateInquiry/index.vue')
+const RateInquiry = () => import('../views/RateInquiry/index.vue')
 // 账户互转
 const Rotation = () => import('../views/Finance/Rotation.vue')
 // 转账/提现
@@ -57,8 +62,25 @@ const config = () => import('../views/account/config/index.vue')
 const loginPassword = () => import('../views/account/loginPassword/index.vue')
 // -- 支付密码
 const payPassword = () => import('../views/account/payPassword/index.vue')
-// -- 权限操作
-const PermissionManagement = () => import('../views/account/PermissionManagement/index.vue')
+
+// 集团管理
+// -- 登录记录
+const logs = () => import('../views/Group/logs.vue')
+// -- 商户列表
+const MerchantList = () => import('../views/Group/MerchantList.vue')
+// -- 操作员管理
+const PermissionManagement = () => import('../views/Group/PermissionManagement.vue')
+// -- 集团支付密码
+const grouppayPassword = () => import('../views/Group/grouppayPassword.vue')
+// -- 集团商户互转
+const groupTransfer = () => import('../views/Group/groupTransfer.vue')
+// -- 登录IP白名单
+const loginIPWhiteList = () => import('../views/Group/loginIPWhiteList.vue')
+// -- 集团订单模糊查询
+const groupOrderFuzzyQuery = () => import('../views/Group/groupOrderFuzzyQuery.vue')
+// -- 集团申请下发
+const groupApplyU = () => import('../views/Group/groupApplyU.vue')
+
 
 
 const router = createRouter({
@@ -66,68 +88,92 @@ const router = createRouter({
   routes: [
     // 登录页面 - 不需要登录即可访问，直接渲染，不包含布局
     { path: '/Login', name: 'Login', title: '登录', component: Login },
-    
+    // 设置密码页面 - 商户/操作员首次设置密码
+    { path: '/set-password', name: 'SetPassword', title: '设置密码', component: SetPassword },
+    // 重置密码页面 - 忘记密码重置
+    // { path: '/reset-password', name: 'ResetPassword', title: '重置密码', component: ResetPassword },
+
     // 主应用布局 - 包含左侧菜单，所有非登录页面都在这个布局下
-    { 
-      path: '/', 
+    {
+      path: '/',
       redirect: '/home', // 添加默认重定向到首页
       component: MainLayout, // 使用主布局组件
       children: [
-        // 首页 - path设置为'home'，这样菜单数据获取时能正确处理
-        { path: 'home', name: 'home', title: '首页', icon: HomeFilled, component: HomeView },
+        // 首页 - 所有用户都能访问
+        { path: 'home', name: 'home', title: '首页', icon: HomeFilled, component: HomeView, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 交易查询
-        { path: 'TransactionInquiry', name: 'TransactionInquiry', title: '交易查询', icon: Search, component: TransactionInquiry },
+        // { path: 'TransactionInquiry', name: 'TransactionInquiry', title: '交易查询', icon: Search, component: TransactionInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // { path: 'TransactionInquiry2', name: 'TransactionInquiry2', title: '交易查询2', icon: Search, component: TransactionInquiry2, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 资金流水
-        { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow },
+        { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 统计报表
-        { path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime',  // 添加重定向
-            children: [
-            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计' },
-            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表' },
-            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表' },
-          ]
-         },
-      
-        // 收款订单
-        { path: 'ReceiptOrder', name: 'ReceiptOrder', title: '收款订单', icon: WalletFilled, component: ReceiptOrder },
-        // 付款订单
-        { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment },
-        // 下发订单
-        { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw },
-        // 其他订单、
-         { path: 'Otherorders', name: 'Otherorders', title: '其他订单', icon: Wallet, component: Otherorders },
-        // 商户费率
-        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: DataLine, component: RateInquiry },
-        // 财务管理
-        { path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU',  // 添加重定向
-            children: [
-            { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发' },
-            { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转' },
-            { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现' },
-            { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请' },
-            // { path: 'Otherorders', name: 'Otherorders', component: Otherorders, title: '其他查询' },
-          ]
-         },
-        // 申请下发
-        // { path: 'ApplyU', name: 'ApplyU', title: '申请下发', icon: Wallet, component: ApplyU },
-        // 导出记录
-        { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord },
-        // 账户互转
-        // { path: 'Transfer', name: 'Transfer', title: '账户互转', icon: Files, component: Transfer },
-        // 接口文档
-        { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc },
-        // 账户管理
-        { 
-          path: 'account', 
-          redirect: 'info', // 使用相对路径重定向
-          title: '应用设置',
-          icon: Operation,
+        {
+          path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin','merchant', 'finance', 'operator'] },
           children: [
-            { path: 'info', name: 'info', component: info, title: '基本信息' }, 
-            { path: 'config', name: 'config', component: config, title: '应用配置' }, 
-            { path: 'loginPassword', name: 'loginPassword', component: loginPassword, title: '登录密码' }, 
-            { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码' }, 
-            { path: 'PermissionManagement', name: 'PermissionManagement', component: PermissionManagement, title: '操作员权限' }, 
+            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+          ]
+        },
+
+        // 收款订单
+        { path: 'ReceiptOrder', name: 'ReceiptOrder', title: '收款订单', icon: WalletFilled, component: ReceiptOrder, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // 付款订单
+        { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // 下发订单
+        { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // 其他订单
+        // { path: 'Otherorders', name: 'Otherorders', title: '其他订单', icon: Wallet, component: Otherorders, meta: { roles: ['admin','merchant', 'finance'] } },
+        // 商户费率
+        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: DataLine, component: RateInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // 财务管理
+        {
+          path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', 'merchant'] },
+          children: [
+            { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
+            { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
+             // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
+            // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
+            // 集团的财务管理
+             { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
+             { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
+            { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
+          ]
+        },
+        // 导出记录
+        { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+        // 接口文档
+        { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc, meta: { roles: ['admin','merchant'] } },
+        // 账户管理
+        {
+          path: 'account',
+          redirect: 'info',
+          title: '应用设置',
+          icon: Setting,
+          meta: { roles: ['admin', 'finance', 'operator', 'merchant'] },
+          children: [
+            { path: 'info', name: 'info', component: info, title: '基本信息', meta: { roles: ['admin', 'finance', 'operator', 'merchant'] } },
+            { path: 'config', name: 'config', component: config, title: '应用配置', meta: { roles: ['admin', 'merchant'] } },
+            { path: 'loginPassword', name: 'loginPassword', component: loginPassword, title: '登录密码', meta: { roles: ['admin','merchant'] } },
+            { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码', meta: { roles: ['admin', 'merchant'] } },
+          ]
+        },
+        // 集团管理
+        {
+          path: 'group',
+          redirect: 'info',
+          title: '集团管理',
+          icon: Operation,
+          meta: { roles: ['admin', 'operator', 'finance'] },
+          children: [
+            { path: 'logs', name: 'groupLogs', component: logs, title: '集团登录记录', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'MerchantList', name: 'groupMerchantList', component: MerchantList, title: '集团商户列表', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单模糊查询', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员权限', meta: { roles: ['admin'] } },
+            // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
+            // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
+            { path: 'loginIPWhiteList', name: 'loginIPWhiteList', component: loginIPWhiteList, title: '集团IP白名单', meta: { roles: ['admin'] } },
+            // { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
           ]
         },
       ]
@@ -138,28 +184,62 @@ const router = createRouter({
 // 路由守卫 - 确保没有登录不能访问其他页面
 import useUserStore from '../stores/user';
 
-router.beforeEach( (to, from, next) => {
+router.beforeEach((to, from, next) => {
   // 定义不需要登录的页面
-  const whiteList = ['/Login'];
-  
+  const whiteList = ['/Login', '/set-password' ];
+
   // 直接从URL判断是否为白名单页面，避免创建不必要的store实例
   if (whiteList.includes(to.path)) {
     next();
     return;
   }
-  
+
   // 对于需要登录的页面，创建store实例
   const userStore = useUserStore();
-  
+
   // 如果用户已登录（通过token是否存在判断）
   if (userStore.token) {
     // 如果访问的是登录页面，重定向到首页
     if (to.path === '/Login') {
       next({ path: '/' });
     } else {
-      // 已登录，允许访问其他页面
+      // 已登录，检查角色权限
+      // console.log('当前路径:', to.path);
+      // console.log('匹配的路由:', to.matched);
+      // 检查所有匹配的路由（包括嵌套路由）
+      const hasPermission = to.matched.every(route => {
+        const routeRoles = route.meta?.roles;
+        // console.log('路由:', route.path, '角色要求:', routeRoles);
+        // 如果路由没有配置roles，说明该路由不需要角色权限
+        if (!routeRoles || routeRoles.length === 0) {
+          return true;
+        }
+        // 获取当前用户的角色
+        // admin 管理员角色    
+        // merchant 商户角色    
+        // operator 操作员    
+        // finance 财务角色  
+        const userRole = userStore?.roleCode || 'merchant';
+        // console.log('当前用户角色:', userRole);
+        // 检查用户角色是否在允许的角色列表中
+        const hasRole = routeRoles.includes(userRole);
+        // console.log('是否有权限:', hasRole);
+        return hasRole;
+      });
+      // console.log('最终权限检查结果:', hasPermission);
 
-      next();
+      if (hasPermission) {
+        next();
+      } else {
+        // 没有权限，显示提示并重定向到首页
+        ElMessage({
+          type: 'warning',
+          message: '抱歉，您没有权限访问该页面',
+          duration: 3000
+        });
+        // console.warn('当前用户没有权限访问该页面:', to.path);
+        next({ path: '/home' });
+      }
     }
   } else {
     // 未登录且访问的不是登录页面，重定向到登录页面

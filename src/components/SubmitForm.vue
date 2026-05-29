@@ -62,7 +62,7 @@
               </el-select>
 
               <EditableSelect
-                v-if="item.name === 'select1'"
+                v-else-if="item.name === 'select1'"
                 v-model="ruleForm[item.prop]"
                 :placeholder="item.placeholder || '请选择选项'"
                 :options="item.options"
@@ -114,7 +114,6 @@
                 :max="item.max"
                 :disabled="disabled || formatDisabled(item.disabled)"
                 :rows="item.rows || 5"
-                placeholder="请输入"
                 :type="item.type || 'text'"
                 :placeholder="item.placeholder"
                 :show-password="item.showPassword || false"
@@ -161,7 +160,7 @@
                   lineHeight: '24px',
                 }"
               >
-                {{ ruleForm[item.prop] }}
+               {{ ruleForm[item.prop] }}
               </div>
             </el-form-item>
           </template>

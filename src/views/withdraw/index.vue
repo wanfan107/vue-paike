@@ -95,14 +95,16 @@
               />
               <!-- 表格 -->
               <el-table :data="tableData" stripe @row-click="showDetail">
-                <el-table-column prop="merchantOrderNo" label="商户单号" align="center" />
+                <!-- 没有商户单号 -->
+                <!-- <el-table-column prop="merchantOrderNo" label="商户单号" align="center" />
                 <el-table-column
                   prop="platformOrderNo"
                   label="平台订单号"
                   show-overflow-tooltip
                   width="150"
                   align="center"
-                />
+                /> -->
+                <el-table-column prop="platformOrderNo" label="平台订单号" align="center" />
                 <el-table-column prop="orderAmount" label="订单金额" align="center" />
                 <el-table-column prop="expectAmount" label="预期金额" align="center" />
                 <el-table-column prop="actualPay" label="实际支付" align="center"/>

@@ -222,7 +222,7 @@ async function getdata() {
     let res = await http.financePage({
       billStartTime: formattedStart,
       billEndTime: formattedEnd,
-      id: userStore.merchantInfo.id,
+      id: userStore.merchantId,
       merchantOrderNo: "",
       orderNo: "",
       pageNo: 1,

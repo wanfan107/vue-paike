@@ -15,6 +15,13 @@
         ></SubmitForm>
       </div>
     </el-card>
+    <SuccessDialog
+      v-model="showSuccessDialog"
+      title="操作成功"
+      message="支付密码设置成功"
+      description="下次支付请使用新密码"
+      @confirm="handleSuccessConfirm"
+    />
   </div>
 </template>
 <script setup>
@@ -23,11 +30,13 @@ import useUserStore from '@/stores/user';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import SubmitForm from '@/components/SubmitForm.vue';
+import SuccessDialog from '@/components/SuccessDialog.vue';
 
 // 获取用户 store
 const userStore = useUserStore();
 
 // 定义响应式数据
+const showSuccessDialog = ref(false);  // 成功弹窗是否显示
 const loading = ref(false);
 const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
@@ -240,15 +249,19 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.code === 200) {
-        ElMessage.success("修改成功");
-        ruleForm.value = {
-          oldPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-          emailCode: "",
-        };
+        showSuccessDialog.value = true;
       }
     });
+};
+
+const handleSuccessConfirm = () => {
+  showSuccessDialog.value = false;
+  ruleForm.value = {
+    oldPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+    emailCode: "",
+  };
 };
 
 // 关闭表单

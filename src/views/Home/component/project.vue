@@ -134,7 +134,9 @@ const getdata = async () => {
     projectList.forEach((item) => {
       // item.currency = merchantRes.data.currency || "R$";
       item.currency = "R$";
-    });
+            projectList[3].amount = Number(merchantRes.data.CreditMax); // 授信最大额度， 
+      projectList[3].count = merchantRes.data.CreditUsed;  // 授信已用额度（>0的数就是待还金额，说明有预付未还清。=0已还清，<=0不用理会）
+       });
     
     // 获取收款成功率数据
     const collectRes = await http.collectSuccessRate({

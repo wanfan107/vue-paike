@@ -17,7 +17,7 @@
           @tab-click="handleClick" 
           tab-position="top"
         > 
-          <el-tab-pane label="User" name="first">
+          <el-tab-pane label="订单统计" name="first">
             <div class="table-layout">
               <div class="table_time">
                 <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
@@ -27,8 +27,10 @@
                     type="datetime"
                     placeholder="选择时间"            
                     format="YYYY-MM-DD HH:mm:ss"
+                    value-format="YYYY-MM-DD HH:mm:ss"
                     style="width: 180px; border-radius: 4px;"
                     size="small"
+                    @change="getdata"
                   />
                   <!-- 时间范围下拉 -->
                   <el-select
@@ -36,6 +38,7 @@
                     placeholder="选择时间范围"
                     style="width: 180px; border-radius: 4px;"
                     size="small"
+                    @change="getdata"
                   >
                     <el-option label="近5分钟" value="5" />
                     <el-option label="近15分钟" value="15" />
@@ -50,13 +53,13 @@
           <template #reference><el-icon><WarningFilled /></el-icon></template>
         </el-popover>
             <el-tooltip class="item" effect="dark" content="刷新数据" placement="bottom">
-                    <el-button circle :icon="Refresh" style="margin-right: 20px;" @click.stop="refreshData"></el-button>
+                    <el-button circle :icon="Refresh" style="margin-right: 20px;" @click.stop="getdata()"></el-button>
                   </el-tooltip>
                 </div>
               </div>
               <!-- 动画金额图 -->
               <div style="flex-shrink: 0;">
-                <ProjectBox :showAll="true" />
+                <ProjectBox :showAll="true" :data="projectData"/>
               </div>
               <!-- 图表 -->
               <div class="chart-wrapper">
@@ -64,21 +67,21 @@
               </div>
             </div>
           </el-tab-pane> 
-          <el-tab-pane label="Config" name="second">
+          <el-tab-pane label="余额趋势" name="second">
             <div class="config-content">
               <!-- 日期范围选择 -->
               <div class="date-range-container">
                 <div class="date-range">
                    <el-date-picker
                 v-model="searchForm.orderTime"
-                type="datetimerange"
+                type="daterange"
                 :shortcuts="shortcuts"
                 range-separator="To"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
-                value-format="YYYY-MM-DD HH:mm:ss"
+                value-format="YYYY-MM-DD"
               />
-                  <el-button size="small" class="search-button">
+                  <el-button size="small" class="search-button" @click="getdataBoth">
                     <el-icon><Search /></el-icon>
                   </el-button>
                 </div>
@@ -88,23 +91,13 @@
               <div class="chart-container">
                 <!-- 左侧图表：当日结束余额 -->
                 <div class="chart-item">
-                  <div class="chart-header">
-                    <el-button size="small" class="search-button">
-                      <el-icon><Search /></el-icon>
-                    </el-button>
-                  </div>
                   <div class="chart-content">
                     <div ref="balanceChartRef" style="width: 100%; height: 100%;"></div>
                   </div>
                 </div>
-                
-                <!-- 右侧图表：交易总额 -->
+                <!-- 右侧图表：代收代付交易总额 -->
                 <div class="chart-item">
-                  <div class="chart-header">
-                    <el-button size="small" class="search-button">
-                      <el-icon><Search /></el-icon>
-                    </el-button>
-                  </div>
+
                   <div class="chart-content">
                     <div ref="transactionChartRef" style="width: 100%; height: 100%;"></div>
                   </div>
@@ -134,12 +127,23 @@ const props = defineProps({
   },
 });
 
+// 动画金额数据
+const projectData = ref({
+  orderCount: 0,
+  successCount: 0,
+  successRate: 0,
+});
 
 // 标签页相关数据
 const activeName = ref('first');
 
 // 处理标签页点击
 const handleClick = (tab) => {
+  if(tab.props.name=='first'){
+    getdata();
+  }else{
+    getdataBoth();
+  }
   console.log('标签页切换:', tab.props.name);
 };
 
@@ -174,6 +178,13 @@ const shortcuts = [
 const selectedTime = ref('');
 const timeRange = ref('5');
 
+// 格式化当前时间
+const formatCurrentTime = () => {
+  const now = new Date();
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+};
+
 
 // 图表容器引用
 const chartContainer = ref(null);
@@ -187,49 +198,174 @@ let transactionChartInstance = null;
 
 // 搜索方法
 // DailyReport方法
-const refreshData = () => {
-  // 刷新数据逻辑
-  getdata();
-};
+// const refreshData = () => {
+//   // 刷新数据逻辑
+//   getdata();
+// };
+
+// 图表数据
+const chartData = ref({
+  dates: [],
+  collectionSuccessRates: [],
+  paymentSuccessRates: [],
+  collectionAmounts: [],
+  paymentAmounts: [],
+  collectionCounts: [],
+  paymentCounts: []
+});
 
 // 图表配置
 const realTimeChart = computed(() => {
-  // 生成假数据用于展示成功率、金额和笔数
-  const dates = [];
-  const collectionSuccessRates = [];
-  const paymentSuccessRates = [];
-  const collectionAmounts = [];
-  const paymentAmounts = [];
-  const collectionCounts = [];
-  const paymentCounts = [];
+  const { dates, collectionSuccessRates, paymentSuccessRates, collectionAmounts, paymentAmounts, collectionCounts, paymentCounts } = chartData.value;
 
-  // 生成最近24小时的假数据
-  for (let i = 23; i >= 0; i--) {
-    const date = new Date();
-    date.setHours(date.getHours() - i);
-    dates.push(`${date.getHours()}:00`);
+  // 如果没有数据，生成假数据用于展示
+  // if (dates.length === 0) {
+  //   const tempDates = [];
+  //   const tempCollectionRates = [];
+  //   const tempPaymentRates = [];
+  //   const tempCollectionAmounts = [];
+  //   const tempPaymentAmounts = [];
+  //   const tempCollectionCounts = [];
+  //   const tempPaymentCounts = [];
 
-    // 生成随机的收款成功率（范围在85%-99%之间）
-    const collectionRate = (Math.random() * 14 + 85).toFixed(2);
-    collectionSuccessRates.push(parseFloat(collectionRate));
+  //   for (let i = 23; i >= 0; i--) {
+  //     const date = new Date();
+  //     date.setHours(date.getHours() - i);
+  //     tempDates.push(`${date.getHours()}:00`);
+  //     tempCollectionRates.push(parseFloat((Math.random() * 14 + 85).toFixed(2)));
+  //     tempPaymentRates.push(parseFloat((Math.random() * 18 + 80).toFixed(2)));
+  //     tempCollectionAmounts.push(Math.floor(Math.random() * 40000) + 100000);
+  //     tempPaymentAmounts.push(Math.floor(Math.random() * 32000) + 80000);
+  //     tempCollectionCounts.push(Math.floor(Math.random() * 400) + 100);
+  //     tempPaymentCounts.push(Math.floor(Math.random() * 320) + 80);
+  //   }
 
-    // 生成随机的付款成功率（范围在80%-98%之间，略低于收款成功率）
-    const paymentRate = (Math.random() * 18 + 80).toFixed(2);
-    paymentSuccessRates.push(parseFloat(paymentRate));
+  //   return {
+  //     title: {
+  //       text: "收款与付款成功率趋势",
+  //       left: "center",
+  //       top: 20,
+  //       textStyle: {
+  //         color: "#666",
+  //         fontSize: 16,
+  //       },
+  //     },
+  //     tooltip: {
+  //       trigger: "axis",
+  //       backgroundColor: "rgba(0,0,0,0.8)",
+  //       borderColor: "#2d8ef6",
+  //       textStyle: {
+  //         color: "#fff",
+  //       },
+  //       formatter: function (params) {
+  //         const index = params[0].dataIndex;
+  //         let result = params[0].axisValue + "<br/>";
+  //         const enabledSeries = new Set();
+  //         let collectionMarker = "";
+  //         let paymentMarker = "";
+          
+  //         params.forEach(function (item) {
+  //           enabledSeries.add(item.seriesName);
+  //           if (item.seriesName === "收款成功率") collectionMarker = item.marker;
+  //           else if (item.seriesName === "付款成功率") paymentMarker = item.marker;
+  //         });
+          
+  //         if (enabledSeries.has("收款成功率")) {
+  //           result += collectionMarker + " 成功率: " + params.find(p => p.seriesName === "收款成功率").value + "%<br/>";
+  //           result += collectionMarker + " 收款金额: R$ " + tempCollectionAmounts[index].toLocaleString() + "<br/>";
+  //           result += collectionMarker + " 收款笔数: " + tempCollectionCounts[index] + "笔<br/>";
+  //         }
+  //         if (enabledSeries.has("付款成功率")) {
+  //           result += paymentMarker + " 成功率: " + params.find(p => p.seriesName === "付款成功率").value + "%<br/>";
+  //           result += paymentMarker + " 付款金额: R$ " + tempPaymentAmounts[index].toLocaleString() + "<br/>";
+  //           result += paymentMarker + " 付款笔数: " + tempPaymentCounts[index] + "笔";
+  //         }
+  //         return result;
+  //       },
+  //     },
+  //     legend: {
+  //       data: ["收款成功率", "付款成功率"],
+  //       bottom: "5%",
+  //       textStyle: {
+  //         color: "#666",
+  //         fontSize: 13,
+  //       },
+  //     },
+  //     grid: {
+  //       top: "25%",
+  //       left: "5%",
+  //       right: "5%",
+  //       bottom: "15%",
+  //       containLabel: true,
+  //     },
+  //     xAxis: {
+  //       type: "category",
+  //       data: tempDates,
+  //       boundaryGap: false,
+  //       axisLine: { lineStyle: { color: "#d8d8d8" } },
+  //       splitLine: { show: false },
+  //       axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
+  //       axisLabel: { textStyle: { color: "#666", align: "center" }, fontSize: 12, margin: 15 },
+  //     },
+  //     yAxis: {
+  //       type: "value",
+  //       name: "成功率 (%)",
+  //       min: 70,
+  //       max: 100,
+  //       axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
+  //       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
+  //       axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
+  //       axisTick: { show: false },
+  //       nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+  //     },
+  //     series: [
+  //       {
+  //         name: "收款成功率",
+  //         type: "line",
+  //         data: tempCollectionRates,
+  //         symbol: "circle",
+  //         symbolSize: 6,
+  //         smooth: true,
+  //         showSymbol: true,
+  //         lineStyle: { color: "#48bb78", width: 3 },
+  //         itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
+  //         areaStyle: {
+  //           color: {
+  //             type: "linear",
+  //             x: 0, y: 0, x2: 0, y2: 1,
+  //             colorStops: [
+  //               { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
+  //               { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
+  //             ],
+  //           },
+  //         },
+  //       },
+  //       {
+  //         name: "付款成功率",
+  //         type: "line",
+  //         data: tempPaymentRates,
+  //         symbol: "circle",
+  //         symbolSize: 6,
+  //         smooth: true,
+  //         showSymbol: true,
+  //         lineStyle: { color: "#db0011", width: 3 },
+  //         itemStyle: { color: "#db0011", borderColor: "#fff", borderWidth: 1 },
+  //         areaStyle: {
+  //           color: {
+  //             type: "linear",
+  //             x: 0, y: 0, x2: 0, y2: 1,
+  //             colorStops: [
+  //               { offset: 0, color: "rgba(219, 0, 17, 0.3)" },
+  //               { offset: 1, color: "rgba(219, 0, 17, 0.05)" },
+  //             ],
+  //           },
+  //         },
+  //       },
+  //     ],
+  //   };
+  // }
 
-    // 生成随机的收款金额（范围在10000-50000之间）
-    collectionAmounts.push(Math.floor(Math.random() * 40000) + 100000);
-
-    // 生成随机的付款金额（范围在8000-40000之间，略低于收款金额）
-    paymentAmounts.push(Math.floor(Math.random() * 32000) + 80000);
-
-    // 生成随机的收款笔数（范围在100-500之间）
-    collectionCounts.push(Math.floor(Math.random() * 400) + 100);
-
-    // 生成随机的付款笔数（范围在80-400之间，略低于收款笔数）
-    paymentCounts.push(Math.floor(Math.random() * 320) + 80);
-  }
-
+  // 使用真实数据
   return {
     title: {
       text: "收款与付款成功率趋势",
@@ -250,35 +386,26 @@ const realTimeChart = computed(() => {
       formatter: function (params) {
         const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
-        
-        // 检查哪些系列被启用
         const enabledSeries = new Set();
         let collectionMarker = "";
         let paymentMarker = "";
         
         params.forEach(function (item) {
           enabledSeries.add(item.seriesName);
-          if (item.seriesName === "收款成功率") {
-            collectionMarker = item.marker;
-          } else if (item.seriesName === "付款成功率") {
-            paymentMarker = item.marker;
-          }
+          if (item.seriesName === "收款成功率") collectionMarker = item.marker;
+          else if (item.seriesName === "付款成功率") paymentMarker = item.marker;
         });
         
-        // 分组展示收款相关信息
         if (enabledSeries.has("收款成功率")) {
-          result += collectionMarker + " 收款成功率: " + params.find(p => p.seriesName === "收款成功率").value + "%<br/>";
-          result += collectionMarker + " 收款金额: ¥" + collectionAmounts[index].toLocaleString() + "<br/>";
+          result += collectionMarker + " 成功率: " + collectionSuccessRates[index] + "%<br/>";
+          result += collectionMarker + " 收款金额: R$ " + collectionAmounts[index].toLocaleString() + "<br/>";
           result += collectionMarker + " 收款笔数: " + collectionCounts[index] + "笔<br/>";
         }
-        
-        // 分组展示付款相关信息
         if (enabledSeries.has("付款成功率")) {
-          result += paymentMarker + " 付款成功率: " + params.find(p => p.seriesName === "付款成功率").value + "%<br/>";
-          result += paymentMarker + " 付款金额: ¥" + paymentAmounts[index].toLocaleString() + "<br/>";
+          result += paymentMarker + " 成功率: " + paymentSuccessRates[index] + "%<br/>";
+          result += paymentMarker + " 付款金额: R$ " + paymentAmounts[index].toLocaleString() + "<br/>";
           result += paymentMarker + " 付款笔数: " + paymentCounts[index] + "笔";
         }
-        
         return result;
       },
     },
@@ -301,64 +428,21 @@ const realTimeChart = computed(() => {
       type: "category",
       data: dates,
       boundaryGap: false,
-      axisLine: {
-        lineStyle: {
-          color: "#d8d8d8",
-        },
-      },
-      splitLine: {
-        show: false,
-        lineStyle: {
-          color: "#DCE2E8",
-        },
-      },
-      axisTick: {
-        show: true,
-        alignWithLabel: true,
-        lineStyle: {
-          color: "#d8d8d8",
-        },
-      },
-      axisLabel: {
-        textStyle: {
-          color: "#666",
-          align: "center",
-        },
-        fontSize: 12,
-        margin: 15,
-      },
+      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      splitLine: { show: false },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
+      axisLabel: { textStyle: { color: "#666", align: "center" }, fontSize: 10, margin: 15, rotate: 0 },
     },
     yAxis: {
       type: "value",
-      name: "成功率 (%/笔)",
+      name: "成功率 (%)",
       min: 70,
       max: 100,
-      axisLine: {
-        show: true,
-        lineStyle: {
-          color: "#d8d8d8",
-        },
-      },
-      splitLine: {
-        show: true,
-        lineStyle: {
-          color: "#f0f0f0",
-          type: "dashed",
-        },
-      },
-      axisLabel: {
-        color: "#666",
-        formatter: "{value}%",
-        fontSize: 12,
-      },
-      axisTick: {
-        show: false,
-      },
-      nameTextStyle: {
-        color: "#666",
-        fontSize: 12,
-        padding: [0, 30, 0, 0],
-      },
+      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
+      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
+      axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
+      axisTick: { show: false },
+      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
     },
     series: [
       {
@@ -369,31 +453,15 @@ const realTimeChart = computed(() => {
         symbolSize: 6,
         smooth: true,
         showSymbol: true,
-        lineStyle: {
-          color: "#48bb78",
-          width: 3,
-        },
-        itemStyle: {
-          color: "#48bb78",
-          borderColor: "#fff",
-          borderWidth: 1,
-        },
+        lineStyle: { color: "#48bb78", width: 3 },
+        itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
         areaStyle: {
           color: {
             type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
+            x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              {
-                offset: 0,
-                color: "rgba(72, 187, 120, 0.3)",
-              },
-              {
-                offset: 1,
-                color: "rgba(72, 187, 120, 0.05)",
-              },
+              { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
+              { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
             ],
           },
         },
@@ -406,31 +474,15 @@ const realTimeChart = computed(() => {
         symbolSize: 6,
         smooth: true,
         showSymbol: true,
-        lineStyle: {
-          color: "#db0011",
-          width: 3,
-        },
-        itemStyle: {
-          color: "#db0011",
-          borderColor: "#fff",
-          borderWidth: 1,
-        },
+        lineStyle: { color: "#db0011", width: 3 },
+        itemStyle: { color: "#db0011", borderColor: "#fff", borderWidth: 1 },
         areaStyle: {
           color: {
             type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
+            x: 0, y: 0, x2: 0, y2: 1,
             colorStops: [
-              {
-                offset: 0,
-                color: "rgba(219, 0, 17, 0.3)",
-              },
-              {
-                offset: 1,
-                color: "rgba(219, 0, 17, 0.05)",
-              },
+              { offset: 0, color: "rgba(219, 0, 17, 0.3)" },
+              { offset: 1, color: "rgba(219, 0, 17, 0.05)" },
             ],
           },
         },
@@ -444,6 +496,7 @@ const initChart = () => {
   if (chartContainer.value) {
     // 检查容器尺寸
     const checkSize = () => {
+      if (!chartContainer.value) return;
       const clientWidth = chartContainer.value.clientWidth;
       const clientHeight = chartContainer.value.clientHeight;
       
@@ -484,11 +537,12 @@ const destroyChart = () => {
   }
 };
 
-// 初始化余额图表
-const initBalanceChart = () => {
+// 初始化余额图表-期初余额
+const initBalanceChart = (chartData = null) => {
   if (balanceChartRef.value) {
     // 检查容器尺寸
     const checkSize = () => {
+      if (!balanceChartRef.value) return;
       const clientWidth = balanceChartRef.value.clientWidth;
       const clientHeight = balanceChartRef.value.clientHeight;
       
@@ -500,6 +554,8 @@ const initBalanceChart = () => {
         // 创建新实例
         balanceChartInstance = echarts.init(balanceChartRef.value);
         
+                const dates = chartData?.dates || [];
+        const PreviousDayEndBalance = chartData?.PreviousDayEndBalance || [];
         // 图表配置
         const option = {
           title: {
@@ -523,7 +579,7 @@ const initBalanceChart = () => {
           },
           xAxis: {
             type: 'category',
-            data: ['28/03', '29/03', '30/03', '31/03', '01/04', '02/04', '03/04'],
+            data: dates,
             axisLine: {
               lineStyle: {
                 color: '#d8d8d8'
@@ -541,7 +597,7 @@ const initBalanceChart = () => {
           series: [{
             name: '余额',
             type: 'line',
-            data: [1000, 1050, 1100, 1080, 1150, 1200, 1250],
+            data: PreviousDayEndBalance,
             itemStyle: {
               color: '#48bb78'
             },
@@ -594,10 +650,11 @@ const handleBalanceChartResize = () => {
 };
 
 // 初始化交易总额图表
-const initTransactionChart = () => {
+const initTransactionChart = (chartData = null) => {
   if (transactionChartRef.value) {
     // 检查容器尺寸
     const checkSize = () => {
+      if (!transactionChartRef.value) return;
       const clientWidth = transactionChartRef.value.clientWidth;
       const clientHeight = transactionChartRef.value.clientHeight;
       
@@ -608,6 +665,11 @@ const initTransactionChart = () => {
         }
         // 创建新实例
         transactionChartInstance = echarts.init(transactionChartRef.value);
+        
+        // 使用真实数据或默认模拟数据
+        const dates = chartData?.dates || [];
+        const payinData = chartData?.payinData || [];
+        const payoutData = chartData?.payoutData || [];
         
         // 图表配置
         const option = {
@@ -621,7 +683,14 @@ const initTransactionChart = () => {
             }
           },
           tooltip: {
-            trigger: 'axis'
+            trigger: 'axis',
+            formatter: function(params) {
+              let result = `${params[0].axisValue}<br/>`;
+              params.forEach(item => {
+                result += `${item.marker} ${item.seriesName}: R$ ${item.value.toLocaleString()}<br/>`;
+              });
+              return result;
+            }
           },
           legend: {
             data: ['代收总额', '代付总额'],
@@ -644,7 +713,7 @@ const initTransactionChart = () => {
           },
           xAxis: {
             type: 'category',
-            data: ['28/03', '29/03', '30/03', '31/03', '01/04', '02/04', '03/04'],
+            data: dates,
             axisLine: {
               lineStyle: {
                 color: '#d8d8d8'
@@ -656,14 +725,31 @@ const initTransactionChart = () => {
             }
           },
           yAxis: {
-            show: false,
-            type: 'value'
+            type: 'value',
+            axisLabel: {
+              fontSize: 10,
+              color: '#999',
+              formatter: function(value) {
+                return 'R$ ' + value.toLocaleString();
+              }
+            },
+            axisLine: {
+              show: true,
+              lineStyle: {
+                color: '#d8d8d8'
+              }
+            },
+            splitLine: {
+              lineStyle: {
+                color: '#f0f0f0'
+              }
+            }
           },
           series: [
             {
               name: '代收总额',
               type: 'line',
-              data: [500, 550, 600, 580, 650, 700, 750],
+              data: payinData,
               itemStyle: {
                 color: '#db0011'
               },
@@ -676,7 +762,7 @@ const initTransactionChart = () => {
             {
               name: '代付总额',
               type: 'line',
-              data: [300, 320, 350, 330, 380, 400, 420],
+              data: payoutData,
               itemStyle: {
                 color: '#f59e0b'
               },
@@ -726,13 +812,159 @@ const destroyRightCharts = () => {
   }
 };
 
+// 格式化时间为 YYYY-MM-DD HH:mm:ss
+const formatTime = (date) => {
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+};
+
 const getdata = async () => {
   try {
-    let res = await http.financeReportByDay({
-      startDate: selectedTime.value,
-      endDate: selectedTime.value,
+    let endTime, startTime;
+    
+    
+ if (selectedTime.value) {
+  const endDate = new Date(selectedTime.value.replace(/-/g, '/'));
+  // 结束时间提前两分钟
+  const adjustedEndDate = new Date(endDate.getTime() - 2 * 60 * 1000);
+  endTime = formatTime(adjustedEndDate);
+  // 开始时间基于提前后的结束时间计算
+  startTime = formatTime(new Date(adjustedEndDate.getTime() - parseInt(timeRange.value) * 60 * 1000));
+  console.log("endTime", endTime);
+  console.log("startTime", startTime);
+} else {
+  const now = new Date();
+  // 结束时间提前两分钟
+  const adjustedNow = new Date(now.getTime() - 2 * 60 * 1000);
+  endTime = formatTime(adjustedNow);
+  // 开始时间基于提前后的结束时间计算
+  startTime = formatTime(new Date(adjustedNow.getTime() - parseInt(timeRange.value) * 60 * 1000));
+}
+
+    const [payRes, collectRes] = await Promise.all([
+      http.paySuccessRatio({ startTime, endTime }),
+      http.collectSuccessRatio({ startTime, endTime })
+    ]);
+
+    console.log("代付成功率数据", payRes);
+    console.log("代收成功率数据", collectRes);
+
+    const payList = payRes.data?.list || [];
+    const collectList = collectRes.data?.list || [];
+     // 累加创建订单和成功订单
+      projectData.value.orderCount = parseInt(collectRes.data?.totalOrderCount || '0');
+      projectData.value.successCount = parseInt(collectRes.data?.totalSuccessCount || '0');
+      projectData.value.successRate = parseFloat(collectRes.data?.totalSuccessRate?.replace('%', '') || '0');
+    const mergedData = {};
+    
+    payList.forEach(item => {
+      mergedData[item.time] = {
+        payOrderCount: item.orderCount || 0,
+        paySuccessCount: item.successCount || 0,
+        paySuccessRate: parseFloat(item.successRate?.replace('%', '') || '0'),
+        payTotalAmount: parseFloat(item.totalAmount || '0'),
+        paySuccessAmount: parseFloat(item.successAmount || '0'),
+        collectOrderCount: 0,
+        collectSuccessCount: 0,
+        collectSuccessRate: 0,
+        collectTotalAmount: 0,
+        collectSuccessAmount: 0
+      };
     });
-    console.log("每日数据", res);
+
+    collectList.forEach(item => {
+      if (!mergedData[item.time]) {
+        mergedData[item.time] = {
+          payOrderCount: 0,
+          paySuccessCount: 0,
+          paySuccessRate: 0,
+          payTotalAmount: 0,
+          paySuccessAmount: 0,
+          collectOrderCount: 0,
+          collectSuccessCount: 0,
+          collectSuccessRate: 0,
+          collectTotalAmount: 0,
+          collectSuccessAmount: 0
+        };
+      }
+ 
+
+      mergedData[item.time].collectOrderCount = item.orderCount || 0;
+      mergedData[item.time].collectSuccessCount = item.successCount || 0;
+      mergedData[item.time].collectSuccessRate = parseFloat(item.successRate?.replace('%', '') || '0');
+      mergedData[item.time].collectTotalAmount = parseFloat(item.totalAmount || '0');
+      mergedData[item.time].collectSuccessAmount = parseFloat(item.successAmount || '0');
+    });
+
+
+    const sortedTimes = Object.keys(mergedData).sort();
+    
+    chartData.value = {
+      dates: sortedTimes,
+      collectionSuccessRates: sortedTimes.map(t => mergedData[t].collectSuccessRate),
+      paymentSuccessRates: sortedTimes.map(t => mergedData[t].paySuccessRate),
+      collectionAmounts: sortedTimes.map(t => mergedData[t].collectTotalAmount),
+      paymentAmounts: sortedTimes.map(t => mergedData[t].payTotalAmount),
+      collectionCounts: sortedTimes.map(t => mergedData[t].collectOrderCount),
+      paymentCounts: sortedTimes.map(t => mergedData[t].payOrderCount)
+    };
+
+    if (chartInstance) {
+      chartInstance.setOption(realTimeChart.value, true);
+    }
+
+  } catch (error) {
+    ElMessage.error(  error.msg || "获取数据失败");
+    console.error(error);
+  }
+};
+const getdataBoth = async () => {
+  try {
+    let startDate, endDate;
+    
+    const formatDateToString = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    if (searchForm.orderTime && searchForm.orderTime.length === 2) {
+      startDate = searchForm.orderTime[0];
+      endDate = searchForm.orderTime[1];
+    } else {
+      const end = new Date();
+      const start = new Date();
+      start.setTime(start.getTime() - 3600 * 1000 * 24 * 7);
+      startDate = formatDateToString(start);
+      endDate = formatDateToString(end);
+    }
+    
+    let res = await http.statisticsByDayBoth({
+      startDate: startDate,
+      endDate: endDate,
+    });
+    console.log("按天统计代收代付汇总数据", res.data.list);
+    
+    const data = res.data?.list || [];
+    if (Array.isArray(data) && data.length > 0) {
+      const chartData = {
+        dates: data.map(item => {
+          const dateStr = item.OrderDate;
+          if (dateStr && dateStr.includes('T')) {
+            return dateStr.split('T')[0];
+          }
+          const date = new Date(dateStr);
+          return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }),
+        payinData: data.map(item => item.TotalAmountPayin || 0),
+        payoutData: data.map(item => item.TotalAmountPayout || 0),
+        PreviousDayEndBalance: data.map(item => item.PreviousDayEndBalance || 0)
+      };
+      
+      initTransactionChart(chartData);
+      initBalanceChart(chartData);
+    }
   } catch (error) {
     ElMessage.error("获取数据失败");
   }
@@ -747,6 +979,8 @@ watch(realTimeChart, (newOption) => {
 }, { deep: true });
 
 onMounted(() => {
+  // 设置默认时间为当前时间
+  selectedTime.value = formatCurrentTime();
   getdata();
   // 组件挂载后初始化图表
   initChart();

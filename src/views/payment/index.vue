@@ -21,15 +21,6 @@
                 value-format="YYYY-MM-DD HH:mm:ss"
               />
             </el-form-item>
-
-            <el-form-item label="平台订单号">
-              <el-input
-                v-model="searchForm.platformOrderNo"
-                placeholder="请输入"
-                clearable
-                style="width: 155px"
-              />
-            </el-form-item>
             <el-form-item label="商户订单号">
               <el-input
                 v-model="searchForm.merchantOrderNo"
@@ -38,6 +29,15 @@
                 style="width: 155px"
               />
             </el-form-item>
+            <el-form-item label="平台订单号">
+              <el-input
+                v-model="searchForm.platformOrderNo"
+                placeholder="请输入"
+                clearable
+                style="width: 155px"
+              />
+            </el-form-item>
+
             <el-form-item label="账户">
               <el-input
                 v-model="searchForm.account"
@@ -115,10 +115,10 @@
               />
               
               <!-- 批量操作栏 -->
-              <div v-if="selectedRows.length > 0" class="batch-operation-bar">
+              <div  class="batch-operation-bar">
                 <span>已选择 {{ selectedRows.length }} 项</span>
                 <el-button type="primary" size="small" @click="handleBatchExport">
-                  批量回调
+                  批量补发回调
                 </el-button>
               </div>
               
@@ -142,9 +142,9 @@
                   width="150"
                   align="center"
                 />
-                <el-table-column prop="amount" label="订单金额" align="center" />
-                <el-table-column prop="expectAmount" label="预计到账" align="center" />
-                <el-table-column prop="actualAmount" label="实际支付" align="center" />
+                <el-table-column prop="orderAmount" label="订单金额" align="center" />
+                <el-table-column prop="expectAmount" label="到账金额" align="center" />
+                <!-- <el-table-column prop="actualAmount" label="实际支付" align="center" /> -->
                 <el-table-column prop="fee" label="手续费" align="center" />
 
                 <el-table-column prop="status" label="状态" align="center">
@@ -154,11 +154,11 @@
                     </el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column prop="createTime" label="申请时间" align="center" />
+                <el-table-column prop="applyTime" label="申请时间" align="center" />
                 <el-table-column label="操作" align="center" width="100">
                   <template #default="{ row }">
                     <el-button type="primary" size="small" @click.stop="handleCallback(row)" >
-                      回调
+                      补发回调
                     </el-button>
                   </template>
                 </el-table-column>
@@ -197,15 +197,20 @@
         <el-descriptions v-else :column="1" border>
           <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item>
           <el-descriptions-item label="平台订单号">{{ currentRow.platformOrderNo || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="订单金额">{{ currentRow.amount || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="预计到账">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="实际支付">{{ currentRow.actualAmount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="银行单号">{{ currentRow.bankArea || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="币种">{{ currentRow.currency || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="订单金额">{{ currentRow.orderAmount || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="到账金额">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="实际支付">{{ currentRow.actualAmount || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="银行（类型）">{{ currentRow.bank || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="客户姓名">{{ currentRow.name || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="客户电话">{{ currentRow.phone || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="客户邮箱">{{ currentRow.email || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="申请时间">{{ currentRow.createTime || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="支付类型">{{ currentRow.bank || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="创建IP">{{ currentRow.createdIp || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户姓名">{{ currentRow.customerName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户账户">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="客户电话">{{ currentRow.customerPhone || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="客户邮箱">{{ currentRow.customerEmail || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="申请时间">{{ currentRow.applyTime || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="风控类型">{{ currentRow.riskype || '-' }}</el-descriptions-item>
           <!-- <el-descriptions-item label="处理时间">{{ currentRow.handleTime || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="状态">
             <el-tag :type="currentRow.status === 'PENDING' ? 'warning' : currentRow.status === 'SUCCESS' ? 'success' : 'danger'" v-if="currentRow.status">
@@ -213,33 +218,104 @@
             </el-tag>
             <span v-else>-</span>
           </el-descriptions-item>
-          <el-descriptions-item label="通知状态">{{ currentRow.notifyStatus || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="通知地址">{{ currentRow.notifyUrl || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="回调">{{ currentRow.callback || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="凭证">
-            <el-image
-              style="width: 100px; height: 100px"
-              src="/src/assets/image/1.jpg"
-              :zoom-rate="1.2"
-              :max-scale="7"
-              :min-scale="0.2"
-              :preview-src-list="['/src/assets/image/1.jpg']"
-              show-progress
-              fit="cover"
-            />
-          
-            <!-- <span v-else>-</span> -->
+          <el-descriptions-item label="通知地址">
+            <span class="wrap-text">{{ currentRow.merchantNotifyUrl || '-' }}</span>
           </el-descriptions-item>
-      <!-- 下载凭证 -->
-          <el-descriptions-item label="下载凭证">
-            <el-button type="primary" size="small" @click.stop="handleDownload(currentRow)">
-              下载
+          <!-- <el-descriptions-item label="回调">{{ currentRow.callback || '-' }}</el-descriptions-item> -->
+           <!-- 可能是备注字段 -->
+          <!-- <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item> -->
+          <el-descriptions-item label="凭证" v-if="currentRow.currency === 'BRL'">
+            <el-button type="primary" size="small" @click.stop="handleViewVoucher">
+              查看凭证
             </el-button>
           </el-descriptions-item>
         </el-descriptions>
       </div>
     </el-drawer>
+
+    <!-- 凭证弹窗 -->
+    <el-dialog
+      v-model="showVoucherDialog"
+      width="600px"
+      append-to-body
+    >
+      <div class="voucher-container" id="voucher">
+        <div class="logo"><img src="@/assets/image/logo.png" alt="logo"></div>
+        <div class="title"></div>
+
+        <div class="form-group first-form">
+          <div class="divider"></div>
+          <div class="form-group-title">comprovante de transacçäo</div>
+          <div class="form-row">
+            <label class="form-group-title-left">Valor</label>
+            <span>{{ formatBRL(voucherInfo.amount) }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">Tempo de transaccǎo</label>
+            <span>{{ formattedTime }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">ID da transacçao</label>
+            <span>{{ voucherInfo.end2endId || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">Tipo de transferência</label>
+            <span>PIX</span>
+          </div>
+          <div class="divider"></div>
+          <div class="form-group-title">Informagóes do depositante</div>
+          <div class="form-row">
+            <label class="form-group-title-left">Nome</label>
+            <span>{{ voucherInfo.fromName || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">CNPJ</label>
+            <span>{{ voucherInfo.fromCNPJ || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">Banco/Instituição</label>
+            <span>{{ voucherInfo.fromBankName || '-' }}</span>
+          </div>
+          <div class="divider"></div>
+        </div>
+
+        <div class="form-group">
+          <div class="form-group-title">Informagóes do destino</div>
+          <div class="form-row">
+            <label class="form-group-title-left">Nome</label>
+            <span>{{ voucherInfo.accountName || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">CPF/CNPJ</label>
+            <span>{{ voucherInfo.taxId || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">AGÊNCIA</label>
+            <span>{{ voucherInfo.toIspb || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">ISPB Nome</label>
+            <span>{{ voucherInfo.bankName || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">Chave</label>
+            <span>{{ voucherInfo.account || '-' }}</span>
+          </div>
+          <div class="form-row">
+            <label class="form-group-title-left">Tipo de Conta</label>
+            <span>{{ voucherInfo.accountType || '-' }}</span>
+          </div>
+          <div class="divider"></div>
+        </div>
+      </div>
+      <div style="text-align: center;">
+              <el-button type="primary" block @click="downloadVoucher" style="margin-top:10px">
+          <el-icon><Download /></el-icon>
+          Descarregar comprovante
+        </el-button>
+      </div>
+   
+    </el-dialog>
   </div>
 </template>
 
@@ -251,6 +327,19 @@ import { ElMessage, ElMessageBox  } from "element-plus";
 import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
+import html2canvas from 'html2canvas';  // 下载图片
+
+// 格式化BRL货币
+const formatBRL = (value) => {
+  if (value === null || value === undefined || value === '') return '-';
+  const num = Number(value);
+  if (isNaN(num)) return '-';
+  return num.toLocaleString('pt-BR', {
+    style: 'currency',
+    currency: 'BRL'
+  });
+};
+
 // 付款订单
 const props = defineProps({
   title: {
@@ -322,17 +411,13 @@ const tableData = ref([]);
 const exportLoading = ref(false);
 const detailVisible = ref(false);
 const currentRow = ref({});
+const showVoucherDialog = ref(false);   // 控制弹窗开关
+const formattedTime = ref('');    // 凭证时间格式化后
+const voucherInfo = ref('');   // 凭证信息
 const selectedRows = ref([]);
 const tableRef = ref(null);
 
-// 图片预览相关
-const url = ref('');
-const srcList = ref([
-    'https://tse1.mm.bing.net/th/id/OIP.IJZgTNx1vp9EML_1wV5p2gHaEo?rs=1&pid=ImgDetMain&o=7&rm=3',
-  'https://www.bing.com/th/id/OIP.MfK-234s0vHYxSuS9YRyUgHaJ4?w=160&h=211&c=8&rs=1&qlt=90&o=6&dpr=1.5&pid=3.1&rm=2',
-  'https://tse3.mm.bing.net/th/id/OIP.BaTVG1gAGyDZczd-kwb5kgAAAA?rs=1&pid=ImgDetMain&o=7&rm=3',
-  '../../assets/image/1.jpg',
-]);
+
 
 // 路由实例
 const router = useRouter();
@@ -520,11 +605,6 @@ const handleCurrentChange = (val) => {
 const showDetail = (row) => {
   console.log('显示详情弹窗，row数据:', row);
   currentRow.value = row;
-  // 设置图片URL和预览列表，添加默认假图片
-  url.value = row.evidenceUrl || row.evidence || row.imageUrl || '../../assets/image/1.jpg';
-  srcList.value = [url.value];
-  console.log('图片URL:', url.value);
-  console.log('图片预览列表:', srcList.value);
   detailVisible.value = true;
   console.log('currentRow已设置:', currentRow.value);
 };
@@ -541,6 +621,63 @@ const handleSelectionChange = (selection) => {
   console.log('选中的行:', selectedRows);
 };
 
+// 查看凭证
+const handleViewVoucher = () => {
+  updateVoucherTime(currentRow.value.time);
+  voucherInfo.value = currentRow.value.memo;
+  console.log('凭证信息:', voucherInfo.value);
+  showVoucherDialog.value = true;
+};
+
+// 更新凭证时间
+const updateVoucherTime = (orderNo) => {
+if (orderNo && orderNo.length === 32 && orderNo.startsWith('E')) {
+    const timestampStr = orderNo.substring(9, 21);
+    const year = parseInt(timestampStr.substring(0, 4));
+    const month = parseInt(timestampStr.substring(4, 6)) - 1;
+    const day = parseInt(timestampStr.substring(6, 8));
+    const hour = parseInt(timestampStr.substring(8, 10));
+    const minute = parseInt(timestampStr.substring(10, 12));
+
+    const utcDate = new Date(Date.UTC(year, month, day, hour, minute));
+    utcDate.setUTCHours(utcDate.getUTCHours() - 3);
+
+    formattedTime.value =
+      String(utcDate.getUTCDate()).padStart(2, '0') + '/' +
+      String(utcDate.getUTCMonth() + 1).padStart(2, '0') + '/' +
+      utcDate.getUTCFullYear() + ' ' +
+      String(utcDate.getUTCHours()).padStart(2, '0') + ':' +
+      String(utcDate.getUTCMinutes()).padStart(2, '0');
+  }  else {
+    formattedTime.value = 'EndToEndId inválido';
+  }
+};
+
+// 下载凭证为图片
+const downloadVoucher = async () => {
+  try {
+    const element = document.getElementById('voucher');
+    if (!element) {
+      ElMessage.error('未找到凭证元素');
+      return;
+    }
+    
+    const canvas = await html2canvas(element, {
+      useCORS: true,
+      scale: 2,
+      backgroundColor: '#fff'
+    });
+    
+    const link = document.createElement('a');
+    link.download = 'PIX-Comprovante.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  } catch (error) {
+    console.error('下载凭证失败:', error);
+    ElMessage.error('下载凭证失败，请重试');
+  }
+};
+
 
 
 
@@ -548,24 +685,38 @@ const handleSelectionChange = (selection) => {
 // 批量回调
 const handleBatchExport = () => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择要回调的数据');
+    ElMessage.warning('请先选择要补发回调的数据');
     return;
   }
   
-  console.log('批量导出选中的数据:', selectedRows.value);
-  ElMessage.success(`已选择 ${selectedRows.value.length} 条数据进行回调`);
-  
-  // 这里可以添加实际的批量导出逻辑
-  // 例如：调用批量导出API，传递选中的订单号数组
+  http
+    .reissueCallbackPay({
+      idList: selectedRows.value.map((item) => item.platformOrderNo),
+    })
+    .then((res) => {
+      if (res.code === 200) {
+        ElMessage.success(res.msg);
+        handleSearch();
+      }else{
+        ElMessage.error(res.msg);
+      }
+    });
 };
 
 // 单个回调
 const handleCallback = (row) => {
-  console.log('回调操作，row数据:', row);
-  ElMessage.success(`已对订单 ${row.merchantOrderNo || row.platformOrderNo} 进行回调`);
-  
-  // 这里可以添加实际的回调逻辑
-  // 例如：调用回调API，传递订单号
+  http
+    .reissueCallbackPay({
+      idList: [row.platformOrderNo],
+    })
+    .then((res) => {
+      if (res.code === 200) {
+        ElMessage.success(res.msg);
+        handleSearch();
+      }else{
+         ElMessage.error(res.msg);
+      }
+    });
 };
 
 // 初始化数据
@@ -637,6 +788,11 @@ const onExport = async () => {
 
 <style scoped lang="scss"> 
 @use "../../styles/variables.scss" as *;
+/* 放大表格选择框 */
+:deep(.el-table .el-checkbox) {
+  transform: scale(1.4);
+  margin: 8px;
+}
 
 .page-container {
   background-color: #fff;
@@ -777,6 +933,13 @@ const onExport = async () => {
   align-items: center;
   height: 300px;
 }
+.wrap-text {
+  display: inline-block;
+  max-width: 250px;
+  word-break: break-all;
+  white-space: normal;
+}
+
 
 :deep(.el-descriptions) {
   .el-descriptions__label {
@@ -818,5 +981,60 @@ const onExport = async () => {
       width: 100%;
     }
   }
+}
+
+// 凭证弹窗样式
+.voucher-container {
+  position: relative;
+  padding: 30px;
+  background: #fff;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.logo img{
+  position: absolute;
+  left: 20px;
+  top: 20px;
+  width: 107.7px;
+  height: 30px;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+
+.form-group {
+  margin-top: 20px;
+}
+
+.first-form {
+  margin-top: 50px;
+}
+
+.form-group-title {
+  text-align: right;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.form-group-title-left {
+  font-weight: bold;
+  margin-right: 10px;
+  width: 100px;
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.form-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 12px;
+}
+
+.divider {
+  border-bottom: 1px solid #ccc;
+  margin-bottom: 10px;
 }
 </style>

@@ -68,7 +68,7 @@
                     <el-input
                       v-model="ruleForm.arrivalAmount"
                     type="number"
-                    placeholder="单位：USDT"
+                    placeholder="到账金额"
                     @input="convertUToAmount"
                     ></el-input>
                   </el-form-item>
@@ -140,7 +140,7 @@
                 <el-form-item>
                   <div class="form-actions">
                     <el-button @click="reset">重置</el-button>
-                    <el-button type="primary" @click="submit" :loading="loading">确认</el-button>
+                    <el-button type="primary" @click="submit"  :disabled="true" title="暂未开放" :loading="loading">确认 (暂未开放)</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -409,24 +409,24 @@ const getTransferHistory = async () => {
     
     // 模拟转账记录数据
     transferHistory.value = [
-      {
-        orderNo: 'TRF' + (Date.now() - 86400000),
-        fromAccount: 'C95647',
-        toAccount: 'E00001',
-        amount: 5000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '测试转账'
-      },
-      {
-        orderNo: 'TRF' + (Date.now() - 172800000),
-        fromAccount: 'C95647',
-        toAccount: 'E00002',
-        amount: 3000.00,
-        status: 'SUCCESS',
-        createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-        remark: '业务转账'
-      }
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 86400000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00001',
+      //   amount: 5000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '测试转账'
+      // },
+      // {
+      //   orderNo: 'TRF' + (Date.now() - 172800000),
+      //   fromAccount: 'C95647',
+      //   toAccount: 'E00002',
+      //   amount: 3000.00,
+      //   status: 'SUCCESS',
+      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
+      //   remark: '业务转账'
+      // }
     ];
   } catch (error) {
     ElMessage.error('获取转账记录失败');
