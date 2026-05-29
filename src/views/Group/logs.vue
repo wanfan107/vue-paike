@@ -11,20 +11,15 @@
 <div class="search-section">
   <div class="search-form">
     <el-form :inline="true" :model="searchForm">
-      <el-form-item label="开始时间">
+      <el-form-item label="时间范围">
         <el-date-picker
-          v-model="searchForm.startTime"
-          type="datetime"
-          placeholder="选择开始时间"
-          value-format="yyyy-MM-dd HH:mm:ss"
-        />
-      </el-form-item>
-      <el-form-item label="结束时间">
-        <el-date-picker
-          v-model="searchForm.endTime"
-          type="datetime"
-          placeholder="选择结束时间"
-          value-format="yyyy-MM-dd HH:mm:ss"
+          v-model="searchForm.dateRange"
+          type="datetimerange"
+          range-separator="至"
+          start-placeholder="开始时间"
+          end-placeholder="结束时间"
+          value-format="YYYY-MM-DD HH:mm:ss"
+          clearable
         />
       </el-form-item>
       <!-- <el-form-item label="登录结果">
@@ -193,8 +188,7 @@ const props = defineProps({
 });
 // 搜索表单
 const searchForm = reactive({
-  startTime: '',
-  endTime: '',
+  dateRange: [],
   loginResult: '',
   isAnomaly: ''
 });
@@ -255,11 +249,12 @@ const formatAnomalyDetails = (details) => {
 };
 // 设置默认时间范围（最近30天）
 const setDefaultTimeRange = () => {
-  const endDate = new Date();
-  const startDate = new Date();
-  startDate.setDate(startDate.getDate() - 30);
-  searchForm.endTime = formatDateTime(endDate);
-  searchForm.startTime = formatDateTime(startDate);
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  searchForm.dateRange = [
+    formatDateTime(thirtyDaysAgo),
+    formatDateTime(now)
+  ];
 };
 // 查询登录记录
 const fetchLoginLogs = async () => {
@@ -268,8 +263,8 @@ const fetchLoginLogs = async () => {
     const params = {
       pageNo: pagination.pageNo,
       pageSize: pagination.pageSize,
-      startTime: searchForm.startTime,
-      endTime: searchForm.endTime
+      startTime: searchForm.dateRange?.[0] || '',
+      endTime: searchForm.dateRange?.[1] || ''
     };
     // 只添加非空参数
     if (searchForm.loginResult) {
@@ -303,8 +298,7 @@ const search = () => {
 };
 // 重置搜索
 const resetSearch = () => {
-  searchForm.startTime = '';
-  searchForm.endTime = '';
+  searchForm.dateRange = [];
   searchForm.loginResult = '';
   searchForm.isAnomaly = '';
   pagination.pageNo = 1;

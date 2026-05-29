@@ -68,7 +68,7 @@
         </div>
         <template #dropdown>
           <el-dropdown-menu>
-            <el-dropdown-item command="account">切换账户</el-dropdown-item>
+            <el-dropdown-item command="account" v-if="isGroupLogin">切换账户</el-dropdown-item>
             <el-dropdown-item command="logout">退出</el-dropdown-item>
           </el-dropdown-menu>
         </template>
@@ -225,9 +225,9 @@ onMounted(() => {
     }
     return accounts.value.filter(
       (account) =>
-        account.id.toLowerCase().includes(keyword) ||
-        account.company.toLowerCase().includes(keyword) ||
-        account.accountNumber.toLowerCase().includes(keyword)
+        (account.id || '').toLowerCase().includes(keyword) ||
+        (account.company || '').toLowerCase().includes(keyword) ||
+        (account.accountNumber || '').toLowerCase().includes(keyword)
     )
   })
 

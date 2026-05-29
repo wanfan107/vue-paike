@@ -21,13 +21,13 @@
         </div>
         <div class="project-amount">
           <el-statistic 
-            :value="animatedValues[index].value" 
+            :value="animatedValues[index]" 
             class="amount-value"
             :formatter="(value) => {
               if (item.type === 'count') {
                 return Math.round(value);
               } else if (item.type === 'rate') {
-                return value.toFixed(1) + '%';
+                return value.toFixed(2) + '%';
               }
               return value;
             }"
@@ -41,7 +41,6 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { TransitionPresets, useTransition } from '@vueuse/core';
 import { FolderAdd, Select, Histogram } from '@element-plus/icons-vue';
 
 const props = defineProps({
@@ -59,53 +58,56 @@ const props = defineProps({
 const displayList = computed(() => [
   {
     name: "创建订单",
-    amount: props.data.orderCount || 0,
+    amount: parseInt(props.data.orderCount || '0'),
     type: "count"
   },
   {
     name: "成功订单",
-    amount: props.data.successCount || 0,
+    amount: parseInt(props.data.successCount || '0'),
     type: "count"
   },
   {
     name: "成功率",
-    amount: parseFloat(props.data.successRate || 0),
+    amount: parseFloat(props.data.successRate || '0'),
     type: "rate"
   },
 ]);
 
-// 为每个金额创建独立的响应式ref，初始值为0
-const sourceRefs = ref(displayList.value.map(() => ref(0)));
+// 动画值
+const animatedValues = ref([0, 0, 0]);
 
-// 为每个ref应用useTransition
-const animatedValues = computed(() => {
-  return sourceRefs.value.map(sourceRef => {
-    return useTransition(sourceRef, { 
-      duration: 1000,
-      easing: TransitionPresets.easeInOutCubic,  
-    });
-  });
-});
+// 数字滚动动画
+const animateValue = (index, start, end, duration = 1000) => {
+  const startTime = performance.now();
+  const diff = end - start;
+  
+  const animate = (currentTime) => {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    
+    // 使用缓动函数
+    const easeProgress = 1 - Math.pow(1 - progress, 3);
+    
+    animatedValues.value[index] = start + diff * easeProgress;
+    
+    if (progress < 1) {
+      requestAnimationFrame(animate);
+    }
+  };
+  
+  requestAnimationFrame(animate);
+};
 
 // 更新动画值
 const updateValues = () => {
   displayList.value.forEach((item, index) => {
-    if (sourceRefs.value[index]) {
-      sourceRefs.value[index].value = item.amount;
-    }
+    animateValue(index, animatedValues.value[index] || 0, item.amount);
   });
 };
 
 // 监听数据变化
 watch(() => props.data, () => {
-  sourceRefs.value = displayList.value.map((item, index) => {
-    const currentValue = sourceRefs.value[index]?.value || 0;
-    const newRef = ref(currentValue);
-    setTimeout(() => {
-      newRef.value = item.amount;
-    }, 50);
-    return newRef;
-  });
+  updateValues();
 }, { deep: true });
 
 onMounted(() => {

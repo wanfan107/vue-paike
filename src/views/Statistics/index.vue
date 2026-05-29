@@ -854,7 +854,7 @@ const getdata = async () => {
      // 累加创建订单和成功订单
       projectData.value.orderCount = parseInt(collectRes.data?.totalOrderCount || '0');
       projectData.value.successCount = parseInt(collectRes.data?.totalSuccessCount || '0');
-      projectData.value.successRate = parseFloat(collectRes.data?.totalSuccessRate?.replace('%', '') || '0');
+      projectData.value.successRate = parseFloat(collectRes.data?.totalSuccessRate.replace('%', '') || '0');
     const mergedData = {};
     
     payList.forEach(item => {

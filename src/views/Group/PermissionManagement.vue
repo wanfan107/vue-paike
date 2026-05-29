@@ -687,11 +687,12 @@ const saveOperator = async () => {
     });
     if (res.code === 200) {
       ElMessage.success(res.msg);
+        showAddDialog.value = false;
+            resetForm();
     } else {
       ElMessage.error(res.msg);
     }
-    showAddDialog.value = false;
-    resetForm();
+
     loadOperators();
   } catch (error) {
     ElMessage.error(error.response?.data?.msg || '添加失败');
