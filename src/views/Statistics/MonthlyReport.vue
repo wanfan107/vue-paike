@@ -1408,7 +1408,7 @@ const handleSearch = async () => {
     // 实际 API 调用（注释掉）
     console.log(searchForm.value);
     
-    let res = await http.financeReportByDay({
+    let res = await http.financeReportByMonth({
       startDate: formatTime(searchForm.time[0]),
       endDate: formatTime(searchForm.time[1]),
     });

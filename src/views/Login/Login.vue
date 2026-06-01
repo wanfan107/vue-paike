@@ -7,6 +7,7 @@
             style="width: 170px"
             src="@/assets/image/logo.png"
             alt="Banco E2 Logo"
+            @click="getDeviceInfo"
           />
           <div class="login-subtitle">Finance</div>
         </div>
@@ -39,6 +40,16 @@
               placeholder="密码"
               autocomplete="new-password"
               @input="handleInput('password')"
+            ></el-input>
+          </el-form-item>
+          <!-- 验证邮箱是否已验证的密码输入框 -->
+          <el-form-item label="EmailCode" prop="EmailCode" v-if="EmailVerifyshow">
+            <el-input
+              v-model="loginForm.EmailCode"
+              size="default"
+              show-password
+              placeholder="邮箱验证码"
+              @input="handleInput('EmailCode')"
             ></el-input>
           </el-form-item>
 
@@ -308,6 +319,8 @@ const countdown = ref(0); // 验证码倒计时
 const forgotPasswordFormRef = ref(null); // 忘记密码表单引用
 const groupNeedBindGoogle = ref(false); // 是否需要绑定Google验证码
 
+const EmailVerifyshow = ref(false); // 是否显示邮箱验证码输入框
+
 // 忘记密码表单数据
 const forgotPasswordForm = ref({
   email: '',
@@ -483,6 +496,7 @@ const accounts = ref([
 const loginForm = ref({
   username: "",
   password: "",
+  EmailCode: "",
   code: "",
 });
 
@@ -602,6 +616,7 @@ async function _groupLogin() {
       password: loginForm.value.password,
       code: loginForm.value.code,
       deviceFingerprint: fingerprint,
+      EmailCode: loginForm.value.EmailCode,
       deviceInfo: deviceInfo
     });
     if (res.autoSelected) {
@@ -746,7 +761,20 @@ async function groupLoginLogin() {
 
     console.log("集团登录响应:",res);
     if (res.code == 200) {
+      // 验证邮箱是否已验证
+      if(res.data.EmailVerify==true){
+        EmailVerifyshow.value = true;
+        // ElMessage.error(res.msg); // 新设备登录需要邮箱验证码
+        if (!loginForm.value.EmailCode) {
+          ElMessage.error(res.msg);
+          return;
+        }
+        if (loginForm.value.EmailCode) {
+          isVerifyPass.value = true;
+        }
+      }else{
       isVerifyPass.value = true;
+      }
     } if (res.code === 401 && res.data && res.data.googledata) {
       const { IsBinding, qrCodeImageUrl } = res.data.googledata;
       if (!IsBinding) {
@@ -769,52 +797,255 @@ async function groupLoginLogin() {
 
 
 
-// -----------------------获取设备信息-----------------------
-async function getDeviceInfo() {
-  return new Promise((resolve) => {
-    Fingerprint.get((components) => {
-      const fingerprint = md5(components.map((c) => c.value).join("|"));
-      
-      const deviceInfo = {
-        os: getOS(),
-        browser: getBrowser(),
-        device: getDeviceType(),
-        userAgent: navigator.userAgent
-      };
+// -----------------------获取设备信息（终极闭环版 · 修复async）-----------------------
 
-      resolve({
-        fingerprint,
-        deviceInfo
-      });
-    });
-  });
+/**
+ * 获取设备信息
+ * @returns {Promise<{fingerprint: string, deviceInfo: object}>} 包含指纹和设备信息的对象
+ */
+async function getDeviceInfo() {
+  try {
+    // 🔥 修复：标准 async/await，不再嵌套 Promise
+    const components = await new Promise(resolve => Fingerprint.get(resolve));
+    const fingerprint = md5(components.map(c => c.value || '').join('|'));
+
+    const os = getOS();
+    let osVersion = 'Unknown';
+
+    // 精准获取系统版本
+    if (os === 'MacOS') {
+      osVersion = await getAccurateMacVersion();
+    } else if (os === 'Windows') {
+      osVersion = await getAccurateWindowsVersion();
+    } else {
+      osVersion = getOSVersion();
+    }
+
+    const deviceInfo = {
+      os: os,
+      osVersion: osVersion,
+      browser: getBrowser(),
+      browserVersion: getBrowserVersion(),
+      device: getDeviceType(),
+      deviceModel: getDeviceModel(),
+      language: getLanguage(),
+      userAgent: navigator.userAgent
+    };
+
+    console.log('✅ Fingerprint:', fingerprint);
+    console.log('✅ Device Info:', deviceInfo);
+    return { fingerprint, deviceInfo };
+
+  } catch (err) {
+    console.error('❌ 获取设备信息失败', err);
+    return {
+      fingerprint: 'unknown',
+      deviceInfo: {
+        os: 'Unknown',
+        osVersion: 'Unknown',
+        browser: 'Unknown',
+        browserVersion: 'Unknown',
+        device: 'Unknown',
+        deviceModel: 'Unknown',
+        language: 'Unknown',
+        userAgent: navigator.userAgent || 'Unknown'
+      }
+    };
+  }
 }
 
+/**
+ * 获取操作系统名称
+ */
 function getOS() {
   const userAgent = navigator.userAgent;
-  if (userAgent.indexOf("Win") !== -1) return "Windows";
-  if (userAgent.indexOf("Mac") !== -1) return "MacOS";
-  if (userAgent.indexOf("Linux") !== -1) return "Linux";
-  if (userAgent.indexOf("Android") !== -1) return "Android";
-  if (userAgent.indexOf("iOS") !== -1) return "iOS";
-  return "Unknown";
+  if (userAgent.indexOf('Android') !== -1) return 'Android';
+  if (/iPhone|iPad|iPod/i.test(userAgent)) return 'iOS';
+  if (userAgent.indexOf('Win') !== -1) return 'Windows';
+  if (userAgent.indexOf('Mac') !== -1) return 'MacOS';
+  if (userAgent.indexOf('Linux') !== -1 && userAgent.indexOf('Android') === -1) return 'Linux';
+  return 'Unknown';
 }
 
+/**
+ * 获取操作系统版本号
+ */
+function getOSVersion() {
+  const userAgent = navigator.userAgent;
+
+  if (userAgent.indexOf('Windows NT') !== -1) {
+    const match = userAgent.match(/Windows NT (\d+\.\d+)/);
+    if (match) {
+      const versionMap = {
+        '10.0': '10',
+        '6.3': '8.1', '6.2': '8', '6.1': '7', '6.0': 'Vista', '5.1': 'XP'
+      };
+      return versionMap[match[1]] || match[1];
+    }
+  }
+  if (userAgent.indexOf('Mac OS X') !== -1) {
+    const match = userAgent.match(/Mac OS X (\d+[._]\d+[._]\d+[._]?\d*)/);
+    return match ? match[1].replace(/_/g, '.') : 'Unknown';
+  }
+  if (userAgent.indexOf('Android') !== -1) {
+    const match = userAgent.match(/Android (\d+\.\d+(?:\.\d+)?)/);
+    return match ? match[1] : 'Unknown';
+  }
+  if (/iPhone|iPad|iPod/i.test(userAgent)) {
+    const match = userAgent.match(/(?:iPhone OS|CPU OS) (\d+_\d+(?:_\d+)?)/);
+    return match ? match[1].replace(/_/g, '.') : 'Unknown';
+  }
+  return 'Unknown';
+}
+
+/**
+ * 异步获取精准的 Mac 操作系统版本
+ */
+async function getAccurateMacVersion() {
+  const userAgent = navigator.userAgent;
+
+  if (userAgent.indexOf('Mac') === -1) {
+    return getOSVersion();
+  }
+
+  if (navigator.userAgentData) {
+    try {
+      const highEntropy = await navigator.userAgentData.getHighEntropyValues(['platformVersion']);
+      const darwinMajor = parseInt(highEntropy.platformVersion.split('.')[0]);
+
+      // 2026 最新映射
+      const macVersionMap = {
+        25: '16',
+        24: '15 (Sequoia)',
+        23: '14 (Sonoma)',
+        22: '13 (Ventura)',
+        21: '12 (Monterey)',
+        20: '11 (Big Sur)'
+      };
+
+      return macVersionMap[darwinMajor] || `10.15+ (Darwin: ${highEntropy.platformVersion})`;
+    } catch (e) {
+      console.warn('Client Hints API 调用失败，准备降级:', e.message);
+    }
+  }
+
+  return getOSVersion();
+}
+
+/**
+ * 异步获取精准 Windows 版本（完美区分 Win10 / Win11）
+ */
+async function getAccurateWindowsVersion() {
+  const baseVersion = getOSVersion();
+
+  if (navigator.userAgentData) {
+    try {
+      const highEntropy = await navigator.userAgentData.getHighEntropyValues(['platformVersion']);
+      const pv = highEntropy.platformVersion;
+      const build = parseInt(pv.split('.')[2]) || 0;
+
+      if (build >= 22000) {
+        return '11';
+      } else if (build >= 10000) {
+        return '10';
+      }
+    } catch (e) {
+      console.warn('Client Hints API 调用失败');
+    }
+  }
+
+  return baseVersion;
+}
+
+/**
+ * 获取浏览器名称
+ */
 function getBrowser() {
   const userAgent = navigator.userAgent;
-  if (userAgent.indexOf("Chrome") !== -1) return "Chrome";
-  if (userAgent.indexOf("Safari") !== -1) return "Safari";
-  if (userAgent.indexOf("Firefox") !== -1) return "Firefox";
-  if (userAgent.indexOf("Edge") !== -1) return "Edge";
-  if (userAgent.indexOf("IE") !== -1) return "IE";
-  return "Unknown";
+  if (userAgent.indexOf('Edg/') !== -1) return 'Edge';
+  if (userAgent.indexOf('OPR/') !== -1) return 'Opera';
+  if (userAgent.indexOf('Chrome/') !== -1 && userAgent.indexOf('Edg') === -1) return 'Chrome';
+  if (userAgent.indexOf('Safari/') !== -1 && userAgent.indexOf('Chrome') === -1) return 'Safari';
+  if (userAgent.indexOf('Firefox/') !== -1) return 'Firefox';
+  if (userAgent.indexOf('MSIE ') !== -1 || userAgent.indexOf('Trident/') !== -1) return 'IE';
+  return 'Unknown';
 }
 
+/**
+ * 获取浏览器版本号
+ */
+function getBrowserVersion() {
+  const userAgent = navigator.userAgent;
+
+  const edgeMatch = userAgent.match(/Edg\/([\d.]+)/);
+  if (edgeMatch) return edgeMatch[1];
+
+  const operaMatch = userAgent.match(/OPR\/([\d.]+)/);
+  if (operaMatch) return operaMatch[1];
+
+  const chromeMatch = userAgent.match(/Chrome\/([\d.]+)/);
+  if (chromeMatch) return chromeMatch[1];
+
+  const safariMatch = userAgent.match(/Version\/([\d.]+)/);
+  if (safariMatch && userAgent.indexOf('Chrome') === -1) {
+    return safariMatch[1];
+  }
+
+  const firefoxMatch = userAgent.match(/Firefox\/([\d.]+)/);
+  if (firefoxMatch) return firefoxMatch[1];
+
+  const ieMatch = userAgent.match(/rv:([\d.]+)/);
+  if (ieMatch && userAgent.indexOf('Trident') !== -1) {
+    return ieMatch[1];
+  }
+
+  const msieMatch = userAgent.match(/MSIE ([\d.]+)/);
+  if (msieMatch) return msieMatch[1];
+
+  return 'Unknown';
+}
+
+/**
+ * 获取设备类型
+ */
 function getDeviceType() {
   const userAgent = navigator.userAgent;
-  if (/mobile/i.test(userAgent)) return "Mobile";
-  if (/tablet/i.test(userAgent)) return "Tablet";
-  return "Desktop";
+  if (/ipad/i.test(userAgent)) return 'Tablet';
+  if (/mobile/i.test(userAgent)) return 'Mobile';
+  if (/tablet/i.test(userAgent)) return 'Tablet';
+  if (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) return 'Tablet';
+  return 'Desktop';
+}
+
+/**
+ * 获取设备型号
+ */
+function getDeviceModel() {
+  const userAgent = navigator.userAgent;
+
+  if (/iPhone/.test(userAgent)) return 'iPhone';
+  if (/iPad/.test(userAgent)) return 'iPad';
+  if (userAgent.indexOf('iPod') !== -1) return 'iPod';
+
+  if (userAgent.indexOf('Android') !== -1) {
+    const modelMatch = userAgent.match(/Android\s+[\d.]+;\s*([^;)]+?)(?=\s+(?:Build|))/i);
+    if (modelMatch && modelMatch[1].trim()) {
+      const model = modelMatch[1].trim();
+      if (!/Build|\d+\.\d+/.test(model)) {
+        return model;
+      }
+    }
+    return 'Android Device';
+  }
+
+  return 'Unknown';
+}
+
+/**
+ * 获取浏览器语言
+ */
+function getLanguage() {
+  return navigator.language || navigator.userLanguage || 'Unknown';
 }
 
 

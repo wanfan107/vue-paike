@@ -74,13 +74,14 @@ const useUserStore = defineStore('user', {
 
     // 集团登录
     async groupLogin(userInfo) {
-      const { email, password, code, deviceFingerprint, deviceInfo } = userInfo
+      const { email, password, code, deviceFingerprint, EmailCode, deviceInfo } = userInfo
 
       const res = await http.groupLogin({
         email,
         password,
         code,
         deviceFingerprint,
+        EmailCode,
         deviceInfo
       });
 
