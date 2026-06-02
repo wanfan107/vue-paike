@@ -167,21 +167,13 @@
               max-height="250"
               stripe
             >
-            
+              <el-table-column prop="merchantCode" label="商户号" width="120" />
               <el-table-column prop="address" label="钱包地址" min-width="300" />
               <el-table-column prop="type" label="类型" width="120">
                 <template #default="scope">
                   <el-tag type="info">TRC2.0</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="120">
-                <template #default="scope">
-                  <el-tag :type="scope.row.status === 'COMPLETED' ? 'success' : 'warning'">
-                    {{ scope.row.status === 'COMPLETED' ? '完成' : '进行中' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="createTime" label="添加时间" width="180" />
               <el-table-column label="操作" width="120">
                 <template #default="scope">
                   <el-button 
@@ -195,9 +187,6 @@
               </el-table-column>
             </el-table>
             
-            <div class="history-empty" v-if="!historyLoading && walletAddresses.length === 0">
-              <el-empty description="暂无钱包地址" />
-            </div>
           </div>
         
         <!-- </el-card> -->
@@ -263,7 +252,7 @@
             </div>
           </el-form-item>
           <el-form-item label="USDT地址" prop="usdtAddress">
-            <el-input v-model="walletForm.usdtAddress" type="textarea" placeholder="请输入USDT地址,可以用#隔开"></el-input>
+            <el-input v-model="walletForm.usdtAddress"  placeholder="请输入USDT地址"></el-input>
           </el-form-item>
           <el-form-item label="谷歌验证码" prop="googleCode">
             <el-input v-model="walletForm.googleCode" placeholder="请输入谷歌验证码" ></el-input>
@@ -281,7 +270,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
@@ -313,29 +302,44 @@ const merchantOptions = ref([
 
 ]);
 
-// 钱包地址选项
+// 所有商户的钱包地址映射 { merchantCode: [walletAddresses] }
+const allWalletAddresses = ref({});
+
+// 当前商户的钱包地址列表（根据选中的商户动态过滤）
 const walletAddressOptions = computed(() => {
-  const { merchantInfo } = userStore;
-  let options = [];
+  if (!ruleForm.merchantCode) return [];
   
-  if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
-    options = merchantInfo.usdtaddresseslist.reduce((prev, curr) => {
-      prev.push({
-        name: curr,
-        original: curr,
-        value: curr,
+  const addresses = allWalletAddresses.value[ruleForm.merchantCode] || [];
+  return addresses.map(address => ({
+    name: address,
+    original: address,
+    value: address,
+  }));
+});
+
+// 获取所有商户的钱包地址
+const fetchAllWalletAddresses = async () => {
+  try {
+    const res = await http.groupWalletQuery({});
+    if (res.Success && res.Data && res.Data.merchants) {
+      const walletMap = {};
+      res.Data.merchants.forEach(merchant => {
+        if (merchant.merchantCode && merchant.walletAddresses) {
+          walletMap[merchant.merchantCode] = merchant.walletAddresses;
+        }
       });
-      return prev;
-    }, []);
-  } else {
-    options.push({
-      name: merchantInfo.usdtAddress || "",
-      original: merchantInfo.usdtAddress || "",
-      value: merchantInfo.usdtAddress || "",
-    });
+      allWalletAddresses.value = walletMap;
+    }
+  } catch (error) {
+    console.error('获取钱包地址失败:', error);
+    allWalletAddresses.value = {};
   }
-  
-  return options;
+};
+
+// 监听商户号变化
+watch(() => ruleForm.merchantCode, () => {
+  // 商户号变化时清空钱包地址选择
+  ruleForm.walletAddress = '';
 });
 
 // 新增钱包地址弹窗
@@ -421,10 +425,16 @@ onMounted(() => {
   getExchangeRate();
   
   // 检查授信款状态
-  checkPrepayStatus();
+  // checkPrepayStatus();
+
+  // 获取集团钱包地址列表
+  getWalletAddresses();
 
   // 初始化钱包地址数据
-  initWalletAddresses();
+  // initWalletAddresses();
+  
+  // 获取所有商户的钱包地址（用于下拉选择）
+  fetchAllWalletAddresses();
 
   // 加载商户列表
   loadMerchants();
@@ -507,20 +517,23 @@ const onSave = () => {
 const submit = () => {
   loading.value = true;
   http
-    .usdttransfer({
-      id: userStore.merchantInfo.id,
-      merchantCode: ruleForm.merchantCode,
-      amount: ruleForm.amount,
-      password: ruleForm.password,
-      code: ruleForm.code,
-      walletAddress: ruleForm.walletAddress,
+    .groupUsdtTransfer({
+          "merchantCode": ruleForm.merchantCode,
+    "amount": ruleForm.amount,
+    "walletAddress": ruleForm.walletAddress,
+    "walletType": "TRC20",
+    "applicantCode":'',
+    code: ruleForm.code,
+    payPassword: ruleForm.password,
     })
     .then((res) => {
       loading.value = false;
-      if (res.code === 200) {
-        ElMessage.success("提现成功");
+      if (res.Success) {
+        ElMessage.success(res.Message || '提现成功');
         // 页面跳转到 withdraw/withdrawManagement
         router.push({ name: "withdrawManagement" });
+      } else {
+        ElMessage.error(res.ErrorMessage || '提现失败');
       }
     })
     .catch(() => {
@@ -546,72 +559,118 @@ const historyLoading = ref(false);
 const walletAddresses = ref([]);
 
 // 初始化钱包地址数据
-const initWalletAddresses = () => {
-  const { merchantInfo } = userStore;
-  if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
-    walletAddresses.value = merchantInfo.usdtaddresseslist.map((address, index) => ({
-      id: index + 1,
-      address: address,
-      type: 'TRC2.0',
-      status: index % 2 === 0 ? 'COMPLETED' : 'PENDING',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }));
-  } else if (merchantInfo.usdtAddress) {
-    walletAddresses.value = [{
-      id: 1,
-      address: merchantInfo.usdtAddress,
-      type: 'TRC2.0',
-      status: 'COMPLETED',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }, {
-      id: 2,
-      address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-      type: 'TRC2.0',
-      status: 'PENDING',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }];
-  } else {
-    // 添加假数据
-    walletAddresses.value = [];
-  }
+// const initWalletAddresses = () => {
+//   const { merchantInfo } = userStore;
+//   if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
+//     walletAddresses.value = merchantInfo.usdtaddresseslist.map((address, index) => ({
+//       id: index + 1,
+//       address: address,
+//       type: 'TRC2.0',
+//     }));
+//   } else {
+//     // 添加假数据
+//     walletAddresses.value = [];
+//   }
+// };
+const getWalletAddresses = () => {
+  http
+    .groupWalletQuery()
+    .then((res) => {
+      if (res.Success && res.Data && res.Data.merchants) {
+        // 转换数据格式，展示所有商户的钱包地址
+        const allAddresses = [];
+        res.Data.merchants.forEach((merchant, merchantIndex) => {
+          if (merchant.walletAddresses && merchant.walletAddresses.length > 0) {
+            merchant.walletAddresses.forEach((address, addressIndex) => {
+              allAddresses.push({
+                id: merchantIndex * 1000 + addressIndex + 1,
+                merchantCode: merchant.merchantCode,
+                address: address,
+                type: 'TRC2.0',
+              });
+            });
+          }
+        });
+        walletAddresses.value = allAddresses;
+      } else {
+        walletAddresses.value = [];
+        ElMessage.error(res.ErrorMessage || '获取钱包地址失败');
+      }
+    })
+    .catch(() => {
+      ElMessage.error('获取钱包地址失败');
+    });
 };
 
+// 删除钱包地址的谷歌验证码
+
 // 处理删除钱包地址
-const handleDeleteWallet = (wallet) => {
-  ElMessageBox.confirm(
-    `确定要删除钱包地址 ${wallet.address} 吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    // 模拟删除操作
-    const index = walletAddresses.value.findIndex(item => item.id === wallet.id);
-    if (index !== -1) {
-      walletAddresses.value.splice(index, 1);
-      ElMessage.success('删除成功');
-    }
-  }).catch(() => {});
+const handleDeleteWallet = async (wallet) => {
+  try {
+    await ElMessageBox.prompt(
+      `请输入谷歌验证码以删除钱包地址 ${wallet.address}`,
+      '确认删除',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^\d{6}$/,
+        inputErrorMessage: '请输入6位谷歌验证码',
+        inputValue: ''
+      }
+    ).then(async (googleCode) => {
+      try {
+        const res = await http.deleteWalletAddress({
+          merchantCode: wallet.merchantCode,
+          walletAddress: wallet.address,
+          code: googleCode.value
+        });
+        
+        if (res.Success) {
+          ElMessage.success(res.Data?.Message || '删除申请已提交');
+          // 刷新钱包地址列表
+          getWalletAddresses();
+        } else {
+          ElMessage.error(res.ErrorMessage || '删除失败');
+        }
+      } catch (error) {
+        ElMessage.error('删除失败');
+      }
+    }).catch(() => {});
+  } catch (error) {
+    // 用户取消输入
+  }
 };
 
 // 保存钱包地址
 const saveWalletAddress = async () => {
-  if (walletFormRef.value) {
-    await walletFormRef.value.validate(async (valid) => {
-      if (valid) {
-        // 这里可以添加保存钱包地址的逻辑
-        ElMessage.success('钱包地址添加成功');
-        showWalletDialog.value = false;
-        // 重置表单
-        if (walletFormRef.value) {
-          walletFormRef.value.resetFields();
-        }
-        // 重新初始化钱包地址数据
-        initWalletAddresses();
-      }
+  if (!walletFormRef.value) return;
+  
+  try {
+    const valid = await walletFormRef.value.validate();
+    if (!valid) return;
+    
+    let res = await http.addWalletAddress({
+      merchantCode: walletForm.merchantCode,
+      walletAddress: walletForm.usdtAddress,
+      walletType: "TRC20",
+      oldWalletAddresses: [],
+      applicantCode: "",
+      code: walletForm.googleCode
     });
+    if(res.Success == true){
+      ElMessage.success("钱包地址添加成功");
+          showWalletDialog.value = false;
+    walletFormRef.value.resetFields();
+    // initWalletAddresses();
+    getWalletAddresses();
+    }else{
+      ElMessage.error(res.ErrorMessage || "钱包地址添加失败");
+    }
+    
+
+  } catch (error) {
+    console.error("保存钱包地址失败:", error);
+    ElMessage.error(error.ErrorMessage || "保存失败，请稍后重试");
   }
 };
 

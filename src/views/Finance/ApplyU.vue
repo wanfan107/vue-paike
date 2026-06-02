@@ -43,7 +43,7 @@
           <div class="form-section">
             <div class="section-header">
               <h3 class="section-title">开始申请</h3>
-              <el-button type="primary"  @click="showWalletDialog = true">新增钱包地址</el-button>
+              <!-- <el-button type="primary"  @click="showWalletDialog = true">新增钱包地址</el-button> -->
             </div>
             <div class="form-container">
               <el-form
@@ -124,12 +124,39 @@
               </el-form>
             </div>
           </div>
+
+
+              <!-- 授信款未还清弹窗 -->
+    <el-dialog
+      v-model="showPrepayDialog"
+      title="提示"
+      width="400px"
+      :close-on-click-modal="false"
+      :close-on-press-escape="false"
+      :show-close="false"
+    >
+      <div class="dialog-content">
+        <div class="dialog-icon">
+          <el-icon><Warning /></el-icon>
+        </div>
+        <div class="dialog-message">
+          授信款未还清，不能提U
+        </div>
+      </div>
+      <template #footer>
+        <span class="dialog-footer">
+          <el-button type="primary" @click="handleDialogClose">
+            确定
+          </el-button>
+        </span>
+      </template>
+    </el-dialog>
           
         <!-- 横线分隔 -->
-          <div class="divider"></div>
+          <!-- <div class="divider"></div> -->
           
           <!-- 钱包地址管理 -->
-          <div class="transfer-history">
+          <!-- <div class="transfer-history">
             <div class="history-header">
               <h3>钱包地址管理</h3>
             </div>
@@ -172,37 +199,13 @@
             <div class="history-empty" v-if="!historyLoading && walletAddresses.length === 0">
               <el-empty description="暂无钱包地址" />
             </div>
-          </div>
+          </div> -->
         
         <!-- </el-card> -->
       </div>
     </main>
 
-    <!-- 授信款未还清弹窗 -->
-    <el-dialog
-      v-model="showPrepayDialog"
-      title="提示"
-      width="400px"
-      :close-on-click-modal="false"
-      :close-on-press-escape="false"
-      :show-close="false"
-    >
-      <div class="dialog-content">
-        <div class="dialog-icon">
-          <el-icon><Warning /></el-icon>
-        </div>
-        <div class="dialog-message">
-          授信款未还清，不能提U
-        </div>
-      </div>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button type="primary" @click="handleDialogClose">
-            确定
-          </el-button>
-        </span>
-      </template>
-    </el-dialog>
+
 
     <!-- 新增钱包地址弹窗 -->
     <el-dialog
@@ -295,25 +298,25 @@ const walletAddressOptions = computed(() => {
 });
 
 // 新增钱包地址弹窗
-const showWalletDialog = ref(false);
-const walletFormRef = ref(null);
-const walletForm = reactive({
-  usdtAddress: '',
-  googleCode: '',
-  emailCode: '',
-  email: userStore.merchantInfo.email || ''
-});
-const walletRules = {
-  usdtAddress: [
-    { required: true, message: '请输入USDT地址', trigger: 'blur' }
-  ],
-  googleCode: [
-    { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
-  ],
-  emailCode: [
-    { required: true, message: '请输入原邮箱验证码', trigger: 'blur' }
-  ]
-};
+// const showWalletDialog = ref(false);
+// const walletFormRef = ref(null);
+// const walletForm = reactive({
+//   usdtAddress: '',
+//   googleCode: '',
+//   emailCode: '',
+//   email: userStore.merchantInfo.email || ''
+// });
+// const walletRules = {
+//   usdtAddress: [
+//     { required: true, message: '请输入USDT地址', trigger: 'blur' }
+//   ],
+//   googleCode: [
+//     { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
+//   ],
+//   emailCode: [
+//     { required: true, message: '请输入原邮箱验证码', trigger: 'blur' }
+//   ]
+// };
 
 // 弹窗状态
 const showPrepayDialog = ref(false);
@@ -442,7 +445,7 @@ onMounted(() => {
   checkPrepayStatus();
 
   // 初始化钱包地址数据
-  initWalletAddresses();
+  // initWalletAddresses();
 });
 
 // 获取汇率信息
@@ -554,91 +557,63 @@ const reset = () => {
   });
 };
 
-// 钱包地址相关
-const historyLoading = ref(false);
-const walletAddresses = ref([]);
+// // 钱包地址相关
+// const historyLoading = ref(false);
+// const walletAddresses = ref([]);
 
-// 初始化钱包地址数据
-const initWalletAddresses = () => {
-  const { merchantInfo } = userStore;
-  if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
-    walletAddresses.value = merchantInfo.usdtaddresseslist.map((address, index) => ({
-      id: index + 1,
-      address: address,
-      type: 'TRC2.0',
-      status: index % 2 === 0 ? 'COMPLETED' : 'PENDING',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }));
-  } else if (merchantInfo.usdtAddress) {
-    walletAddresses.value = [{
-      id: 1,
-      address: merchantInfo.usdtAddress,
-      type: 'TRC2.0',
-      status: 'COMPLETED',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }, {
-      id: 2,
-      address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-      type: 'TRC2.0',
-      status: 'PENDING',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }];
-  } else {
-    // 添加假数据
-    walletAddresses.value = [{
-      id: 1,
-      address: 'TR7NHqjeKQxGTCi8q8ZY4pL8otSzgjLj6t',
-      type: 'TRC2.0',
-      status: 'COMPLETED',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }, {
-      id: 2,
-      address: 'TRXz6Q5N9hW4t1Yv1Z5z7a8b9c0d1e2f3g4h5i6j7k',
-      type: 'TRC2.0',
-      status: 'PENDING',
-      createTime: new Date().toISOString().slice(0, 19).replace('T', ' ')
-    }];
-  }
-};
+// // 初始化钱包地址数据
+// const initWalletAddresses = () => {
+//   const { merchantInfo } = userStore;
+//   if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
+//     walletAddresses.value = merchantInfo.usdtaddresseslist.map((address, index) => ({
+//       id: index + 1,
+//       address: address,
+//       type: 'TRC2.0',
+//     }));
+//   } else {
+//     // 添加假数据
+//     walletAddresses.value = [];
+//   }
+// };
 
 // 处理删除钱包地址
-const handleDeleteWallet = (wallet) => {
-  ElMessageBox.confirm(
-    `确定要删除钱包地址 ${wallet.address} 吗？`,
-    '提示',
-    {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning'
-    }
-  ).then(() => {
-    // 模拟删除操作
-    const index = walletAddresses.value.findIndex(item => item.id === wallet.id);
-    if (index !== -1) {
-      walletAddresses.value.splice(index, 1);
-      ElMessage.success('删除成功');
-    }
-  }).catch(() => {});
-};
+// const handleDeleteWallet = (wallet) => {
+//   ElMessageBox.confirm(
+//     `确定要删除钱包地址 ${wallet.address} 吗？`,
+//     '提示',
+//     {
+//       confirmButtonText: '确定',
+//       cancelButtonText: '取消',
+//       type: 'warning'
+//     }
+//   ).then(() => {
+//     // 模拟删除操作
+//     const index = walletAddresses.value.findIndex(item => item.id === wallet.id);
+//     if (index !== -1) {
+//       walletAddresses.value.splice(index, 1);
+//       ElMessage.success('删除成功');
+//     }
+//   }).catch(() => {});
+// };
 
-// 保存钱包地址
-const saveWalletAddress = async () => {
-  if (walletFormRef.value) {
-    await walletFormRef.value.validate(async (valid) => {
-      if (valid) {
-        // 这里可以添加保存钱包地址的逻辑
-        ElMessage.success('钱包地址添加成功');
-        showWalletDialog.value = false;
-        // 重置表单
-        if (walletFormRef.value) {
-          walletFormRef.value.resetFields();
-        }
-        // 重新初始化钱包地址数据
-        initWalletAddresses();
-      }
-    });
-  }
-};
+// // 保存钱包地址
+// const saveWalletAddress = async () => {
+//   if (walletFormRef.value) {
+//     await walletFormRef.value.validate(async (valid) => {
+//       if (valid) {
+//         // 这里可以添加保存钱包地址的逻辑
+//         ElMessage.success('钱包地址添加成功');
+//         showWalletDialog.value = false;
+//         // 重置表单
+//         if (walletFormRef.value) {
+//           walletFormRef.value.resetFields();
+//         }
+//         // 重新初始化钱包地址数据
+//         initWalletAddresses();
+//       }
+//     });
+//   }
+// };
 
 </script>
 <style scoped lang="scss">

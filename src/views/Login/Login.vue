@@ -7,7 +7,6 @@
             style="width: 170px"
             src="@/assets/image/logo.png"
             alt="Banco E2 Logo"
-            @click="getDeviceInfo"
           />
           <div class="login-subtitle">Finance</div>
         </div>
@@ -822,14 +821,14 @@ async function getDeviceInfo() {
     }
 
     const deviceInfo = {
-      os: os,
-      osVersion: osVersion,
-      browser: getBrowser(),
-      browserVersion: getBrowserVersion(),
-      device: getDeviceType(),
-      deviceModel: getDeviceModel(),
-      language: getLanguage(),
-      userAgent: navigator.userAgent
+      os: os,                          // 操作系统名称（Windows/MacOS/Linux/Android/iOS）
+      osVersion: osVersion,            // 操作系统版本号（已支持区分Win10/Win11）
+      browser: getBrowser(),            // 浏览器名称（Chrome/Edge/Safari/Firefox等）
+      browserVersion: getBrowserVersion(), // 浏览器版本号
+      device: getDeviceType(),           // 设备类型（Desktop/Mobile/Tablet）
+      deviceModel: getDeviceModel(),     // 设备型号（iPhone/iPad/Android设备型号等）
+      language: getLanguage(),            // 浏览器语言（如zh-CN/en-US）
+      userAgent: navigator.userAgent      // 完整的User-Agent字符串
     };
 
     console.log('✅ Fingerprint:', fingerprint);

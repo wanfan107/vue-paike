@@ -50,6 +50,28 @@ export const http = {
     paySuccessRatio: (params) => request.get('/pay/successratio', { params }),
     // 代收成功率统计
     collectSuccessRatio: (params) => request.get('/collect/successratio', { params }),
+    // 集团新增钱包地址
+    addWalletAddress: (data, headers) => request.post('/wfwallet/apply', data, { headers }),
+    // 集团提U
+    groupUsdtTransfer: (data, headers) => request.post('/wfwithdraw/apply', data, { headers }),
+    // 集团钱包地址查询
+    groupWalletQuery: (params, headers) => request.get('/wfwallet/group-wallets', { params, headers }),
+    // 集团删除钱包地址
+    deleteWalletAddress: (data, headers) => request.post('/wfwallet/delete', data, { headers }),
+    // 集团新增IP白名单  
+    // // 1：代付
+    // 2：代收 （先不做）
+    // 3：登录 useFor
+    addLoginIp: (data, headers) => request.post('/wfipwhitelist/apply', data, { headers }),
+    // 集团查询IP白名单
+    // 查询IP白名单（别名）
+    queryIpWhiteList: (params, headers) => request.get('/wfipwhitelist/list', { params, headers }),
+    // 集团删除IP白名单
+    deleteLoginIp: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
+    // 删除IP白名单（别名）
+    deleteIpWhiteList: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
+
+
 
     login: (data) => request.post('/Auth/login', data),
     prelogin: (data) => request.post('/Auth/prelogin', data),
@@ -71,9 +93,9 @@ export const http = {
     usdttransfer: data => request.post('/USDT/transfer', data),
     // 统计报表
     financeReport: (params) => request.post('/Finance/dailyorderstats', params),
-  // 统计报表查每天，每月
-  financeReportByDay: (params) => request.get("/Collect/statisticsByDayBoth",{ params}),
-   financeReportByMonth : (params) => request.get("Collect/statisticsByMonthMulti",{ params}),
+    // 统计报表查每天，每月
+    financeReportByDay: (params) => request.get("/Collect/statisticsByDayBoth", { params }),
+    financeReportByMonth: (params) => request.get("Collect/statisticsByMonthMulti", { params }),
     // 查询汇率
     exchangeRate: (params) => request.get('/USDT/rate', { params }),
     // 资金记录导出

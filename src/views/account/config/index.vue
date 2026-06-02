@@ -11,7 +11,7 @@
           :form-list="formList"
           :rule-form="ruleForm"
           :loading="loading"
-          :footer="true"
+          :footer="false"
           :footer2="false"
           @save="submit"
           @close="close"
@@ -105,7 +105,7 @@ const formList = ref([
     placeholder: "多个IP以#隔开",
     name: "input",
     type: "textarea",
-    disabled: false,  // 修改函数返回值为布尔类型   启用
+    disabled: true,  // 修改函数返回值为布尔类型   启用
     rules: [{ required: true, message: "登陆IP白名单", trigger: "blur" }],
   },
 ]);
