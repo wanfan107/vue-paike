@@ -75,15 +75,17 @@
               :label="item.label"
             >
               <template #default="scope">
-                <template v-if="item.type === 'select'">
-                  <el-tag
-                    v-if="item.isTag"
-                    :type="tagTypeColor[scope.row[item.prop]] || item.tagType"
-                    >{{ item.mapping[scope.row[item.prop]] }}</el-tag
-                  >
-                  <span v-else>{{ item.mapping[scope.row[item.prop]] }}</span>
+                <template v-if="scope && scope.row">
+                  <template v-if="item.type === 'select'">
+                    <el-tag
+                      v-if="item.isTag"
+                      :type="tagTypeColor[scope.row[item.prop]] || item.tagType"
+                      >{{ item.mapping[scope.row[item.prop]] || scope.row[item.prop] }}</el-tag
+                    >
+                    <span v-else>{{ item.mapping[scope.row[item.prop]] || scope.row[item.prop] }}</span>
+                  </template>
+                  <span v-else>{{ scope.row[item.prop] }}</span>
                 </template>
-                <span v-else>{{ scope.row[item.prop] }}</span>
               </template>
             </el-table-column>
           </el-table>
@@ -231,12 +233,22 @@ async function getdata() {
     });
     
     if (res.code === 200) {
-      tableData.value = res.data.list;
+      // 安全检查，确保 list 存在并且是数组
+      if (res.data && Array.isArray(res.data.list)) {
+        tableData.value = res.data.list;
+      } else {
+        tableData.value = [];
+      }
+    } else {
+      // 如果接口返回失败，也清空数据
+      tableData.value = [];
     }
 
     console.log("10条数据", res);
   } catch (error) {
     console.error("获取数据失败", error);
+    // 出错时也清空数据
+    tableData.value = [];
   } finally {
     loading.value = false;
   }

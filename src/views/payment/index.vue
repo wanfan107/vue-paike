@@ -768,12 +768,15 @@ const onExport = async () => {
     exportLoading.value = true;
 
     // 创建导出
-    await http.exportFinance(getQueryParams());
-
-    // 跳转到导出记录页面
+    let res = await http.exportFinance(getQueryParams());
+    if(res.code === 200){
+      ElMessage.success( res.msg||"导出请求已提交，请到导出记录页面查看");
+          // 跳转到导出记录页面
     router.push({ name: "exportRecord" });
-
-    ElMessage.success("导出请求已提交，请到导出记录页面查看");
+    } else {
+      ElMessage.error( res.msg||"导出失败，请稍后重试");
+    }
+    
   } catch (error) {
     if (error !== "cancel") {
       // 不是取消操作时才显示错误信息

@@ -1174,7 +1174,7 @@ const standardtime = computed(() => {
 // 将 shortcuts 也定义为 computed，确保响应式
 const shortcuts = computed(() => [
   {
-    text: "昨天",
+    text: "本月",
     value: () => {
       const timestamp = Date.now();
       const localDate = new Date(timestamp);
@@ -1183,32 +1183,20 @@ const shortcuts = computed(() => [
         ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
         : 0;
 
-      // 创建昨天的日期
-      const yesterday = new Date(
-        timestamp - 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-
-      // 设置开始时间（00:00:00.000）
-      const start = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      // 当前月份的开始时间
+      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
+      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth(), 1);
       start.setHours(0, 0, 0, 0);
 
-      // 设置结束时间（23:59:59.999）
-      const end = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      // 当前月份的结束时间
+      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
       end.setHours(23, 59, 59, 999);
 
       return [start, end];
     },
   },
   {
-    text: "3天",
+    text: "3个月",
     value: () => {
       const timestamp = Date.now();
       const localDate = new Date(timestamp);
@@ -1217,31 +1205,20 @@ const shortcuts = computed(() => [
         ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
         : 0;
 
-      // 3天前的开始时间
-      const startDate = new Date(
-        timestamp - 3 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      // 三个月前的开始时间
+      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
+      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() - 2, 1);
       start.setHours(0, 0, 0, 0);
 
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
-      end.setHours(0, 0, 0, 0);
+      // 当前月份的结束时间
+      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
 
       return [start, end];
     },
   },
   {
-    text: "7天",
+    text: "7个月",
     value: () => {
       const timestamp = Date.now();
       const localDate = new Date(timestamp);
@@ -1250,25 +1227,14 @@ const shortcuts = computed(() => [
         ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
         : 0;
 
-      // 7天前的开始时间
-      const startDate = new Date(
-        timestamp - 7 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      // 七个月前的开始时间
+      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
+      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() - 6, 1);
       start.setHours(0, 0, 0, 0);
 
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
-      end.setHours(0, 0, 0, 0);
+      // 当前月份的结束时间
+      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
+      end.setHours(23, 59, 59, 999);
 
       return [start, end];
     },

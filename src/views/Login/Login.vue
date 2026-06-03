@@ -28,6 +28,8 @@
               placeholder="邮箱账户或商户号"
               autocomplete="new-username"
               @input="handleInput('username')"
+              @change="handleUsernameChange"
+              clearable
             ></el-input>
           </el-form-item>
           <el-form-item label="PassWord" prop="password">
@@ -478,10 +480,25 @@ function closeDialog() {
   loginForm.value.code = '';
 }
 
+// 处理用户名变化 - 简化版（只要输入框值改变就重置）
+function handleUsernameChange() {
+  console.log('用户名变化:', { current: loginForm.value.username, EmailVerifyshow: EmailVerifyshow.value });
+  // 只要用户名任何变化（包括选中粘贴）都重置邮箱验证码状态
+  EmailVerifyshow.value = false;
+  loginForm.value.EmailCode = '';
+  console.log('重置邮箱验证码状态');
+}
+
 // 处理输入事件，去除所有空格
 function handleInput(field) {
   if (loginForm.value[field]) {
     loginForm.value[field] = loginForm.value[field].replace(/\s/g, '');
+  }
+  
+  if (field === 'username') {
+    // 只要输入用户名时也重置邮箱验证码状态
+    EmailVerifyshow.value = false;
+    loginForm.value.EmailCode = '';
   }
 }
 

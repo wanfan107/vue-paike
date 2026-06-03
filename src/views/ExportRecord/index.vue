@@ -143,7 +143,7 @@ const columns = reactive([
     tagType: "success",
     mapping: { 0: "生成中", 1: "生成成功", 2: "生成失败" },
   },
-  { label: "导出时间", prop: "createtime" },
+  { label: "创建时间", prop: "createdon" },
   { label: "操作", prop: "fileurl" },
 ]);
 

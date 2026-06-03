@@ -529,7 +529,7 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.Success) {
-        ElMessage.success(res.Message || '提现成功');
+        ElMessage.success(res.Data?.Message || '提现成功');
         // 页面跳转到 withdraw/withdrawManagement
         router.push({ name: "withdrawManagement" });
       } else {
@@ -658,7 +658,7 @@ const saveWalletAddress = async () => {
       code: walletForm.googleCode
     });
     if(res.Success == true){
-      ElMessage.success("钱包地址添加成功");
+      ElMessage.success( res.Data?.Message||"钱包地址添加成功");
           showWalletDialog.value = false;
     walletFormRef.value.resetFields();
     // initWalletAddresses();

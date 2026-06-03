@@ -29,6 +29,7 @@
     "vue3-count-to": "^1.1.2"
   },
   "devDependencies": {
+    "@rollup/plugin-terser": "^1.0.0",
     "@vitejs/plugin-vue": "^6.0.2",
     "fast-glob": "^3.3.3",
     "sass": "^1.97.1",

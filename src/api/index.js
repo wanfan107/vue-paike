@@ -67,7 +67,6 @@ export const http = {
     // 查询IP白名单（别名）
     queryIpWhiteList: (params, headers) => request.get('/wfipwhitelist/list', { params, headers }),
     // 集团删除IP白名单
-    deleteLoginIp: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
     // 删除IP白名单（别名）
     deleteIpWhiteList: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
 
