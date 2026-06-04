@@ -51,10 +51,10 @@
         <!-- 最近交易 -->
         <div class="section-header">
           <h2>最新交易</h2>
-          <el-button class="simple-button" size="small" plain>
+          <!-- <el-button class="simple-button" size="small" plain>
             <svg-icon icon-class="caidan" size="20px" class="custom-class" />
             完整报表
-          </el-button>
+          </el-button> -->
         </div>
         <section class="recent-transactions" >
           <el-table

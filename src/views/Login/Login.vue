@@ -89,6 +89,7 @@
       custom-class="account-dialog"
       append-to-body
       :show-close="false"
+      @opened="handleDialogOpen"
     >
     <div class="dialog-close"  @click="closeDialog">×</div>
       <div style="display: flex; flex-direction: column; align-items: center">
@@ -119,7 +120,6 @@
       :z-index="1000"
       top="35vh"
       width="400px"
-      height="400px"
       v-model="isVerifyPass"
       :close-on-click-modal="false"
       append-to-body
@@ -174,6 +174,10 @@
       custom-class="account-dialog"
       :show-close="false"
     >
+    <div         v-loading="loading"
+        element-loading-text="正在登录..."
+        element-loading-spinner="el-icon-loading"
+        element-loading-background="rgba(255, 255, 255, 0.9)">
       <div class="dialog-close" @click="dialogValue1 = false">×</div>
       <div class="dialog-header">
         <div class="logo-container">
@@ -218,10 +222,11 @@
           </div>
         </div>
       </div>
+      </div>
     </el-dialog>
 
     <!-- 忘记密码对话框 -->
-    <el-dialog
+    <!-- <el-dialog
       :z-index="1003"
       top="10vh"
       width="400px"
@@ -273,7 +278,7 @@
           重置密码
         </el-button>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 <!-- <script
@@ -314,10 +319,10 @@ const loading = ref(false);  // 登录加载中
 const isLoading = ref(false);  // 是否正在加载中
 const dialogValue1 = ref(false); // 多个商户选择对话框是否显示
 const isFirstVisit = ref(true); // 是否是首次访问
-const showForgotPasswordDialog = ref(false); // 是否显示忘记密码对话框
-const resettingPassword = ref(false); // 是否正在重置密码
-const countdown = ref(0); // 验证码倒计时
-const forgotPasswordFormRef = ref(null); // 忘记密码表单引用
+// const showForgotPasswordDialog = ref(false); // 是否显示忘记密码对话框
+// const resettingPassword = ref(false); // 是否正在重置密码
+// const countdown = ref(0); // 验证码倒计时
+// const forgotPasswordFormRef = ref(null); // 忘记密码表单引用
 const groupNeedBindGoogle = ref(false); // 是否需要绑定Google验证码
 
 const EmailVerifyshow = ref(false); // 是否显示邮箱验证码输入框
@@ -342,11 +347,20 @@ const forgotPasswordRules = ref({
 
 // 对话框打开时设置焦点
 function handleDialogOpen() {
-  // 使用nextTick确保对话框内容完全渲染
   nextTick(() => {
-    const firstInput = document.querySelector('.code-input');
-    if (firstInput) {
-      firstInput.focus();
+    // 获取当前可见对话框中的验证码输入框
+    const activeDialog = document.querySelector('.account-dialog.is-visible');
+    if (activeDialog) {
+      const firstInput = activeDialog.querySelector('.code-input');
+      if (firstInput) {
+        firstInput.focus();
+      }
+    } else {
+      // 备用方案：直接找第一个输入框
+      const firstInput = document.querySelector('.code-input');
+      if (firstInput) {
+        firstInput.focus();
+      }
     }
   });
 }
@@ -654,8 +668,6 @@ async function _groupLogin() {
       dialogValue1.value = true;  // 显示选择商户弹窗
      loading.value = false;
     }
-    
-    router.push({ path: "/home" });
   } catch (error) {
     console.log("-------------", error);
     if (error.code === 401 && error.data && error.data.googledata) {
@@ -723,7 +735,12 @@ async function checkHuman() {
 // 判断是单商户登录还是集团商户登录
 if (loginForm.value.username.includes('@')) {
   // 集团商户登录
-  groupLoginLogin();
+  if(EmailVerifyshow.value==true&&loginForm.value.EmailCode==""){
+    ElMessage.error("请输入邮箱验证码");
+    return;
+  } else {
+groupLoginLogin();
+  }
 } else {
   // 单商户登录
   singleLoginLogin();
@@ -1069,11 +1086,12 @@ function getLanguage() {
 
 //  选择商户
 async function confirmBind(account) {
-  dialogValue.value = false;
-  dialogValue1.value = false;
+
   loginForm.value.code = "";
 
   if (groupNeedBindGoogle.value) {
+      dialogValue.value = false;
+  dialogValue1.value = false;
     groupNeedBindGoogle.value = false;
     isVerifyPass.value = true;
     nextTick(() => {
@@ -1084,69 +1102,78 @@ async function confirmBind(account) {
 
   if (account && account.code) {
     try {
-     const res =  await userStore.selectMerchant(account.code);
-     console.log("登录选择用户");
-     
-     if(res.code == 200){
-      router.push({ path: "/home" });
-     }else{
-      ElMessage.error(res.msg || "选择商户失败");
-     }
+      // 显示加载状态
+      loading.value = true;
+      
+      const res = await userStore.selectMerchant(account.code);
+      console.log("登录选择用户");
+      
+      if(res.code == 200){
+        // 关闭弹窗
+        dialogValue.value = false;
+        dialogValue1.value = false;
+        // 跳转到首页
+        router.push({ path: "/home" });
+      }else{
+        ElMessage.error(res.msg || "选择商户失败");
+      }
     } catch (err) {
       ElMessage.error(err.msg || "选择商户失败");
+    } finally {
+      loading.value = false;
     }
   }
 }
 
 // 发送验证码
-async function sendVerificationCode() {
-  try {
-    // 验证邮箱格式
-    await forgotPasswordFormRef.value.validateField('email');
+// async function sendVerificationCode() {
+//   try {
+//     // 验证邮箱格式
+//     await forgotPasswordFormRef.value.validateField('email');
     
-    // 模拟发送验证码
-    ElMessage.info('验证码已发送到您的邮箱');
+//     // 模拟发送验证码
+//     ElMessage.info('验证码已发送到您的邮箱');
     
-    // 开始倒计时
-    countdown.value = 60;
-    const timer = setInterval(() => {
-      countdown.value--;
-      if (countdown.value <= 0) {
-        clearInterval(timer);
-      }
-    }, 1000);
-  } catch (error) {
-    // 验证失败，不发送验证码
-  }
-}
+//     // 开始倒计时
+//     countdown.value = 60;
+//     const timer = setInterval(() => {
+//       countdown.value--;
+//       if (countdown.value <= 0) {
+//         clearInterval(timer);
+//       }
+//     }, 1000);
+//   } catch (error) {
+//     // 验证失败，不发送验证码
+//   }
+// }
 
 // 重置密码
-async function resetPassword() {
-  try {
-    await forgotPasswordFormRef.value.validate();
+// async function resetPassword() {
+//   try {
+//     await forgotPasswordFormRef.value.validate();
     
-    resettingPassword.value = true;
+//     resettingPassword.value = true;
     
-    // 模拟后端API调用延迟
-    await new Promise(resolve => setTimeout(resolve, 1000));
+//     // 模拟后端API调用延迟
+//     await new Promise(resolve => setTimeout(resolve, 1000));
     
-    // 重置成功
-    ElMessage.success('密码重置成功，请查看邮箱获取新密码');
-    showForgotPasswordDialog.value = false;
+//     // 重置成功
+//     ElMessage.success('密码重置成功，请查看邮箱获取新密码');
+//     showForgotPasswordDialog.value = false;
     
-    // 重置表单
-    forgotPasswordForm.value = {
-      email: '',
-      verificationCode: ''
-    };
-  } catch (error) {
-    if (error !== 'cancel') {
-      ElMessage.error('请填写完整信息');
-    }
-  } finally {
-    resettingPassword.value = false;
-  }
-}
+//     // 重置表单
+//     forgotPasswordForm.value = {
+//       email: '',
+//       verificationCode: ''
+//     };
+//   } catch (error) {
+//     if (error !== 'cancel') {
+//       ElMessage.error('请填写完整信息');
+//     }
+//   } finally {
+//     resettingPassword.value = false;
+//   }
+// }
 </script>
 <style scoped lang="scss">
   :deep(.login-form .el-input__inner) {
@@ -1287,8 +1314,8 @@ async function resetPassword() {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0;
-  margin-bottom: 20px;
+  padding:  25px 0;
+  margin-bottom: 10px;
 }
 
 .logo-container {
@@ -1367,6 +1394,9 @@ async function resetPassword() {
 .account-list {
   padding: 0;
   margin: 0;
+  min-height: 150px; /* 确保loading能看到 */
+  max-height: 220px; /* 大约3个账户的高度 */
+  overflow-y: auto; /* 超出部分滚动 */
 }
 
 .account-item {

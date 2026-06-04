@@ -10,7 +10,7 @@ import useUserStore from '@/stores/user';
 const service = axios.create({
   // 使用环境变量配置baseURL
   baseURL: import.meta.env.VITE_APP_REQUEST_BASE_API || '/api',
-  timeout: import.meta.env.VITE_APP_REQUEST_TIMEOUT || 5000,
+  timeout: import.meta.env.VITE_APP_REQUEST_TIMEOUT || 30000,
 })
 
 // 2.请求拦截器

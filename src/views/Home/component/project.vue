@@ -2,10 +2,10 @@
   <el-row :gutter="20" class="project-container">
     <el-col
       :xs="24"
-      :sm="6"
-      :md="6"
-      :lg="6"
-      :xl="6"
+      :sm="8"
+      :md="8"
+      :lg="8"
+      :xl="8"
       v-for="(item, index) in projectList"
       :key="item.name"
     >
@@ -17,7 +17,7 @@
             <el-icon v-if="index === 0"><Plus /></el-icon>
             <el-icon v-if="index === 1"><Coin /></el-icon>
             <el-icon v-if="index === 2"><Minus /></el-icon>
-            <el-icon v-if="index === 3"><CreditCard /></el-icon>
+            <!-- <el-icon v-if="index === 3"><CreditCard /></el-icon> -->
           </div>
         </div>
         <div class="project-amount">
@@ -102,13 +102,13 @@ const projectList = reactive([
     currency: "R$"
   },
   // 授信卡片
-  {
-    name: "可授信",
-    amount: 0,
-    desc: "待还金额",
-    count: 0,
-    currency: "R$"
-  },
+  // {
+  //   name: "可授信",
+  //   amount: 0,
+  //   desc: "待还金额",
+  //   count: 0,
+  //   currency: "R$"
+  // },
 ]);
 
 // 为每个金额创建独立的响应式ref，初始值为0

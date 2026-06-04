@@ -337,12 +337,17 @@ const handleUserCommand = async (command) => {
     try {
       await userStore.logout();
       
-      // 跳转到登录页面
-      router.push('/Login');
+      // 使用 replace 替代 push，并添加时间戳参数避免缓存
+      await router.replace({
+        path: '/Login',
+        query: { t: Date.now() }
+      });
       ElMessage.success('退出登录成功');
     } catch (error) {
-      ElMessage.error('退出登录失败');
+      // ElMessage.error('退出登录失败');
       console.error('退出登录失败:', error);
+      // 即使出错也强制跳转到登录页
+      router.replace('/Login');
     }
   }
 };
@@ -590,7 +595,7 @@ function confirmBind(account) {
   transition: all 0.3s ease;
   padding: 10px;
   border-radius: 12px;
-    background-color: rgba(175, 76, 76, 0.1);
+    // background-color: rgba(175, 76, 76, 0.1);
 }
 
 .user-dropdown-icon {
@@ -698,6 +703,8 @@ function confirmBind(account) {
 .account-list {
   padding: 0;
   margin: 0;
+  max-height: 220px; /* 大约3个账户的高度 */
+  overflow-y: auto; /* 超出部分滚动 */
 }
 
 .account-item {

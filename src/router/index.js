@@ -131,7 +131,7 @@ const router = createRouter({
           path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', 'merchant'] },
           children: [
             { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
-            { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
+            // { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
              // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
             // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
             // 集团的财务管理
@@ -198,7 +198,8 @@ router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
 
   // 如果用户已登录（通过token是否存在判断）
-  if (userStore.token) {
+  // 使用 !! 确保转换为布尔值，避免空字符串被误判
+  if (!!userStore.token && userStore.token.trim() !== '') {
     // 如果访问的是登录页面，重定向到首页
     if (to.path === '/Login') {
       next({ path: '/' });
