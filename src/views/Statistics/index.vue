@@ -397,12 +397,12 @@ const realTimeChart = computed(() => {
         });
         
         if (enabledSeries.has("收款成功率")) {
-          result += collectionMarker + " 成功率: " + collectionSuccessRates[index] + "%<br/>";
+          result += collectionMarker + " 收款笔数成功率: " + collectionSuccessRates[index] + "%<br/>";
           result += collectionMarker + " 收款金额: R$ " + collectionAmounts[index].toLocaleString() + "<br/>";
           result += collectionMarker + " 收款笔数: " + collectionCounts[index] + "笔<br/>";
         }
         if (enabledSeries.has("付款成功率")) {
-          result += paymentMarker + " 成功率: " + paymentSuccessRates[index] + "%<br/>";
+          result += paymentMarker + " 付款笔数成功率: " + paymentSuccessRates[index] + "%<br/>";
           result += paymentMarker + " 付款金额: R$ " + paymentAmounts[index].toLocaleString() + "<br/>";
           result += paymentMarker + " 付款笔数: " + paymentCounts[index] + "笔";
         }

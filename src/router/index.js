@@ -2,84 +2,122 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
-// 布局组件
-const MainLayout = () => import('../components/MainLayout.vue')
+// // 布局组件
+// const MainLayout = () => import('../components/MainLayout.vue')
 
-// 页面组件导入
-const HomeView = () => import('../views/Home/HomeView.vue')
-// 登录
-const Login = () => import('../views/Login/Login.vue')
-// 设置密码
-const SetPassword = () => import('../views/Login/SetPassword.vue')
-// 重置密码
-const ResetPassword = () => import('../views/Login/ResetPassword.vue')
-// 交易查询
-// const TransactionInquiry = () => import('../views/TransactionInquiry/index.vue')
-// 资金流水
-const CapitalFlow = () => import('../views/CapitalFlow/index.vue')
-// 统计报表
-// --即使报表--
-const Realtime = () => import('../views/Statistics/index.vue')
-// -- 每日报表--
-const DailyReport = () => import('../views/Statistics/DailyReport.vue')
-// -- 每月报表--
-const MonthlyReport = () => import('../views/Statistics/MonthlyReport.vue')
-// 收款订单
-const ReceiptOrder = () => import('../views/ReceiptOrder/index.vue')
-// 付款订单
-const payment = () => import('../views/payment/index.vue')
-// 下发订单
-const withdraw = () => import('../views/withdraw/index.vue')
+// // 页面组件导入
+// const HomeView = () => import('../views/Home/HomeView.vue')
+// // 登录
+// const Login = () => import('../views/Login/Login.vue')
+// // 设置密码
+// const SetPassword = () => import('../views/Login/SetPassword.vue')
+// // 重置密码
+// const ResetPassword = () => import('../views/Login/ResetPassword.vue')
+// // 交易查询
+// // const TransactionInquiry = () => import('../views/TransactionInquiry/index.vue')
+// // 资金流水
+// const CapitalFlow = () => import('../views/CapitalFlow/index.vue')
+// // 统计报表
+// // --即使报表--
+// const Realtime = () => import('../views/Statistics/index.vue')
+// // -- 每日报表--
+// const DailyReport = () => import('../views/Statistics/DailyReport.vue')
+// // -- 每月报表--
+// const MonthlyReport = () => import('../views/Statistics/MonthlyReport.vue')
+// // 收款订单
+// const ReceiptOrder = () => import('../views/ReceiptOrder/index.vue')
+// // 付款订单
+// const payment = () => import('../views/payment/index.vue')
+// // 下发订单
+// const withdraw = () => import('../views/withdraw/index.vue')
 
-// 财务管理
-// 申请下发
-const ApplyU = () => import('../views/Finance/ApplyU.vue')
-// 商户费率
-const RateInquiry = () => import('../views/RateInquiry/index.vue')
-// 账户互转
-const Rotation = () => import('../views/Finance/Rotation.vue')
-// 转账/提现
-const Transfer = () => import('../views/Finance/Transfer.vue')
-// 内充申请
-const Inflation = () => import('../views/Finance/Inflation.vue')
+// // 财务管理
+// // 申请下发
+// const ApplyU = () => import('../views/Finance/ApplyU.vue')
+// // 商户费率
+// const RateInquiry = () => import('../views/RateInquiry/index.vue')
+// // 账户互转
+// const Rotation = () => import('../views/Finance/Rotation.vue')
+// // 转账/提现
+// const Transfer = () => import('../views/Finance/Transfer.vue')
+// // 内充申请
+// const Inflation = () => import('../views/Finance/Inflation.vue')
 
 
-// 其他查询
-const Otherorders = () => import('../views/Otherorders/index.vue')
+// // 其他查询
+// const Otherorders = () => import('../views/Otherorders/index.vue')
 
-// 导出记录
-const ExportRecord = () => import('../views/ExportRecord/index.vue')
+// // 导出记录
+// const ExportRecord = () => import('../views/ExportRecord/index.vue')
 
-// 接口文档
-const ApiDoc = () => import('../views/ApiDoc/index.vue')
+// // 接口文档
+// const ApiDoc = () => import('../views/ApiDoc/index.vue')
 
-// 账户管理
-// -- 基本信息
-const info = () => import('../views/account/info/index.vue')
-// -- 应用配置
-const config = () => import('../views/account/config/index.vue')
-// -- 登录密码
-const loginPassword = () => import('../views/account/loginPassword/index.vue')
-// -- 支付密码
-const payPassword = () => import('../views/account/payPassword/index.vue')
+// // 账户管理
+// // -- 基本信息
+// const info = () => import('../views/account/info/index.vue')
+// // -- 应用配置
+// const config = () => import('../views/account/config/index.vue')
+// // -- 登录密码
+// const loginPassword = () => import('../views/account/loginPassword/index.vue')
+// // -- 支付密码
+// const payPassword = () => import('../views/account/payPassword/index.vue')
 
-// 集团管理
-// -- 登录记录
-const logs = () => import('../views/Group/logs.vue')
-// -- 商户列表
-const MerchantList = () => import('../views/Group/MerchantList.vue')
-// -- 操作员管理
-const PermissionManagement = () => import('../views/Group/PermissionManagement.vue')
-// -- 集团支付密码
-const grouppayPassword = () => import('../views/Group/grouppayPassword.vue')
-// -- 集团商户互转
-const groupTransfer = () => import('../views/Group/groupTransfer.vue')
-// -- 登录IP白名单
-const loginIPWhiteList = () => import('../views/Group/loginIPWhiteList.vue')
-// -- 集团订单模糊查询
-const groupOrderFuzzyQuery = () => import('../views/Group/groupOrderFuzzyQuery.vue')
-// -- 集团申请下发
-const groupApplyU = () => import('../views/Group/groupApplyU.vue')
+// // 集团管理
+// // -- 登录记录
+// const logs = () => import('../views/Group/logs.vue')
+// // -- 商户列表
+// const MerchantList = () => import('../views/Group/MerchantList.vue')
+// // -- 操作员管理
+// const PermissionManagement = () => import('../views/Group/PermissionManagement.vue')
+// // -- 集团支付密码
+// const grouppayPassword = () => import('../views/Group/grouppayPassword.vue')
+// // -- 集团商户互转
+// const groupTransfer = () => import('../views/Group/groupTransfer.vue')
+// // -- 登录IP白名单
+// const loginIPWhiteList = () => import('../views/Group/loginIPWhiteList.vue')
+// // -- 集团订单模糊查询
+// const groupOrderFuzzyQuery = () => import('../views/Group/groupOrderFuzzyQuery.vue')
+// // -- 集团申请下发
+// const groupApplyU = () => import('../views/Group/groupApplyU.vue')
+
+
+
+// 布局组件 - 静态导入
+import MainLayout from '../components/MainLayout.vue'
+
+// 页面组件导入 - 静态导入
+import HomeView from '../views/Home/HomeView.vue'
+import Login from '../views/Login/Login.vue'
+import SetPassword from '../views/Login/SetPassword.vue'
+import ResetPassword from '../views/Login/ResetPassword.vue'
+import CapitalFlow from '../views/CapitalFlow/index.vue'
+import Realtime from '../views/Statistics/index.vue'
+import DailyReport from '../views/Statistics/DailyReport.vue'
+import MonthlyReport from '../views/Statistics/MonthlyReport.vue'
+import ReceiptOrder from '../views/ReceiptOrder/index.vue'
+import payment from '../views/payment/index.vue'
+import withdraw from '../views/withdraw/index.vue'
+import ApplyU from '../views/Finance/ApplyU.vue'
+import RateInquiry from '../views/RateInquiry/index.vue'
+import Rotation from '../views/Finance/Rotation.vue'
+import Transfer from '../views/Finance/Transfer.vue'
+import Inflation from '../views/Finance/Inflation.vue'
+import Otherorders from '../views/Otherorders/index.vue'
+import ExportRecord from '../views/ExportRecord/index.vue'
+import ApiDoc from '../views/ApiDoc/index.vue'
+import info from '../views/account/info/index.vue'
+import config from '../views/account/config/index.vue'
+import loginPassword from '../views/account/loginPassword/index.vue'
+import payPassword from '../views/account/payPassword/index.vue'
+import logs from '../views/Group/logs.vue'
+import MerchantList from '../views/Group/MerchantList.vue'
+import PermissionManagement from '../views/Group/PermissionManagement.vue'
+import grouppayPassword from '../views/Group/grouppayPassword.vue'
+import groupTransfer from '../views/Group/groupTransfer.vue'
+import loginIPWhiteList from '../views/Group/loginIPWhiteList.vue'
+import groupOrderFuzzyQuery from '../views/Group/groupOrderFuzzyQuery.vue'
+import groupApplyU from '../views/Group/groupApplyU.vue'
 
 
 
@@ -122,10 +160,27 @@ const router = createRouter({
         { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 下发订单
         { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+             // 集团管理
+        {
+          path: 'group',
+          redirect: 'info',
+          title: '集团管理',
+          icon: Operation,
+          meta: { roles: ['admin', 'operator', 'finance'] },
+          children: [
+            { path: 'logs', name: 'groupLogs', component: logs, title: '集团登录记录', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'MerchantList', name: 'groupMerchantList', component: MerchantList, title: '集团商户列表', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单模糊查询', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员权限', meta: { roles: ['admin'] } },
+            // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
+            // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
+            { path: 'loginIPWhiteList', name: 'loginIPWhiteList', component: loginIPWhiteList, title: '集团IP白名单', meta: { roles: ['admin'] } },
+            // { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
+          ]
+        },
         // 其他订单
         // { path: 'Otherorders', name: 'Otherorders', title: '其他订单', icon: Wallet, component: Otherorders, meta: { roles: ['admin','merchant', 'finance'] } },
-        // 商户费率
-        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: DataLine, component: RateInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+
         // 财务管理
         {
           path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', 'merchant'] },
@@ -144,6 +199,8 @@ const router = createRouter({
         { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 接口文档
         { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc, meta: { roles: ['admin','merchant'] } },
+        // 商户费率
+        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: DataLine, component: RateInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 账户管理
         {
           path: 'account',
@@ -158,24 +215,7 @@ const router = createRouter({
             { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码', meta: { roles: ['admin', 'merchant'] } },
           ]
         },
-        // 集团管理
-        {
-          path: 'group',
-          redirect: 'info',
-          title: '集团管理',
-          icon: Operation,
-          meta: { roles: ['admin', 'operator', 'finance'] },
-          children: [
-            { path: 'logs', name: 'groupLogs', component: logs, title: '集团登录记录', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'MerchantList', name: 'groupMerchantList', component: MerchantList, title: '集团商户列表', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单模糊查询', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员权限', meta: { roles: ['admin'] } },
-            // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
-            // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
-            { path: 'loginIPWhiteList', name: 'loginIPWhiteList', component: loginIPWhiteList, title: '集团IP白名单', meta: { roles: ['admin'] } },
-            // { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
-          ]
-        },
+   
       ]
     },
   ],

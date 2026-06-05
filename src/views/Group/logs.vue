@@ -69,10 +69,10 @@
             <div class="stat-value">{{ failureCount }}</div>
             <div class="stat-label">登录失败</div>
           </div>
-          <div class="stat-card warning">
+          <!-- <div class="stat-card warning">
             <div class="stat-value">{{ anomalyCount }}</div>
             <div class="stat-label">异常登录</div>
-          </div>
+          </div> -->
         </div>
 
         <!-- 登录记录列表 -->
@@ -94,13 +94,13 @@
               </template>
             </el-table-column>
             <el-table-column prop="LoginMessage" label="结果描述" min-width="150" />
-            <el-table-column prop="IsAnomaly" label="是否异常" width="100">
+            <!-- <el-table-column prop="IsAnomaly" label="是否异常" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.IsAnomaly ? 'warning' : 'success'" size="small">
                   {{ row.IsAnomaly ? '异常' : '正常' }}
                 </el-tag>
               </template>
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column prop="AnomalyType" label="异常类型" width="150">
               <template #default="{ row }">
                 <span v-if="row.AnomalyType" class="anomaly-type">

@@ -53,8 +53,8 @@
       <el-dropdown @command="handleUserCommand">
         <div class="user-info">
           <div class="user-avatar" v-if=" isGroupLogin && userStore.roleName==='管理员'">管理</div>
-          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='运营'" style="background-color: #f0f9eb; color: #67c33b;">运营</div>
-          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='财务'" style="background-color: #fcf6ec; color: #e3a43f;">财务</div> 
+          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='运营'">运营</div>
+          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='财务'">财务</div> 
           <div class="user-avatar" v-else style="background-color: #ff4949;">商户</div> 
 
           <div class="user-details">
@@ -348,6 +348,9 @@ const handleUserCommand = async (command) => {
       console.error('退出登录失败:', error);
       // 即使出错也强制跳转到登录页
       router.replace('/Login');
+    }  finally {
+      // 使用 window.location 强制刷新，确保重新加载登录页面
+      window.location.href = '/Login?t=' + Date.now();
     }
   }
 };
@@ -582,10 +585,17 @@ function confirmBind(account) {
 
 /* 用户信息区域样式 */
 .user-info-container {
-  padding: 15px;
+  padding: 0px 15px;
   text-align: center;
   border-top: 1px solid #e0e0e0;
-  // background-color: #ffffff;
+}
+
+:deep(.el-dropdown:focus),
+:deep(.el-dropdown:focus-visible),
+:deep(.el-dropdown-item:focus),
+:deep(.el-dropdown-item:focus-visible) {
+  outline: none;
+  box-shadow: none;
 }
 
 .user-info {
@@ -595,7 +605,8 @@ function confirmBind(account) {
   transition: all 0.3s ease;
   padding: 10px;
   border-radius: 12px;
-    // background-color: rgba(175, 76, 76, 0.1);
+  outline: none;
+  box-shadow: none;
 }
 
 .user-dropdown-icon {

@@ -26,10 +26,11 @@
               size="default"
               type="text"
               placeholder="邮箱账户或商户号"
-              autocomplete="new-username"
-              @input="handleInput('username')"
               @change="handleUsernameChange"
               clearable
+             autocomplete="username/current-password"
+             name="login_user_account"
+              @input="handleInput('username')"
             ></el-input>
           </el-form-item>
           <el-form-item label="PassWord" prop="password">
@@ -39,16 +40,18 @@
               type="password"
               show-password
               placeholder="密码"
-              autocomplete="new-password"
-              @input="handleInput('password')"
+              autocomplete="current-password"
+              name="login_user_pwd"
+               @input="handleInput('password')"
             ></el-input>
+            
+                        
           </el-form-item>
           <!-- 验证邮箱是否已验证的密码输入框 -->
           <el-form-item label="EmailCode" prop="EmailCode" v-if="EmailVerifyshow">
             <el-input
               v-model="loginForm.EmailCode"
               size="default"
-              show-password
               placeholder="邮箱验证码"
               @input="handleInput('EmailCode')"
             ></el-input>
@@ -327,23 +330,23 @@ const groupNeedBindGoogle = ref(false); // 是否需要绑定Google验证码
 
 const EmailVerifyshow = ref(false); // 是否显示邮箱验证码输入框
 
-// 忘记密码表单数据
-const forgotPasswordForm = ref({
-  email: '',
-  verificationCode: ''
-});
+// // 忘记密码表单数据
+// const forgotPasswordForm = ref({
+//   email: '',
+//   verificationCode: ''
+// });
 
-// 忘记密码验证规则
-const forgotPasswordRules = ref({
-  email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
-  ],
-  verificationCode: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
-  ]
-});
+// // 忘记密码验证规则
+// const forgotPasswordRules = ref({
+//   email: [
+//     { required: true, message: '请输入邮箱', trigger: 'blur' },
+//     { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+//   ],
+//   verificationCode: [
+//     { required: true, message: '请输入验证码', trigger: 'blur' },
+//     { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+//   ]
+// });
 
 // 对话框打开时设置焦点
 function handleDialogOpen() {
@@ -492,6 +495,8 @@ function closeDialog() {
   
   // 清空loginForm.code
   loginForm.value.code = '';
+  // 清空邮箱验证码
+  loginForm.value.EmailCode = '';
 }
 
 // 处理用户名变化 - 简化版（只要输入框值改变就重置）
@@ -566,23 +571,21 @@ const filteredAccounts = computed(() => {
 
 // 生命周期钩子
 onMounted(() => {
+  // 重置token
+  userStore.resetToken();
   nextTick(() => {
-    userInput.value.focus(); // 在组件挂载后设置焦点
+    userInput.value.focus();
   });
   
-  // 检测是否为首次访问
   const hasVisited = localStorage.getItem("hasVisited");
   isFirstVisit.value = !hasVisited;
   localStorage.setItem("hasVisited", "true");
   
-  // 初始化状态
   dialogValue.value = false;
   isVerifyPass.value = false;
   loading.value = false;
   isLoading.value = false;
   dialogValue1.value = false;
-  
- 
 });
 
 // 方法
@@ -675,7 +678,7 @@ async function _groupLogin() {
       if (!IsBinding) {
         qrcode.value = qrCodeImageUrl;  // 赋值给二维码图片
         groupNeedBindGoogle.value = true;
-        dialogValue.value = true;  // dialogValue.value 为 true 时，显示谷歌验证码弹窗
+        // dialogValue.value = true;  // dialogValue.value 为 true 时，显示谷歌验证码弹窗
       } else if (isVerified === false) {
         ElMessage.error("谷歌验证码错误，请重新输入");
       }
@@ -1091,12 +1094,11 @@ async function confirmBind(account) {
 
   if (groupNeedBindGoogle.value) {
       dialogValue.value = false;
-  dialogValue1.value = false;
-    groupNeedBindGoogle.value = false;
-    isVerifyPass.value = true;
-    nextTick(() => {
-      codeInput.value.focus();
-    });
+    groupNeedBindGoogle.value = false;  // 关闭谷歌验证码弹窗
+    // isVerifyPass.value = true;
+    // nextTick(() => {
+    //   codeInput.value.focus();
+    // });
     return;
   }
 

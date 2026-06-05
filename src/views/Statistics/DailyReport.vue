@@ -71,7 +71,7 @@
               <TimeRangeSelector
                 @change="onTimeRangeChange"
                 :timeRangeOptions="timeRangeOptions"
-                :defaultValue="'yesterday'"
+                :defaultValue="'7days'"
                 :format="'yyyy-MM-dd'"
               />
           <!-- 骨架屏 -->
@@ -123,7 +123,7 @@
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
-                          label="成功率"
+                          label="收款笔数成功率"
                           align="center"
                         >
                         </el-table-column>
@@ -141,7 +141,7 @@
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayout"
-                          label="成功率"
+                          label="付款笔数成功率"
                           align="center"
                         >
                         </el-table-column>
