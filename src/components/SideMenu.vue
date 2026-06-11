@@ -87,7 +87,7 @@
       custom-class="account-dialog"
       :show-close="false"
     >
-      <div class="dialog-close" @click="dialogValue1 = false">×</div>
+      <div class="dialog-close" @click="dialogValue1 = false,searchKey = ''">×</div>
       <div class="dialog-header">
         <div class="logo-container">
           <img
@@ -147,6 +147,7 @@
   import router from '../router/index.js'
   import useUserStore from '../stores/user.js'
   import { ElMessage,ElMessageBox } from 'element-plus'
+  import { http } from "@/api";
 
   
   // 获取当前路由
@@ -165,21 +166,26 @@
   const accounts = ref([])
 
   // 获取用户列表（集团用户的商户列表）
-function getUserList() {
-  if (!userStore.merchants || !Array.isArray(userStore.merchants)) {
+ const getUserList = async () => {
+  try {
+    const res = await http.getGroupMerchants();
+    if (res.code === 200) {
+      const filteredMerchants = res.data.filter(m => !m.code?.startsWith('G'));
+      accounts.value = filteredMerchants.map(m => ({
+        id: m.code,
+        code: m.code,
+        siteUrl: m.siteUrl || '',
+        type: m.isGroup ? '集团' : '商户',
+        balance: m.balance || '0.00',
+        createdOn: formatDateTime(m.createdOn) || '',
+      }));
+    } else {
+      accounts.value = [];
+    }
+  } catch (error) {
+    console.error('获取商户列表失败:', error);
     accounts.value = [];
-    return;
   }
-  console.log(userStore);
-  
-  accounts.value = userStore.merchants.filter(m => !m.code?.startsWith('G')).map(m => ({
-    id: m.code,
-    code: m.code,
-    siteUrl: m.siteUrl || '',
-    type: m.isGroup ? '集团' : '商户',
-    balance: m.balance || '0.00',
-    createdOn: formatDateTime(m.createdOn) || '',
-  }));
 }
 
 const formatDateTime = (dateStr) => {
@@ -331,6 +337,7 @@ const handleUserCommand = async (command) => {
   if (command === 'account') {
     // 显示账户选择弹窗
     dialogValue1.value = true;
+      getUserList();
     console.log('Dados da Conta clicked');
   } else if (command === 'logout') {
     // 执行退出登录逻辑
@@ -375,7 +382,7 @@ function confirmBind(account) {
         ElMessage.success(`已切换到商户 ${merchantCode}`);
         window.location.reload();
       } catch (err) {
-        ElMessage.error(err.msg || '切换失败');
+        ElMessage.error('切换失败');
       }
     }).catch(() => {
       // 用户取消操作

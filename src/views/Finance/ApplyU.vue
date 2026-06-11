@@ -99,6 +99,8 @@
                       <el-input
                         v-model="ruleForm.password"
                         type="password"
+                        show-password
+                        autocomplete="new-password"
                         placeholder="请输入支付密码"
                       ></el-input>
                     </el-form-item>
@@ -287,10 +289,11 @@ const walletAddressOptions = computed(() => {
       return prev;
     }, []);
   } else {
+    options = []
     options.push({
-      name: merchantInfo.usdtAddress || "",
-      original: merchantInfo.usdtAddress || "",
-      value: merchantInfo.usdtAddress || "",
+      name:  "暂无钱包地址，请先新增钱包地址",
+      original:  "暂无钱包地址，请先新增钱包地址",
+      value:  "暂无钱包地址，请先新增钱包地址",
     });
   }
   
@@ -321,92 +324,7 @@ const walletAddressOptions = computed(() => {
 // 弹窗状态
 const showPrepayDialog = ref(false);
 
-// 计算属性 - 表单列表
-const formList = computed(() => {
-  const { merchantInfo } = userStore;
-  let walletAddressOptions = [];
-  
-  if (merchantInfo.usdtaddresseslist && merchantInfo.usdtaddresseslist.length > 0) {
-    walletAddressOptions = merchantInfo.usdtaddresseslist.reduce((prev, curr) => {
-      prev.push({
-        name: curr,
-        original: curr,
-        value: curr,
-      });
-      return prev;
-    }, []);
-  } else {
-    walletAddressOptions.push({
-      name: merchantInfo.usdtAddress || "",
-      original: merchantInfo.usdtAddress || "",
-      value: merchantInfo.usdtAddress || "",
-    });
-  }
 
-  return [
-    // 金额(法币) 、到账U数、手续费、手续费、支付密码、MFA2验证码
-    {
-      label: "金额(法币)",
-      prop: "amount",
-      name: "input",
-      type: "number",
-      placeholder: "手续费：0.00 + 0%",
-      rules: [
-        { required: true, message: "请输入金额(法币)", trigger: "blur" },
-      ],
-    },
-    {
-      colSpan: 12,
-      disabled: false,
-      label: "到账U数",
-      prop: "uAmount",
-      name: "input",
-      placeholder: "单位：USDT",
-      rules: [{ required: true, message: "请输入单位", trigger: "blur" }],
-    },
-    {
-      colSpan: 12,
-      disabled: true,
-      label: "手续费",
-      prop: "fee",
-      name: "input",
-      placeholder: "单位：₹",
-      rules: [
-        { required: false, message: "请输入手续费", trigger: "blur" },
-      ],
-    },
-    {
-      label: "钱包地址",
-      prop: "walletAddress",
-      name: "select1",
-      placeholder:
-        "请输入钱包地址，如果输入错误，产生的交易不可逆转，当前仅支持TRC2.0地址提现",
-      rules: [
-        { required: true, message: "请输入钱包地址", trigger: "blur" },
-      ],
-      options: walletAddressOptions,
-    },
-    {
-      label: "支付密码",
-      prop: "password",
-      name: "input",
-      type: "password",
-      placeholder: "请输入支付密码",
-      rules: [
-        { required: true, message: "请输入支付密码", trigger: "blur" },
-      ],
-    },
-    {
-      label: "MFA2验证码",
-      prop: "code",
-      name: "input",
-      placeholder: "请输入MFA2验证码",
-      rules: [
-        { required: true, message: "请输入MFA2验证码", trigger: "blur" },
-      ],
-    },
-  ];
-});
 
 // 检查授信款状态
 const checkPrepayStatus = async () => {
@@ -436,7 +354,7 @@ const handleDialogClose = () => {
 // 生命周期 - 组件挂载
 onMounted(() => {
   // 初始化表单默认值
-  ruleForm.walletAddress = userStore.merchantInfo.usdtAddress || "";
+  // ruleForm.walletAddress = userStore.merchantInfo.usdtAddress || "";
   
   // 获取汇率信息
   getExchangeRate();
@@ -535,9 +453,27 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.code === 200) {
-        ElMessage.success("提现成功");
-        // 页面跳转到 withdraw/withdrawManagement
-        router.push({ name: "withdrawManagement" });
+ElMessageBox.alert(
+  `<div style="text-align: center; padding: 8px;">
+    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">提交成功</div>
+    <div style="font-size: 14px; color: #909399; line-height: 1.6;">您的申请已提交，请等待审核</div>
+  </div>`,
+  '提示',
+  {
+    confirmButtonText: '确定',
+    type: 'success',
+    showClose: false,
+    closeOnClickModal: true,
+    dangerouslyUseHTMLString: true,
+    width: '360px',
+    center: true,
+    callback: () => {
+      reset();
+    }
+  }
+);
+      }else{
+        ElMessage.error(res.msg || "提现失败");
       }
     })
     .catch(() => {
@@ -551,7 +487,7 @@ const reset = () => {
     amount: "",
     uAmount: "",
     fee: 0,
-    walletAddress: userStore.merchantInfo.usdtAddress || "",
+    walletAddress:  "",
     password: "",
     code: "",
   });

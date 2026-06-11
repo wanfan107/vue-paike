@@ -28,6 +28,7 @@
               highlight-current-row
             >
               <el-table-column prop="email" label="邮箱名" width="180" />
+              <el-table-column prop="name" label="姓名" width="100" />
               <el-table-column prop="roleName" label="角色" width="120">
                 <template  #default="{ row }">
                   <el-tag :type="getRoleTagType(row.roleCode)" size="small">
@@ -35,13 +36,21 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="merchantCodes" label="可操作商户" min-width="180">
+              <el-table-column prop="merchantCodes" label="可操作商户" width="240">
                 <template #default="{ row }">
-                  <el-tag v-if="row && row.merchantCodes" size="small" type="info">{{ row.merchantCodes.length }}</el-tag>
-                  <span v-else><el-tag size="small" type="info">0</el-tag></span>
-                  <span v-if="row && row.merchantCodes" v-for="(code, idx) in row.merchantCodes" :key="code" style="margin-left: 4px;">
-                    <el-tag size="small">{{ code }}</el-tag>
-                  </span>
+                  <div class="merchant-codes-wrapper">
+                    <el-tag v-if="row && row.merchantCodes" size="small" type="info">{{ row.merchantCodes.length }}</el-tag>
+                    <span v-else><el-tag size="small" type="info">0</el-tag></span>
+                    <div class="merchant-codes-tags">
+                      <template v-if="row && row.merchantCodes">
+                        <div v-for="(group, groupIdx) in getMerchantGroups(row.merchantCodes)" :key="groupIdx" class="merchant-tag-row">
+                          <span v-for="code in group" :key="code" class="merchant-tag-item">
+                            <el-tag size="small">{{ code }}</el-tag>
+                          </span>
+                        </div>
+                      </template>
+                    </div>
+                  </div>
                 </template>
               </el-table-column>
                     <el-table-column prop="status" label="状态" width="80">
@@ -77,17 +86,19 @@
                   {{ formatDate(row.createdOn) }}
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="220" fixed="right">
-                <template #default="{ row }" width="280" >
-                  <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
-                    编辑
-                  </el-button>
-                  <el-button v-if="row.roleCode !== 'admin'" type="warning" size="small" @click.stop="showResetPasswordDialog(row)">
-                    重置密码
-                  </el-button>
-                  <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="deleteOperator(row)">
-                    删除
-                  </el-button>
+              <el-table-column label="操作" width="220" fixed="right" >
+                <template #default="{ row }">
+                  <div class="action-cell" @click.stop.prevent>
+                    <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
+                      编辑
+                    </el-button>
+                    <el-button  type="warning" size="small" @click.stop="showResetPasswordDialog(row)">
+                      重置密码
+                    </el-button>
+                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="deleteOperator(row)">
+                      删除
+                    </el-button>
+                  </div>
                 </template>
               </el-table-column>
             </el-table>
@@ -108,6 +119,16 @@
                 v-model="formData.email" 
                 placeholder="请输入邮箱名"
                 clearable
+                @keyup.enter="saveOperator"
+              />
+            </el-form-item>
+
+            <el-form-item label="姓名" prop="name">
+              <el-input 
+                v-model="formData.name" 
+                placeholder="请输入姓名"
+                clearable
+                maxlength="50"
                 @keyup.enter="saveOperator"
               />
             </el-form-item>
@@ -188,6 +209,16 @@
                 placeholder="请输入邮箱名"
                 clearable
                 disabled
+                @keyup.enter="updateOperator"
+              />
+            </el-form-item>
+
+            <el-form-item label="姓名" prop="name">
+              <el-input 
+                v-model="editFormData.name" 
+                placeholder="请输入姓名"
+                clearable
+                maxlength="50"
                 @keyup.enter="updateOperator"
               />
             </el-form-item>
@@ -286,6 +317,10 @@
             <div class="info-row">
               <div class="info-label">邮箱：</div>
               <div class="info-value">{{ viewingOperator.email }}</div>
+            </div>
+            <div class="info-row">
+              <div class="info-label">姓名：</div>
+              <div class="info-value">{{ viewingOperator.name || '-' }}</div>
             </div>
             <div class="info-row">
               <div class="info-label">角色：</div>
@@ -415,6 +450,7 @@ const resettingOperator = ref({});
 // 表单数据
 const formData = reactive({
   email: '',
+  name: '',
   code: '',
   roleCode: 'operator',
   googleAuth: false,
@@ -435,6 +471,7 @@ const resetFormRules = {
 const editFormData = reactive({
   // id: null,
   email: '',
+  name: '',
   // code: '',
   roleCode: '',
   isSuspended: false,
@@ -447,6 +484,10 @@ const formRules = {
   email: [
     { required: true, message: '请输入邮箱名', trigger: 'blur' },
     { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+  ],
+  name: [
+    { required: true, message: '请输入姓名', trigger: 'blur' },
+    { max: 50, message: '姓名最大长度为50个字符', trigger: 'blur' }
   ],
   code: [
     { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
@@ -515,6 +556,16 @@ const getRoleTagType = (roleCode) => {
   return 'success';
 };
 
+// 将商户代码数组分成每组3个
+const getMerchantGroups = (codes) => {
+  if (!codes || codes.length === 0) return [];
+  const groups = [];
+  for (let i = 0; i < codes.length; i += 3) {
+    groups.push(codes.slice(i, i + 3));
+  }
+  return groups;
+};
+
 // 格式化日期
 const formatDate = (dateStr) => {
   if (!dateStr) return '';
@@ -543,10 +594,11 @@ const getCurrentTime = () => {
 };
 
 // 点击行查看基本信息
-const handleRowClick = (row) => {
+const handleRowClick = (row, event) => {
   viewingOperator.value = {
     ...row,
     email: row.email || row.username || '',
+    name: row.name || '',
     roleName: row.roleName || '',
     roleCode: row.roleCode || '',
     status: row.status || 0,
@@ -562,6 +614,7 @@ const handleRowClick = (row) => {
 // 重置表单
 const resetForm = () => {
   formData.email = '';
+  formData.name = '';
   formData.code = '';
   formData.roleCode = 'operator';
   formData.merchantCodes = [];
@@ -580,6 +633,7 @@ const resetEditForm = () => {
 // 编辑操作员
 const editOperator = (operator) => {
   editFormData.email = operator.email || operator.email || '';
+  editFormData.name = operator.name || '';
   editFormData.roleCode = operator.roleCode === 'admin' ? 'operator' : operator.roleCode === 'finance' ? 'finance' : 'operator';
   editFormData.isSuspended = operator.isSuspended || false;
   editFormData.merchantCodes = operator.merchantCodes ? [...operator.merchantCodes] : [];
@@ -596,6 +650,7 @@ const updateOperator = async () => {
     
     await http.updateGroupUser({
       email: editFormData.email,
+      name: editFormData.name,
       roleCode: editFormData.roleCode,
       isSuspended: editFormData.isSuspended,
       merchantCodes: editFormData.merchantCodes,
@@ -681,6 +736,7 @@ const saveOperator = async () => {
     
      const res = await http.createGroupUser({
       email: formData.email,
+      name: formData.name,
       roleCode: formData.roleCode,
       merchantCodes: formData.merchantCodes,
      gcode: formData.code
@@ -784,6 +840,38 @@ const saveOperator = async () => {
     color: #c0c4cc;
     font-size: 12px;
   }
+}
+
+.merchant-codes-wrapper {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.merchant-codes-tags {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.action-cell {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  min-height: 48px;
+}
+
+.merchant-tag-row {
+  display: flex;
+  gap: 4px;
+  flex-wrap: nowrap;
+}
+
+.merchant-tag-item {
+  margin-left: 4px;
+  display: inline-block;
 }
 
 .merchant-option {

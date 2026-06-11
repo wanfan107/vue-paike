@@ -181,7 +181,7 @@
         element-loading-text="正在登录..."
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(255, 255, 255, 0.9)">
-      <div class="dialog-close" @click="dialogValue1 = false">×</div>
+      <div class="dialog-close" @click="dialogValue1 = false,searchKey = ''">×</div>
       <div class="dialog-header">
         <div class="logo-container">
           <img

@@ -125,6 +125,8 @@
                       <el-input
                         v-model="ruleForm.password"
                         type="password"
+                        show-password
+                        autocomplete="new-password"
                         placeholder="请输入支付密码"
                       ></el-input>
                     </el-form-item>
@@ -529,15 +531,32 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.Success) {
-        ElMessage.success(res.Data?.Message || '提现成功');
-        // 页面跳转到 withdraw/withdrawManagement
-        router.push({ name: "withdrawManagement" });
+ElMessageBox.alert(
+  `<div style="text-align: center; padding: 8px;">
+    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">提交成功</div>
+    <div style="font-size: 14px; color: #909399; line-height: 1.6;">您的申请已提交，请等待审核</div>
+  </div>`,
+  '提示',
+  {
+    confirmButtonText: '确定',
+    type: 'success',
+    showClose: false,
+    closeOnClickModal: true,
+    dangerouslyUseHTMLString: true,
+    width: '360px',
+    center: true,
+    callback: () => {
+      reset();
+    }
+  }
+);
       } else {
-        ElMessage.error(res.ErrorMessage || '提现失败');
+        ElMessage.error(res.ErrorMessage || '提交失败');
       }
     })
     .catch(() => {
       loading.value = false;
+      ElMessage.error('网络错误，请稍后重试');
     });
 };
 
