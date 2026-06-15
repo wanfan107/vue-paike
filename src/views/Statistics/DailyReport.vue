@@ -58,7 +58,13 @@
               <div ref="lineChartRef" style="width: 100%; height: 450px"></div>
             </div>
             <div class="chart-item pie-chart">
-              <div ref="pieChartRef" style="width: 100%; height: 450px"></div>
+              <el-table :data="pieTableData" border height="450">
+                <el-table-column prop="merchantCode" label="商户号" />
+                <el-table-column prop="todayCollect" label="今日代收总额" />
+                <el-table-column prop="yesterdayCollect" label="昨日代收总额" />
+                <el-table-column prop="todayPay" label="今日代付总额" />
+                <el-table-column prop="yesterdayPay" label="昨日代付总额" />
+              </el-table>
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
@@ -228,47 +234,9 @@ const preserveExpanded = ref(false);
 const show = ref(true);
 const expandRowKeys = ref([]);
 
-// 下拉选项数据
-const options = [
-  {
-    label: "ALL",
-    value: -1,
-  },
-  {
-    label: "未通知",
-    value: 0,
-  },
-  {
-    label: "通知成功",
-    value: 1,
-  },
-  {
-    label: "通知失败",
-    value: 2,
-  },
-];
 
-// 标签类型颜色映射
-const tagTypeColor = {
-  K00001: "danger",
-  K00002: "success",
-  K00003: "danger",
-  K00004: "danger",
-  K00005: "success",
-  K00006: "danger",
-  K00007: "success",
-  K00008: "success",
-  K00009: "success",
-  K00010: "danger",
-  K00011: "danger",
-  K00012: "success",
-  K00013: "danger",
-  K00014: "success",
-  K00015: "danger",
-  K00016: "danger",
-  K00017: "success",
-  K00018: "danger",
-};
+
+
 
 // 搜索表单数据
 const searchForm = reactive({
@@ -491,88 +459,14 @@ const realTimeChart = computed(() => {
   };
 });
 
-const pieChartOption = computed(() => {
-  // 计算收付款总金额
-  let totalCollection = 0;
-  let totalPayment = 0;
-
-  tableData.value.forEach((item) => {
-    totalCollection += item.SuccessAmountPayin || 0;
-    totalPayment += item.SuccessAmountPayout || 0;
-  });
-
-  return {
-    title: {
-      text: "收付款金额占比",
-      left: "center",
-      top: 20,
-      textStyle: {
-        color: "#666",
-        fontSize: 16,
-      },
-    },
-    tooltip: {
-      trigger: "item",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
-      formatter: "{a} <br/>{b}: R${c} ({d}%)",
-    },
-    legend: {
-      orient: "horizontal",
-      bottom: "5%",
-      textStyle: {
-        color: "#666",
-        fontSize: 13,
-      },
-    },
-    series: [
-      {
-        name: "金额占比",
-        type: "pie",
-        radius: ["30%", "60%"],
-        center: ["50%", "50%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 5,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          // formatter: "{b}: R${c} ({d}%)",
-          formatter: "{b}: {d}%",
-          fontSize: 12,
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: "14",
-            fontWeight: "bold",
-          },
-        },
-        labelLine: {
-          show: true,
-          length: 15,
-          length2: 10,
-        },
-        data: [
-          {
-            value: totalCollection,
-            name: "收款金额",
-            itemStyle: { color: "#48bb78" },
-          },
-          {
-            value: totalPayment,
-            name: "付款金额",
-            itemStyle: { color: "#db0011" },
-          },
-        ],
-      },
-    ],
-  };
+const pieTableData = computed(() => {
+  return tableData.value.map((item) => ({
+    merchantCode: item.merchantCode || '-',
+    todayCollect: item.SuccessAmountPayin || '0.00',
+    yesterdayCollect: item.YesterdayPayinAmount || '0.00',
+    todayPay: item.SuccessAmountPayout || '0.00',
+    yesterdayPay: item.YesterdayPayoutAmount || '0.00',
+  }));
 });
 
 // 分页信息
@@ -589,7 +483,6 @@ const exportLoading = ref(false);
 
 // 图表引用
 const lineChartRef = ref(null);
-const pieChartRef = ref(null);
 const chartInstances = ref(new Map()); // 存储展开行的图表实例
 
 // 路由实例
@@ -1321,92 +1214,7 @@ const clearSearch = () => {
   pagination.currentPage = 1;
   handleSearch();
 };
-// 生成假数据
-// const generateMockData = (count = 10) => {
-//   const mockList = [];
-//   const statusMap = {
-//     0: '未通知',
-//     1: '通知成功',
-//     2: '通知失败'
-//   };
-//   const typeKeys = Object.keys(tagTypeColor);
-  
-//   for (let i = 0; i < count; i++) {
-//     mockList.push({
-//       merchantorderno: `MCH${Date.now()}${i.toString().padStart(4, '0')}`,
-//       orderno: `ORD${Date.now()}${i.toString().padStart(4, '0')}`,
-//       orderamount: (Math.random() * 10000).toFixed(2),
-//       realamount: (Math.random() * 10000).toFixed(2),
-//       balance: (Math.random() * 10000).toFixed(2),
-//       createtime: new Date(Date.now() - Math.random() * 7 * 24 * 3600 * 1000).toLocaleString(),
-//       bankType: `银行${String.fromCharCode(65 + i % 26)}`,
-//       customerName: `用户${i + 1}`,
-//       customerPhone: `138${String(Math.random()).slice(2, 6)}${String(Math.random()).slice(2, 6)}`,
-//       customerEmail: `user${i + 1}@example.com`,
-//       applyTime: new Date(Date.now() - Math.random() * 24 * 3600 * 1000).toLocaleString(),
-//       status: statusMap[Math.floor(Math.random() * 3)],
-//       info: `备注信息${i + 1}`,
-//       type: typeKeys[Math.floor(Math.random() * typeKeys.length)]
-//     });
-//   }
-//   return mockList;
-// };
-// 生成报表假数据
-// const generateReportMockData = (startDate, endDate) => {
-//   const mockList = [];
-//   const start = new Date(startDate);
-//   const end = new Date(endDate);
-//   const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
-  
-//   for (let i = 0; i < days; i++) {
-//     const currentDate = new Date(start);
-//     currentDate.setDate(start.getDate() + i);
-//     const dateStr = currentDate.toISOString().split('T')[0];
-    
-//     const successAmountPayin = Math.floor(Math.random() * 100000) + 10000;
-//     const successAmountPayout = Math.floor(Math.random() * 50000) + 5000;
-//     const previousDayEndBalance = Math.floor(Math.random() * 200000) + 50000;
-//     const currentDayEndBalance = previousDayEndBalance + successAmountPayin - successAmountPayout;
-    
-//     mockList.push({
-//       OrderDate: dateStr,
-//       PreviousDayEndBalance: previousDayEndBalance,
-//       SuccessAmountPayin: successAmountPayin,
-//       SuccessAmountPayout: successAmountPayout,
-//       Totalamountreceived: successAmountPayin - successAmountPayout,
-//       CurrentDayEndBalance: currentDayEndBalance,
-//       SuccessOrderFee: Math.floor(successAmountPayin * 0.01),
-//       items: [
-//         {
-//           typeName: '信用卡',
-//           SuccessCountPayin: Math.floor(Math.random() * 50) + 10,
-//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.6),
-//           SuccessRatePayin: 0.95,
-//           SuccessCountPayout: Math.floor(Math.random() * 20) + 5,
-//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.5)
-//         },
-//         {
-//           typeName: '借记卡',
-//           SuccessCountPayin: Math.floor(Math.random() * 30) + 5,
-//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.3),
-//           SuccessRatePayin: 0.98,
-//           SuccessCountPayout: Math.floor(Math.random() * 15) + 3,
-//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.3)
-//         },
-//         {
-//           typeName: '第三方支付',
-//           SuccessCountPayin: Math.floor(Math.random() * 20) + 3,
-//           SuccessAmountPayin: Math.floor(successAmountPayin * 0.1),
-//           SuccessRatePayin: 0.92,
-//           SuccessCountPayout: Math.floor(Math.random() * 10) + 2,
-//           SuccessAmountPayout: Math.floor(successAmountPayout * 0.2)
-//         }
-//       ]
-//     });
-//   }
-  
-//   return mockList;
-// };
+
 
 // 格式化时间为 YYYY-MM-DD
 const formatTime = (date) => {
@@ -1491,9 +1299,7 @@ const handleCurrentChange = (val) => {
 
 // 图表实例
 let lineChart = null;
-let pieChart = null;
 let lineChartResizeHandler = null;
-let pieChartResizeHandler = null;
 
 // 初始化单个图表的辅助函数
 const initChart = (chartRef, chartInstance, resizeHandler, option) => {
@@ -1551,13 +1357,6 @@ const initMainCharts = () => {
     console.log('折线图初始化成功');
   }
   
-  // 初始化饼图
-  const pieChartResult = initChart(pieChartRef, pieChart, pieChartResizeHandler, pieChartOption.value);
-  if (pieChartResult) {
-    pieChart = pieChartResult.chart;
-    pieChartResizeHandler = pieChartResult.resizeHandler;
-    console.log('饼图初始化成功');
-  }
 };
 
 // 更新主图表
@@ -1567,13 +1366,6 @@ const updateMainCharts = () => {
       lineChart.setOption(realTimeChart.value);
     } catch (error) {
       console.error('更新折线图失败:', error);
-    }
-  }
-  if (pieChart && !pieChart.isDisposed()) {
-    try {
-      pieChart.setOption(pieChartOption.value);
-    } catch (error) {
-      console.error('更新饼图失败:', error);
     }
   }
 };
@@ -1638,19 +1430,6 @@ onUnmounted(() => {
       lineChart = null;
     } catch (error) {
       console.error('销毁折线图失败:', error);
-    }
-  }
-  
-  if (pieChart && !pieChart.isDisposed()) {
-    try {
-      if (pieChartResizeHandler) {
-        window.removeEventListener('resize', pieChartResizeHandler);
-        pieChartResizeHandler = null;
-      }
-      pieChart.dispose();
-      pieChart = null;
-    } catch (error) {
-      console.error('销毁饼图失败:', error);
     }
   }
   
@@ -1827,7 +1606,7 @@ const onExport = async () => {
     }
     
     &.pie-chart {
-      flex: 2;
+      flex: 2.5;
     }
   }
 }
