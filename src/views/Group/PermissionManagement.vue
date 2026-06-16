@@ -469,6 +469,7 @@ const resetFormRules = {
 
 // 编辑表单数据
 const editFormData = reactive({
+  userId: null,
   // id: null,
   email: '',
   name: '',
@@ -632,6 +633,7 @@ const resetEditForm = () => {
 
 // 编辑操作员
 const editOperator = (operator) => {
+  editFormData.userId = operator.autoId || operator.userId || '';
   editFormData.email = operator.email || operator.email || '';
   editFormData.name = operator.name || '';
   editFormData.roleCode = operator.roleCode === 'admin' ? 'operator' : operator.roleCode === 'finance' ? 'finance' : 'operator';
@@ -649,7 +651,7 @@ const updateOperator = async () => {
     updating.value = true;
     
     await http.updateGroupUser({
-      email: editFormData.email,
+      userId: editFormData.userId,
       name: editFormData.name,
       roleCode: editFormData.roleCode,
       isSuspended: editFormData.isSuspended,
@@ -684,8 +686,8 @@ const deleteOperator = (operator) => {
     }
   ).then(async () => {
     try {
-      await http.deleteGroupUser({ email: operator.email });
-      const index = operators.value.findIndex(op => op.email === operator.email);
+      await http.deleteGroupUser({ userId: operator.autoId || operator.userId });
+      const index = operators.value.findIndex(op => op.autoId === (operator.autoId || operator.userId));
       if (index !== -1) {
         operators.value.splice(index, 1);
       }
@@ -710,7 +712,7 @@ const resetPassword = async () => {
     resetting.value = true;
     
     await http.resetGroupUserPassword({
-      email: resettingOperator.value.email,
+      userId: resettingOperator.value.autoId || resettingOperator.value.userId,
     });
     
     ElMessage.success('密码重置邮件已发送');
