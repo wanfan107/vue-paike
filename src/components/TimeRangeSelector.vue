@@ -125,9 +125,7 @@ const formatDate = (date, format) => {
 
 // 监听defaultValue变化
 watch(() => props.defaultValue, (newValue) => {
-  if (newValue) {
-    activeRange.value = newValue;
-  }
+  activeRange.value = newValue || '';
 });
 
 // 如果需要在组件挂载时执行某些逻辑，可以使用

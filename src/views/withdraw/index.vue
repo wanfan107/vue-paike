@@ -19,6 +19,7 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 value-format="YYYY-MM-DD HH:mm:ss"
+                @change="onDateRangeChange"
               />
             </el-form-item>
 
@@ -117,11 +118,9 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="applyTime" label="申请时间" align="center" />
-                <el-table-column label="操作" align="center" width="100">
+                <el-table-column label="凭证" align="center" width="100">
                   <template #default="{ row }">
-                    <el-button type="primary" size="small" @click.stop="handleCallback(row)" >
-                      回调
-                    </el-button>
+ 
                   </template>
                 </el-table-column>
               </el-table>
@@ -246,6 +245,44 @@ const onTimeRangeChange = (data) => {
   console.log(data);
   currentTimeRange.value = data.range;
   searchForm.orderTime = [data.timeRange[0], data.timeRange[1]];
+  handleSearch();
+};
+
+// 日期选择器变化回调
+const onDateRangeChange = (val) => {
+  if (!val || val.length !== 2) {
+    currentTimeRange.value = '';
+    return;
+  }
+  
+  const getDateStr = (dateStr) => {
+    return dateStr.split(' ')[0];
+  };
+  
+  const startDateStr = getDateStr(val[0]);
+  const endDateStr = getDateStr(val[1]);
+  
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  const threeDaysAgo = new Date(today);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  const threeDaysAgoStr = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`;
+  
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
+  
+  if (startDateStr === todayStr && endDateStr === todayStr) {
+    currentTimeRange.value = 'today';
+  } else if (startDateStr === threeDaysAgoStr && endDateStr === todayStr) {
+    currentTimeRange.value = '3days';
+  } else if (startDateStr === sevenDaysAgoStr && endDateStr === todayStr) {
+    currentTimeRange.value = '7days';
+  } else {
+    currentTimeRange.value = '';
+  }
+  
   handleSearch();
 };
 
@@ -386,9 +423,7 @@ const handleSearch = async () => {
 
     tableData.value = res.data.list;
     pagination.total = res.data.total;
-  } catch (error) {
-    ElMessage.error("搜索失败");
-  } finally {
+  }  finally {
     loading.value = false;
   }
 };
@@ -418,14 +453,7 @@ const closeDetail = () => {
   currentRow.value = {};
 };
 
-// 单个回调
-const handleCallback = (row) => {
-  console.log('回调操作，row数据:', row);
-  ElMessage.success(`已对订单 ${row.merchantOrderNo || row.platformOrderNo} 进行回调`);
-  
-  // 这里可以添加实际的回调逻辑
-  // 例如：调用回调API，传递订单号
-};
+
 
 // 初始化数据
 onMounted(() => {

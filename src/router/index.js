@@ -211,8 +211,8 @@ const router = createRouter({
           children: [
             { path: 'info', name: 'info', component: info, title: '基本信息', meta: { roles: ['admin', 'finance', 'operator', 'merchant'] } },
             { path: 'config', name: 'config', component: config, title: '应用配置', meta: { roles: ['admin', 'merchant'] } },
-            { path: 'loginPassword', name: 'loginPassword', component: loginPassword, title: '登录密码', meta: { roles: ['admin','merchant'] } },
-            { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码', meta: { roles: ['admin', 'merchant'] } },
+            { path: 'loginPassword', name: 'loginPassword', component: loginPassword, title: '登录密码', meta: { roles: ['merchant'] } },
+            { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码', meta: { roles: ['merchant'] } },
           ]
         },
    

@@ -38,14 +38,14 @@
               >
                 刷新
               </el-button>
-              <el-button
+              <!-- <el-button
                 :icon="Download"
                 @click="onExport"
                 type="primary"
                 :loading="exportLoading"
               >
                 导出
-              </el-button>
+              </el-button> -->
             </el-form-item>
           </el-form>
         </div>
@@ -1395,7 +1395,6 @@ const handleSearch = async () => {
     
   } catch (error) {
     console.error('查询失败:', error);
-    ElMessage.error('查询失败，请稍后重试');
     tableData.value = [];
   } finally {
     loading.value = false;

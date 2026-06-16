@@ -80,10 +80,11 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 value-format="YYYY-MM-DD"
+                 @change="getdataBoth"
               />
-                  <el-button size="small" class="search-button" @click="getdataBoth">
+                  <!-- <el-button size="small" class="search-button" @click="getdataBoth">
                     <el-icon><Search /></el-icon>
-                  </el-button>
+                  </el-button> -->
                 </div>
               </div>
               

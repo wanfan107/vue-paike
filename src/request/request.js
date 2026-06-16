@@ -56,7 +56,7 @@ service.interceptors.response.use(response => {
   if (error && error.response) {
     switch (error.response.status) {
       case 400:
-        error.message = '错误请求'
+        error.message = error.response.data.msg || '错误请求'
         break;
       case 401:
         error.message = '未授权，请重新登录'

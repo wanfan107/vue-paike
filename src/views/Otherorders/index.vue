@@ -19,6 +19,7 @@
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
                 value-format="YYYY-MM-DD HH:mm:ss"
+                @change="onDateRangeChange"
               />
             </el-form-item>
 
@@ -247,6 +248,44 @@ const onTimeRangeChange = (data) => {
   handleSearch();
 };
 
+// 日期选择器变化回调
+const onDateRangeChange = (val) => {
+  if (!val || val.length !== 2) {
+    currentTimeRange.value = '';
+    return;
+  }
+  
+  const getDateStr = (dateStr) => {
+    return dateStr.split(' ')[0];
+  };
+  
+  const startDateStr = getDateStr(val[0]);
+  const endDateStr = getDateStr(val[1]);
+  
+  const today = new Date();
+  const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  
+  const threeDaysAgo = new Date(today);
+  threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+  const threeDaysAgoStr = `${threeDaysAgo.getFullYear()}-${String(threeDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(threeDaysAgo.getDate()).padStart(2, '0')}`;
+  
+  const sevenDaysAgo = new Date(today);
+  sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+  const sevenDaysAgoStr = `${sevenDaysAgo.getFullYear()}-${String(sevenDaysAgo.getMonth() + 1).padStart(2, '0')}-${String(sevenDaysAgo.getDate()).padStart(2, '0')}`;
+  
+  if (startDateStr === todayStr && endDateStr === todayStr) {
+    currentTimeRange.value = 'today';
+  } else if (startDateStr === threeDaysAgoStr && endDateStr === todayStr) {
+    currentTimeRange.value = '3days';
+  } else if (startDateStr === sevenDaysAgoStr && endDateStr === todayStr) {
+    currentTimeRange.value = '7days';
+  } else {
+    currentTimeRange.value = '';
+  }
+  
+  handleSearch();
+};
+
 // 使用 Pinia Store
 const userStore = useUserStore();
 const standardtime = computed(() => {
@@ -384,9 +423,7 @@ const handleSearch = async () => {
 
     tableData.value = res.data.list;
     pagination.total = res.data.total;
-  } catch (error) {
-    ElMessage.error("搜索失败");
-  } finally {
+  }  finally {
     loading.value = false;
   }
 };

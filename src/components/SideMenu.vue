@@ -219,7 +219,10 @@ const roleTagType = computed(() => {
 });
 // 组件挂载时初始化账户列表
 onMounted(() => {
-  getUserList();
+  // 如果是集团用户，获取商户列表
+  if (userStore.groupToken) {
+    getUserList();
+  }
 });
 
   

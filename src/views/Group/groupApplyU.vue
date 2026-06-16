@@ -127,7 +127,7 @@
                         type="password"
                         show-password
                         autocomplete="new-password"
-                        placeholder="请输入支付密码"
+                        placeholder="请输入当前商户的支付密码"
                       ></el-input>
                     </el-form-item>
                   </el-col>
@@ -357,7 +357,12 @@ const walletRules = {
     { required: true, message: '请选择商户号', trigger: 'change' }
   ],
   usdtAddress: [
-    { required: true, message: '请输入USDT地址', trigger: 'blur' }
+    { required: true, message: '请输入USDT地址', trigger: 'blur' },
+    { 
+      pattern: /^T[0-9a-zA-Z]{33}$/, 
+      message: '请输入有效的TRC20地址（34位，以T开头，字母数字）', 
+      trigger: 'blur' 
+    }
   ],
   googleCode: [
     { required: true, message: '请输入谷歌验证码', trigger: 'blur' }

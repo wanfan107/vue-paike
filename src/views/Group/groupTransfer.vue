@@ -56,6 +56,7 @@
                       v-model="ruleForm.fromMerchant"
                       placeholder="请选择转出商户"
                       style="width: 100%"
+                      disabled
                       @change="handleFromMerchantChange"
                     >
                       <el-option
@@ -120,30 +121,29 @@
                   ></el-input>
                 </el-form-item>
                 
-                <!-- MFA2验证码 -->
-                <el-form-item label="MFA2验证码" prop="mfaCode">
-                  <el-input
-                    v-model="ruleForm.mfaCode"
-                    placeholder="请输入集团账户MFA2验证码"
-                  ></el-input>
-                </el-form-item>
+    <!-- MFA2验证码 -->
+<el-form-item label="MFA2验证码" prop="code">
+  <el-input
+    v-model="ruleForm.code"
+    placeholder="请输入MFA2验证码"
+  ></el-input>
+</el-form-item>
                 
                 <!-- 备注 -->
-                <el-form-item label="备注" prop="remark">
+                <!-- <el-form-item label="备注" prop="remark">
                   <el-input
                     v-model="ruleForm.remark"
                     type="textarea"
                     placeholder="选填，转账备注（最多50字）"
                   ></el-input>
                 </el-form-item>
-                
+                 -->
                 <!-- 操作按钮 -->
                 <el-form-item>
                   <div class="form-actions">
                     <el-button @click="reset">重置</el-button>
-                    <el-button type="primary" :disabled="true" title="暂未开放">
-                      <span>确认</span>
-                      <span class="button-tip">（暂未开放）</span>
+                    <el-button type="primary" @click="submit" :loading="loading">
+                      确认转账
                     </el-button>
                   </div>
                 </el-form-item>
@@ -182,6 +182,13 @@
               stripe
             >
               <el-table-column prop="orderNo" label="转账单号" width="180" />
+              <el-table-column prop="type" label="类型" width="100">
+                <template #default="scope">
+                  <el-tag :type="scope.row.type === 'K00014' ? 'success' : 'danger'">
+                    {{ scope.row.type === 'K00014' ? '集团转入' : '集团转出' }}
+                  </el-tag>
+                </template>
+              </el-table-column>
               <el-table-column prop="fromAccount" label="转出账户" />
               <el-table-column prop="toAccount" label="转入账户" />
               <el-table-column prop="amount" label="转账金额" width="120">
@@ -200,9 +207,16 @@
               <el-table-column prop="remark" label="备注" />
             </el-table>
             
-            <div class="history-empty" v-if="!historyLoading && transferHistory.length === 0">
-              <el-empty description="暂无转账记录" />
+            <div class="history-pagination" v-if="!historyLoading && transferHistory.length > 0" style="display: flex; justify-content: center;">
+              <el-pagination
+                v-model:current-page="historyPagination.currentPage"
+                :page-size="10"
+                :total="historyPagination.total"
+                layout="total, prev, pager, next"
+                @current-change="handleHistoryCurrentChange"
+              />
             </div>
+            
           </div>
         
 
@@ -216,6 +230,10 @@
 import { ref, reactive, onMounted, onUnmounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
+import useUserStore from "@/stores/user";
+
+const userStore = useUserStore();
+
 // 页面标题
 const title = '集团商户互转';
 
@@ -224,20 +242,16 @@ const loading = ref(false);
 const formRef = ref(null);
 
 // 商户选项（模拟数据，实际应从接口获取）
-const merchantOptions = ref([
-  { code: 'C95148', balance: 83424.8143 },
-  { code: 'C95149', balance: 52239.7514 },
-  { code: 'C95150', balance: 0.00 },
-  { code: 'C95151', balance: 10000.00 }
-]);
+const merchantOptions = ref([]);
 
 const ruleForm = reactive({
-  fromMerchant: "",
+  fromMerchant: userStore.currentMerchantCode || "",
   toMerchant: "",
   amount: 0,
+  currency: "BRL",
   password: "",
-  mfaCode: "",
-  remark: ""
+  code: "",
+  // remark: ""
 });
 
 // 表单验证规则
@@ -255,9 +269,10 @@ const rules = {
   password: [
     { required: true, message: '请输入支付密码', trigger: 'blur' }
   ],
-  mfaCode: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
-  ]
+code: [
+  { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
+  { pattern: /^\d{6}$/, message: '请输入6位数字验证码', trigger: 'blur' }
+]
 };
 
 // 获取商户列表
@@ -266,7 +281,7 @@ const getMerchantList = () => {
     .getGroupMerchants()
     .then((res) => {
       if (res.code === 200 && res.data) {
-        merchantOptions.value = res.data.map(m => ({ code: m.code, balance: m.balance }));
+        merchantOptions.value = res.data.filter(m => !m.code?.startsWith('G')).map(m => ({ code: m.code, balance: m.balance }));
       }
     })
     .catch(() => {
@@ -294,22 +309,24 @@ const submit = async () => {
       if (valid) {
         loading.value = true;
         http
-          .groupTransfer({
-            fromMerchant: ruleForm.fromMerchant,
-            toMerchant: ruleForm.toMerchant,
+          .groupTransferApproval({
+            fromMerchantCode: ruleForm.fromMerchant,
+            toMerchantCode: ruleForm.toMerchant,
             amount: ruleForm.amount,
-            password: ruleForm.password,
-            mfaCode: ruleForm.mfaCode,
-            remark: ruleForm.remark
+            currency: ruleForm.currency,
+            code: ruleForm.code,
+            applicantCode: ""
           })
           .then((res) => {
             loading.value = false;
-            if (res.code === 200) {
-              ElMessage.success("转账成功");
+            if (res.Success) {
+              ElMessage.success(res.Data?.Message || '余额互转申请已提交');
               reset();
+            } else {
+              ElMessage.error(res.ErrorMessage || '转账失败');
             }
           })
-          .catch(() => {
+          .catch((error) => {
             loading.value = false;
             ElMessage.error("转账失败，请稍后重试");
           });
@@ -327,9 +344,10 @@ const reset = () => {
     fromMerchant: "",
     toMerchant: "",
     amount: 0,
+    currency: "BRL",
     password: "",
-    mfaCode: "",
-    remark: ""
+    code: "",
+    // remark: ""
   });
 };
 
@@ -337,6 +355,12 @@ const reset = () => {
 const historyTimeRange = ref([]);
 const historyLoading = ref(false);
 const transferHistory = ref([]);
+
+const historyPagination = reactive({
+  currentPage: 1,
+  pageSize: 10,
+  total: 0
+});
 
 // 初始化时间范围（默认最近7天）
 const initTimeRange = () => {
@@ -354,35 +378,40 @@ const initTimeRange = () => {
 const getTransferHistory = async () => {
   historyLoading.value = true;
   try {
-    // 模拟API请求
-    await new Promise(resolve => setTimeout(resolve, 1000));
+    const res = await http.financePage({
+      billEndTime: historyTimeRange.value[1],
+      billStartTime: historyTimeRange.value[0],
+      id: userStore.userInfo.id,
+      type: 'K00015',
+      pageNo: historyPagination.currentPage,
+      pageSize: historyPagination.pageSize,
+      orderNo:'',
+      merchantOrderNo:''
+    });
     
-    // 模拟转账记录数据
-    transferHistory.value = [
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 86400000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00001',
-      //   amount: 5000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '测试转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // }
-    ];
+    if (res.data && res.data.list) {
+      historyPagination.total = res.data.total;
+      transferHistory.value = res.data.list.map(item => ({
+        orderNo: item.orderno || '-',
+        fromAccount: item.merchantorderno || '-',
+        toAccount: '-',
+        amount: item.orderamount || 0,
+        status: 'SUCCESS',
+        createTime: item.createtime || '-',
+        remark: item.memo || '-',
+        type: item.type
+        }));
+    }
   } catch (error) {
     ElMessage.error('获取转账记录失败');
   } finally {
     historyLoading.value = false;
   }
+};
+
+const handleHistoryCurrentChange = (val) => {
+  historyPagination.currentPage = val;
+  getTransferHistory();
 };
 
 let refreshTimer = null;

@@ -28,7 +28,7 @@
               highlight-current-row
             >
               <el-table-column prop="email" label="邮箱名" width="180" />
-              <el-table-column prop="name" label="姓名" width="100" />
+              <el-table-column prop="name" label="别名" width="100" />
               <el-table-column prop="roleName" label="角色" width="120">
                 <template  #default="{ row }">
                   <el-tag :type="getRoleTagType(row.roleCode)" size="small">
@@ -123,10 +123,10 @@
               />
             </el-form-item>
 
-            <el-form-item label="姓名" prop="name">
+            <el-form-item label="别名" prop="name">
               <el-input 
                 v-model="formData.name" 
-                placeholder="请输入姓名"
+                placeholder="请输入别名"
                 clearable
                 maxlength="50"
                 @keyup.enter="saveOperator"
@@ -213,10 +213,10 @@
               />
             </el-form-item>
 
-            <el-form-item label="姓名" prop="name">
+            <el-form-item label="别名" prop="name">
               <el-input 
                 v-model="editFormData.name" 
-                placeholder="请输入姓名"
+                placeholder="请输入别名"
                 clearable
                 maxlength="50"
                 @keyup.enter="updateOperator"
@@ -319,7 +319,7 @@
               <div class="info-value">{{ viewingOperator.email }}</div>
             </div>
             <div class="info-row">
-              <div class="info-label">姓名：</div>
+              <div class="info-label">别名：</div>
               <div class="info-value">{{ viewingOperator.name || '-' }}</div>
             </div>
             <div class="info-row">
@@ -486,8 +486,8 @@ const formRules = {
     { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
   ],
   name: [
-    { required: true, message: '请输入姓名', trigger: 'blur' },
-    { max: 50, message: '姓名最大长度为50个字符', trigger: 'blur' }
+    { required: true, message: '请输入别名', trigger: 'blur' },
+    { max: 50, message: '别名最大长度为50个字符', trigger: 'blur' }
   ],
   code: [
     { required: true, message: '请输入MFA2验证码', trigger: 'blur' },

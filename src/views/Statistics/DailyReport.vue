@@ -39,14 +39,14 @@
               >
                 刷新
               </el-button>
-              <el-button
+              <!-- <el-button
                 :icon="Download"
                 @click="onExport"
                 type="primary"
                 :loading="exportLoading"
               >
                 导出
-              </el-button>
+              </el-button> -->
             </el-form-item>
           </el-form>
         </div>
@@ -54,17 +54,20 @@
         <!-- 图表区域 -->
         <div class="fade" >
           <div v-if="show===true && tableData.length > 0" class="chart-container">
-            <div class="chart-item line-chart">
-              <div ref="lineChartRef" style="width: 100%; height: 450px"></div>
+                        <div class="chart-item pie-chart">
+              <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
+                <el-table :data="pieTableData" border :height="tableHeight">
+                  <el-table-column prop="merchantCode" label="商户号" sortable />
+                  <el-table-column prop="todayCollect" label="今日代收总额" sortable />
+                  <el-table-column prop="yesterdayCollect" label="昨日代收总额" sortable />
+                  <el-table-column prop="todayPay" label="今日代付总额" sortable />
+                  <el-table-column prop="yesterdayPay" label="昨日代付总额" sortable />
+                </el-table>
+              </div>
+              <div class="resize-handle" @mousedown="startResize"></div>
             </div>
-            <div class="chart-item pie-chart">
-              <el-table :data="pieTableData" border height="450">
-                <el-table-column prop="merchantCode" label="商户号" />
-                <el-table-column prop="todayCollect" label="今日代收总额" />
-                <el-table-column prop="yesterdayCollect" label="昨日代收总额" />
-                <el-table-column prop="todayPay" label="今日代付总额" />
-                <el-table-column prop="yesterdayPay" label="昨日代付总额" />
-              </el-table>
+            <div class="chart-item line-chart">
+              <div ref="lineChartRef" style="width: 100%; height: 400px"></div>
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
@@ -74,12 +77,12 @@
 
         <!-- 表格内容区域 -->
         <div class="table-container">
-              <TimeRangeSelector
+              <!-- <TimeRangeSelector
                 @change="onTimeRangeChange"
                 :timeRangeOptions="timeRangeOptions"
                 :defaultValue="'7days'"
                 :format="'yyyy-MM-dd'"
-              />
+              /> -->
           <!-- 骨架屏 -->
           <el-skeleton :loading="loading" :count="5" animated>
             <template #default>
@@ -247,11 +250,11 @@ const searchForm = reactive({
 });
 
 // 时间范围选项
-const timeRangeOptions = [
-  { label: "昨天", value: "yesterday" },
-  { label: "3天", value: "3days" },
-  { label: "7天", value: "7days" },
-];
+// const timeRangeOptions = [
+//   { label: "昨天", value: "yesterday" },
+//   { label: "3天", value: "3days" },
+//   { label: "7天", value: "7days" },
+// ];
 
 // 表格列配置
 const columns = reactive([
@@ -481,6 +484,39 @@ const loading = ref(false);
 const tableData = ref([]);
 const exportLoading = ref(false);
 
+// 表格可拉伸高度
+const tableHeight = ref(200);
+let isResizing = false;
+let startY = 0;
+let startHeight = 0;
+
+const startResize = (e) => {
+  isResizing = true;
+  startY = e.clientY;
+  startHeight = tableHeight.value;
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', stopResize);
+  document.body.style.cursor = 'row-resize';
+  document.body.style.userSelect = 'none';
+};
+
+const doResize = (e) => {
+  if (!isResizing) return;
+  const diff = e.clientY - startY;
+  const newHeight = startHeight + diff;
+  if (newHeight >= 100 && newHeight <= 600) {
+    tableHeight.value = newHeight;
+  }
+};
+
+const stopResize = () => {
+  isResizing = false;
+  document.removeEventListener('mousemove', doResize);
+  document.removeEventListener('mouseup', stopResize);
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+};
+
 // 图表引用
 const lineChartRef = ref(null);
 const chartInstances = ref(new Map()); // 存储展开行的图表实例
@@ -489,11 +525,11 @@ const chartInstances = ref(new Map()); // 存储展开行的图表实例
 const router = useRouter();
 
 // 时间范围选择器回调
-const onTimeRangeChange = (data) => {
-  console.log(data);
-  searchForm.time = [data.timeRange[0], data.timeRange[1]];
-  handleSearch();
-};
+// const onTimeRangeChange = (data) => {
+//   console.log(data);
+//   searchForm.time = [data.timeRange[0], data.timeRange[1]];
+//   handleSearch();
+// };
 
 
 // 表格展开行事件
@@ -1592,6 +1628,7 @@ const onExport = async () => {
 /* 图表区域样式 */
 .chart-container {
   display: flex;
+  flex-direction: column;
   margin-bottom: $spacing-lg;
   gap: $spacing-md;
   
@@ -1600,14 +1637,19 @@ const onExport = async () => {
     border-radius: $border-radius-md;
     padding: $spacing-md;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
-    
-    &.line-chart {
-      flex: 3;
-    }
-    
-    &.pie-chart {
-      flex: 2.5;
-    }
+  }
+}
+
+.resize-handle {
+  height: 6px;
+  background: linear-gradient(90deg, transparent, #e0e0e0 20%, #e0e0e0 80%, transparent);
+  cursor: row-resize;
+  margin-top: 4px;
+  border-radius: 3px;
+  transition: background 0.2s;
+  
+  &:hover {
+    background: linear-gradient(90deg, transparent, #c0c0c0 20%, #c0c0c0 80%, transparent);
   }
 }
 

@@ -60,12 +60,12 @@ const formList = ref([
   {
     label: "原始支付密码",
     prop: "oldPassword",
-    placeholder: "请输入原始支付密码",
+    placeholder: "请输入当前商户的原始支付密码",
     name: "input",
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入原始支付密码", trigger: "blur" },
+      { required: true, message: "请输入当前商户的原始支付密码", trigger: "blur" },
     ],
   },
   {

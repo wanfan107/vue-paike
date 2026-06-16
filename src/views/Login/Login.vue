@@ -52,7 +52,7 @@
             <el-input
               v-model="loginForm.EmailCode"
               size="default"
-              placeholder="邮箱验证码"
+              placeholder="第一次登录请输入邮箱验证码"
               @input="handleInput('EmailCode')"
             ></el-input>
           </el-form-item>
@@ -181,7 +181,7 @@
         element-loading-text="正在登录..."
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(255, 255, 255, 0.9)">
-      <div class="dialog-close" @click="dialogValue1 = false,searchKey = ''">×</div>
+      <div class="dialog-close" @click="closeDialog1">×</div>
       <div class="dialog-header">
         <div class="logo-container">
           <img
@@ -497,6 +497,14 @@ function closeDialog() {
   loginForm.value.code = '';
   // 清空邮箱验证码
   loginForm.value.EmailCode = '';
+}
+
+// 关闭dialogValue1 选择账户 退出登录信息
+function closeDialog1() {
+  dialogValue1.value = false;
+  searchKey.value = '';
+   // 重置token
+  userStore.resetToken();
 }
 
 // 处理用户名变化 - 简化版（只要输入框值改变就重置）

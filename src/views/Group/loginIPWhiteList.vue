@@ -30,15 +30,6 @@
             </el-select>
           </el-form-item>
 
-          <el-form-item label="谷歌验证码" prop="googleCode">
-            <el-input
-              v-model="form.googleCode"
-              placeholder="请输入谷歌验证码"
-              style="width: 280px;"
-              clearable
-            />
-          </el-form-item>
-
           <el-divider />
 
           <div class="section-block">
@@ -71,7 +62,7 @@
             </el-form-item>
 
             <el-form-item>
-              <el-button type="success" @click="submitForm('1')">保存代付IP</el-button>
+              <el-button type="primary" @click="submitForm('1')">保存代付IP</el-button>
             </el-form-item>
           </div>
         </el-form>
@@ -207,9 +198,6 @@ const form = reactive({
 const rules = reactive({
   merchantCode: [
     { required: true, message: '请选择商户号', trigger: 'change' }
-  ],
-  googleCode: [
-    { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
   ]
 });
 
@@ -344,12 +332,27 @@ const submitForm = async (useFor) => {
   }));
   
   try {
+    const googleCode = await ElMessageBox.prompt(
+      '请输入谷歌验证码',
+      '验证',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        inputPattern: /^\d{6}$/,
+        inputErrorMessage: '请输入6位数字验证码'
+      }
+    ).catch(() => null);
+    
+    if (!googleCode) {
+      return;
+    }
+    
     const res = await http.addLoginIp({
       items: items,
       merchantCode: form.merchantCode,
       applicantCode: '',
       applicantName: '',
-      code: form.googleCode
+      code: googleCode.value
     });
     if (res.Success) {
       ElMessage.success('保存成功');
@@ -358,7 +361,6 @@ const submitForm = async (useFor) => {
       } else {
         form.payIp = '';
       }
-      form.googleCode = '';
     } else {
       ElMessage.error(res.ErrorMessage || '保存失败');
     }

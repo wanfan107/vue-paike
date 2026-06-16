@@ -1,4 +1,5 @@
 import request from "@/request/index";
+import request_group from "@/request/index_group";
 const defaultApi = (apiName) => {
     return {
         list: (params) => request.get(`/${apiName}/list`, { params }),
@@ -12,39 +13,43 @@ const defaultApi = (apiName) => {
 export const http = {
     form: defaultApi('form'),
     // 集团预登录
-    groupPrelogin: (data) => request.post("/Auth/group/prelogin", data),
+    groupPrelogin: (data) => request_group.post("/Auth/group/prelogin", data),
     // 集团登录
-    groupLogin: (data) => request.post("/Auth/group/login", data),
+    groupLogin: (data) => request_group.post("/Auth/group/login", data),
     // 集团选择商户
-    selectMerchant: (data, headers) => request.post("/Auth/group/selectMerchant", data, { headers }),
+    selectMerchant: (data, headers) => request_group.post("/Auth/group/selectMerchant", data, { headers }),
     // 集团菜单权限
-    getGroupMenus: () => request.get("/Auth/group/menus"),  // 未用
+    getGroupMenus: () => request_group.get("/Auth/group/menus"),  // 未用
     // 集团可访问商户
-    getGroupMerchants: () => request.get("/Auth/group/merchants"),
+    getGroupMerchants: () => request_group.get("/Auth/group/merchants"),
     // 集团用户列表 （查询）
-    getGroupUsers: () => request.post("/Auth/group/users"),
+    getGroupUsers: () => request_group.post("/Auth/group/users"),
     // 创建集团用户 （创建）
-    createGroupUser: (data) => request.post("/Auth/group/users/create", data),
+    createGroupUser: (data) => request_group.post("/Auth/group/users/create", data),
     // 修改集团用户 （修改）
-    updateGroupUser: (data) => request.post("/Auth/group/users/update", data),
+    updateGroupUser: (data) => request_group.post("/Auth/group/users/update", data),
     // 删除集团用户 （删除）
-    deleteGroupUser: (data) => request.post("/Auth/group/users/delete", data),
+    deleteGroupUser: (data) => request_group.post("/Auth/group/users/delete", data),
     // 重置集团用户密码 （重置密码）
-    resetGroupUserPassword: (data) => request.post("/Auth/group/users/resetPassword", data),
+    resetGroupUserPassword: (data) => request_group.post("/Auth/group/users/resetPassword", data),
     // 集团登录记录
-    groupLoginLogs: (params) => request.post("/Auth/group/loginlogs", params),
+    groupLoginLogs: (params) => request_group.post("/Auth/group/loginlogs", params),
     // 验证设置密码Token
-    verifySetPasswordToken: (data) => request.post("/Auth/group/verify-token", data),
+    verifySetPasswordToken: (data) => request_group.post("/Auth/group/verify-token", data),
     // 通过Token设置密码
-    setGroupUserPassword: (data) => request.post("/Auth/group/set-password", data),
+    setGroupUserPassword: (data) => request_group.post("/Auth/group/set-password", data),
     // 支付密码修改（使用集团MFA2验证）
-    updateGroupPayPassword: (data, headers) => request.post("/Auth/group/paypassword", data, { headers }),
+    updateGroupPayPassword: (data, headers) => request_group.post("/Auth/group/paypassword", data, { headers }),
     // 集团商户互转余额查询
-    groupTransferBalance: (params, headers) => request.get("/Auth/group/transfer/balance", { params, headers }),
+    // groupTransferBalance: (params, headers) => request_group.get("/Auth/group/transfer/balance", { params, headers }), // 郭哥接口暂时不用
     // 集团商户互转
-    groupMerchantTransfer: (data, headers) => request.post("/Auth/group/transfer", data, { headers }),
+    // groupMerchantTransfer: (data, headers) => request_group.post("/Auth/group/transfer", data, { headers }),  // 郭哥接口暂时不用
     // 集团订单模糊查询
-    groupOrderQuery: (data, headers) => request.post("/Auth/group/orderQuery", data, { headers }),
+    groupOrderQuery: (data, headers) => request_group.post("/Auth/group/orderQuery", data, { headers }),
+
+
+
+    
     // 即时报表
     // 代付成功率统计
     paySuccessRatio: (params) => request.get('/pay/successratio', { params }),
@@ -69,6 +74,8 @@ export const http = {
     // 集团删除IP白名单
     // 删除IP白名单（别名）
     deleteIpWhiteList: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
+    // 集团互转审批-刘强
+    groupTransferApproval: (data, headers) => request.post("/wftransfer/apply", data, { headers }),
 
 
 
