@@ -100,7 +100,7 @@ export const http = {
     // 统计报表
     financeReport: (params) => request.post('/Finance/dailyorderstats', params),
     // 统计报表查每天，每月
-    financeReportByDay: (params) => request.get("/Collect/statisticsByDayBoth", { params }),
+    financeReportByDay: (params) => request.get("/Finance/dailyRpt", { params }),
     financeReportByMonth: (params) => request.get("Collect/statisticsByMonthMulti", { params }),
     // 查询汇率
     exchangeRate: (params) => request.get('/USDT/rate', { params }),
