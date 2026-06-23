@@ -115,7 +115,7 @@
                     <el-form-item label="钱包地址" prop="walletAddress">
                       <EditableSelect
                         v-model="ruleForm.walletAddress"
-                        :placeholder="'请输入钱包地址，如果输入错误，产生的交易不可逆转，当前仅支持TRC2.0地址提现'"
+                        :placeholder="'请选择钱包地址，如果选择错误，产生的交易不可逆转，当前仅支持TRC2.0地址提现'"
                         :options="walletAddressOptions"
                       />
                     </el-form-item>

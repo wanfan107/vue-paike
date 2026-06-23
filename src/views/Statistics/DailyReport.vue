@@ -166,15 +166,20 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="OrderDate" label="日期" align="center" width="120"></el-table-column>
+                <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable></el-table-column>
                 <el-table-column
                   min-width="140px"
                   align="center"
                   v-for="item in columns"
                   :key="item.prop"
                   :prop="item.prop"
-                  :label="item.label"
                 >
+                  <template #header>
+                    <span>{{ item.label }}</span>
+                    <el-tooltip v-if="item.tooltip" :content="item.tooltip" placement="top">
+                   <span style="margin-left: 5px;"><el-icon><QuestionFilled /></el-icon></span> 
+                    </el-tooltip>
+                  </template>
                   <template #default="scope">
                     <span v-if="item.type === 'select'">
                       {{ item.mapping[scope.row[item.prop]] }}
@@ -261,7 +266,7 @@ const columns = reactive([
   { prop: "PreviousDayEndBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当日收款总额" },
   { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "Totalamountreceived", label: "收款总金额" },
+  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当日 收款总额 - 当日付款总额" },
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 

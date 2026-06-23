@@ -28,6 +28,7 @@
                     placeholder="选择时间"            
                     format="YYYY-MM-DD HH:mm:ss"
                     value-format="YYYY-MM-DD HH:mm:ss"
+                    :show-now="false"
                     style="width: 180px; border-radius: 4px;"
                     size="small"
                     @change="getdata"
@@ -119,6 +120,9 @@ import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import ProjectBox from "./component/project.vue";
 import * as echarts from 'echarts';
+import useUserStore from "@/stores/user";
+
+const userStore = useUserStore();
 
 // 银行页面
 const props = defineProps({
@@ -180,10 +184,31 @@ const selectedTime = ref('');
 const timeRange = ref('5');
 
 // 格式化当前时间
-const formatCurrentTime = () => {
-  const now = new Date();
+const formatCurrentTime = (currency) => {
   const pad = (n) => String(n).padStart(2, '0');
-  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  let targetDate;
+
+  if (currency === 'BRL') {
+    // 巴西时区 UTC-3 计算逻辑
+    const now = new Date();
+    // 当前时间距离UTC的毫秒偏移
+    const utcOffsetMs = now.getTimezoneOffset() * 60 * 1000;
+    // UTC-3 = UTC时间 - 3小时
+    const brazilTs = now.getTime() + utcOffsetMs - 3 * 3600 * 1000;
+    targetDate = new Date(brazilTs);
+  } else {
+    // 非巴西币种，使用本地浏览器时间
+    targetDate = new Date();
+  }
+
+  const year = targetDate.getFullYear();
+  const month = pad(targetDate.getMonth() + 1);
+  const day = pad(targetDate.getDate());
+  const hour = pad(targetDate.getHours());
+  const minute = pad(targetDate.getMinutes());
+  const second = pad(targetDate.getSeconds());
+
+  return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 };
 
 
@@ -675,7 +700,7 @@ const initTransactionChart = (chartData = null) => {
         // 图表配置
         const option = {
           title: {
-            text: '当日代收总额，代付总额',
+            text: '每日代收总额，代付总额',
             left: '0%',
             top: '0%',
             textStyle: {
@@ -981,7 +1006,7 @@ watch(realTimeChart, (newOption) => {
 
 onMounted(() => {
   // 设置默认时间为当前时间
-  selectedTime.value = formatCurrentTime();
+  selectedTime.value = formatCurrentTime(userStore.merchantInfo.currency);
   getdata();
   // 组件挂载后初始化图表
   initChart();
