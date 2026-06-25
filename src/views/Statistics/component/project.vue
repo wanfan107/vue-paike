@@ -11,7 +11,7 @@
     >
       <el-card :class="['project-card', 'project-card' + index]" >
         <div class="project-card-header">
-          <div class="project-name">{{ item.name }}<span style="font-size: 12px;">(代收)</span></div>
+          <div class="project-name">{{ item.name }}</div>
           <div class="project-icon" :class="['icon' + index]">
              <!-- 添加图标 --->
             <el-icon v-if="index === 0"><FolderAdd /></el-icon>

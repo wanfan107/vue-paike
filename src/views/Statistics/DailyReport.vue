@@ -17,7 +17,7 @@
                 unlink-panels
                 :shortcuts="shortcuts"
                 :disabled-date="disabledDate"
-                range-separator="To"
+                range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
               />
@@ -66,8 +66,13 @@
               </div>
               <div class="resize-handle" @mousedown="startResize"></div>
             </div>
-            <div class="chart-item line-chart">
-              <div ref="lineChartRef" style="width: 100%; height: 400px"></div>
+            <div class="charts-wrapper">
+              <div class="chart-item balance-chart">
+                <div ref="balanceChartRef" style="width: 100%; height: 100%;"></div>
+              </div>
+              <div class="chart-item line-chart">
+                <div ref="lineChartRef" style="width: 100%; height: 100%;"></div>
+              </div>
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
@@ -266,7 +271,7 @@ const columns = reactive([
   { prop: "PreviousDayEndBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当日收款总额" },
   { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当日 收款总额 - 当日付款总额" },
+  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 
@@ -286,12 +291,12 @@ const realTimeChart = computed(() => {
   return {
     title: {
       text: "收款金额与付款金额趋势",
-      left: "center",
-      top: 20,
+    left: '0%',
+      top: '0%',
       textStyle: {
-        color: "#666",
-        fontSize: 16,
-      },
+        fontSize: 14,
+        color: '#666'
+      }
     },
     tooltip: {
       trigger: "axis",
@@ -316,18 +321,18 @@ const realTimeChart = computed(() => {
     },
     legend: {
       data: ["收款金额", "付款金额"],
-      bottom: "5%",
+      top: "5%",
       textStyle: {
         color: "#666",
         fontSize: 13,
       },
     },
     grid: {
-      top: "25%",
-      left: "5%",
-      right: "5%",
-      bottom: "15%",
-      containLabel: true,
+      left: '3%',
+      right: '4%',
+      bottom: '8%',
+      top: '20%',
+      containLabel: true
     },
     xAxis: {
       type: "category",
@@ -467,6 +472,82 @@ const realTimeChart = computed(() => {
   };
 });
 
+const balanceChartOption = computed(() => {
+  const dates = balanceChartData.value.dates;
+  const PreviousDayEndBalance = balanceChartData.value.PreviousDayEndBalance;
+
+  return {
+    title: {
+      text: '期初余额',
+      left: '0%',
+      top: '0%',
+      textStyle: {
+        fontSize: 14,
+        color: '#666'
+      }
+    },
+    tooltip: {
+      trigger: 'axis'
+    },
+    grid: {
+      left: '3%',
+      right: '4%',
+      bottom: '10%',
+      top: '20%',
+      containLabel: true
+    },
+    xAxis: {
+      type: 'category',
+      data: dates,
+      axisLine: {
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisLabel: {
+        fontSize: 10,
+        color: '#999'
+      }
+    },
+    yAxis: {
+      show: false,
+      type: 'value'
+    },
+    series: [{
+      name: '余额',
+      type: 'line',
+      data: PreviousDayEndBalance,
+      itemStyle: {
+        color: '#48bb78'
+      },
+      lineStyle: {
+        width: 2
+      },
+      symbol: 'circle',
+      symbolSize: 4,
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            {
+              offset: 0,
+              color: 'rgba(72, 187, 120, 0.3)'
+            },
+            {
+              offset: 1,
+              color: 'rgba(72, 187, 120, 0.05)'
+            }
+          ]
+        }
+      }
+    }]
+  };
+});
+
 const pieTableData = computed(() => {
   return tableData.value.map((item) => ({
     merchantCode: item.merchantCode || '-',
@@ -524,7 +605,14 @@ const stopResize = () => {
 
 // 图表引用
 const lineChartRef = ref(null);
+const balanceChartRef = ref(null);
 const chartInstances = ref(new Map()); // 存储展开行的图表实例
+
+// 期初余额图表数据
+const balanceChartData = ref({
+  dates: [],
+  PreviousDayEndBalance: []
+});
 
 // 路由实例
 const router = useRouter();
@@ -611,7 +699,7 @@ const onExpandChange = (row, expandedRows) => {
 // 生成唯一的行标识符
 const getRowKey = (row, type) => {
   // 优先使用OrderDate，如果没有则使用索引或其他唯一标识
-  const rowId = row.OrderDate || row.id || Math.random().toString(36).substr(2, 9);
+  const rowId = row.OrderDate || row.id || Math.random().toString(36).substring(2, 9);
   return `${rowId}-${type}`;
 };
 
@@ -1168,13 +1256,13 @@ const shortcuts = computed(() => [
       );
       start.setHours(0, 0, 0, 0);
 
-      // 设置结束时间（23:59:59.999）
+      // 设置结束时间（00:00:00.000，左闭右闭）
       const end = new Date(
         yesterday.getFullYear(),
         yesterday.getMonth(),
         yesterday.getDate(),
       );
-      end.setHours(23, 59, 59, 999);
+      end.setHours(0, 0, 0, 0);
 
       return [start, end];
     },
@@ -1189,9 +1277,9 @@ const shortcuts = computed(() => [
         ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
         : 0;
 
-      // 3天前的开始时间
+      // 2天前的开始时间（左闭右闭，3天 = 今天-2天 到 今天）
       const startDate = new Date(
-        timestamp - 3 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
+        timestamp - 2 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
       );
       const start = new Date(
         startDate.getFullYear(),
@@ -1222,9 +1310,9 @@ const shortcuts = computed(() => [
         ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
         : 0;
 
-      // 7天前的开始时间
+      // 6天前的开始时间（左闭右闭，7天 = 今天-6天 到 今天）
       const startDate = new Date(
-        timestamp - 7 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
+        timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
       );
       const start = new Date(
         startDate.getFullYear(),
@@ -1270,7 +1358,6 @@ const formatTime = (date) => {
 
 // 搜索方法
 const handleSearch = async () => {
-  // 发起搜索请求
   if (!searchForm.time || searchForm.time.length !== 2) {
     ElMessage.warning('请选择日期范围');
     return;
@@ -1278,27 +1365,44 @@ const handleSearch = async () => {
 
   loading.value = true;
   try {
-    // 使用假数据
-    // tableData.value = generateReportMockData(searchForm.time[0], searchForm.time[1]);
+    const startDate = formatTime(searchForm.time[0]);
+    const endDate = formatTime(searchForm.time[1]);
     
-    // 实际 API 调用（注释掉）
-    let res = await http.financeReportByDay({
-      startDate: formatTime(searchForm.time[0]),
-      endDate: formatTime(searchForm.time[1]),
+    const res = await http.statisticsByDayBoth({
+      startDate,
+      endDate,
     });
+    
     if (res.code === 200) {
-      if (res.data.list && res.data.list.length > 0) {
-        res.data.list.forEach((item) => {
+      const data = res.data?.list || [];
+      if (Array.isArray(data) && data.length > 0) {
+        data.forEach((item) => {
           item.OrderDate = item.OrderDate ? item.OrderDate.split('T')[0] : '';
           item.Totalamountreceived = (item.SuccessAmountPayin || 0) - (item.SuccessAmountPayout || 0);
         });
-        tableData.value = res.data.list;
+        tableData.value = data;
+        
+        balanceChartData.value = {
+          dates: data.map(item => {
+            const dateStr = item.OrderDate;
+            if (dateStr && dateStr.includes('T')) {
+              return dateStr.split('T')[0];
+            }
+            const date = new Date(dateStr);
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+          }),
+          PreviousDayEndBalance: data.map(item => item.PreviousDayEndBalance || 0)
+        };
       } else {
         tableData.value = [];
+        balanceChartData.value = {
+          dates: [],
+          PreviousDayEndBalance: []
+        };
         ElMessage.info('暂无数据');
       }
     } else {
-      ElMessage.error(res.message || '查询失败');
+      ElMessage.error(res.msg || '查询失败');
     }
     
   } catch (error) {
@@ -1341,6 +1445,8 @@ const handleCurrentChange = (val) => {
 // 图表实例
 let lineChart = null;
 let lineChartResizeHandler = null;
+let balanceChart = null;
+let balanceChartResizeHandler = null;
 
 // 初始化单个图表的辅助函数
 const initChart = (chartRef, chartInstance, resizeHandler, option) => {
@@ -1398,6 +1504,13 @@ const initMainCharts = () => {
     console.log('折线图初始化成功');
   }
   
+  // 初始化期初余额图表
+  const balanceChartResult = initChart(balanceChartRef, balanceChart, balanceChartResizeHandler, balanceChartOption.value);
+  if (balanceChartResult) {
+    balanceChart = balanceChartResult.chart;
+    balanceChartResizeHandler = balanceChartResult.resizeHandler;
+    console.log('期初余额图表初始化成功');
+  }
 };
 
 // 更新主图表
@@ -1409,17 +1522,43 @@ const updateMainCharts = () => {
       console.error('更新折线图失败:', error);
     }
   }
+  
+  if (balanceChart && !balanceChart.isDisposed()) {
+    try {
+      balanceChart.setOption(balanceChartOption.value);
+    } catch (error) {
+      console.error('更新期初余额图表失败:', error);
+    }
+  }
 };
 
 // 初始化数据
 onMounted(async () => {
-  // 设置默认日期范围为最近7天
-  const now = new Date();
-  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-  const start = new Date(sevenDaysAgo.getFullYear(), sevenDaysAgo.getMonth(), sevenDaysAgo.getDate(), 0, 0, 0, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  
-  // 格式化为 yyyy-MM-dd 格式
+  const timestamp = Date.now();
+  const localDate = new Date(timestamp);
+  const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
+  const standardTimeOffset = userStore.merchantInfo?.standardtime
+    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
+    : 0;
+
+  const startDate = new Date(
+    timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
+  );
+  const start = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
+  );
+  start.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
+  const end = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate(),
+  );
+  end.setHours(0, 0, 0, 0);
+
   const formatDate = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -1460,7 +1599,7 @@ watch(show, (newVal) => {
 
 // 组件卸载时清理图表
 onUnmounted(() => {
-  // 销毁主图表
+  // 销毁折线图
   if (lineChart && !lineChart.isDisposed()) {
     try {
       if (lineChartResizeHandler) {
@@ -1471,6 +1610,20 @@ onUnmounted(() => {
       lineChart = null;
     } catch (error) {
       console.error('销毁折线图失败:', error);
+    }
+  }
+  
+  // 销毁期初余额图表
+  if (balanceChart && !balanceChart.isDisposed()) {
+    try {
+      if (balanceChartResizeHandler) {
+        window.removeEventListener('resize', balanceChartResizeHandler);
+        balanceChartResizeHandler = null;
+      }
+      balanceChart.dispose();
+      balanceChart = null;
+    } catch (error) {
+      console.error('销毁期初余额图表失败:', error);
     }
   }
   
@@ -1493,46 +1646,46 @@ onUnmounted(() => {
 });
 
 // 获取查询参数
-const getQueryParams = () => {
-  return {
-    billEndTime: searchForm.time[1],
-    billStartTime: searchForm.time[0],
-    id: userStore.userInfo.id,
-    merchantOrderNo: searchForm.merchantOrderNo,
-    orderNo: searchForm.orderNo,
-    type: searchForm.type,
-  };
-};
+// const getQueryParams = () => {
+//   return {
+//     billEndTime: searchForm.time[1],
+//     billStartTime: searchForm.time[0],
+//     id: userStore.userInfo.id,
+//     merchantOrderNo: searchForm.merchantOrderNo,
+//     orderNo: searchForm.orderNo,
+//     type: searchForm.type,
+//   };
+// };
 
 // 导出方法
-const onExport = async () => {
-  try {
-    // 确认对话框
-    await ElMessageBox.confirm("确定导出数据吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+// const onExport = async () => {
+//   try {
+//     // 确认对话框
+//     await ElMessageBox.confirm("确定导出数据吗?", "提示", {
+//       confirmButtonText: "确定",
+//       cancelButtonText: "取消",
+//       type: "warning",
+//     });
 
-    exportLoading.value = true;
+//     exportLoading.value = true;
 
-    // 创建导出
-    await http.exportFinance(getQueryParams());
+//     // 创建导出
+//     await http.exportFinance(getQueryParams());
 
-    // 跳转到导出记录页面
-    router.push({ name: "exportRecord" });
+//     // 跳转到导出记录页面
+//     router.push({ name: "exportRecord" });
 
-    ElMessage.success("导出请求已提交，请到导出记录页面查看");
-  } catch (error) {
-    if (error !== "cancel") {
-      // 不是取消操作时才显示错误信息
-      console.error("导出失败:", error);
-      ElMessage.error("导出失败，请稍后重试");
-    }
-  } finally {
-    exportLoading.value = false;
-  }
-};
+//     ElMessage.success("导出请求已提交，请到导出记录页面查看");
+//   } catch (error) {
+//     if (error !== "cancel") {
+//       // 不是取消操作时才显示错误信息
+//       console.error("导出失败:", error);
+//       ElMessage.error("导出失败，请稍后重试");
+//     }
+//   } finally {
+//     exportLoading.value = false;
+//   }
+// };
 </script>
 
 <style scoped lang="scss">
@@ -1604,7 +1757,7 @@ const onExport = async () => {
     flex-wrap: wrap;
     gap: $spacing-sm;
 
-    :deep(.el-form-item) {
+    ::deep(.el-form-item) {
       margin-bottom: $spacing-sm;
     }
   }
@@ -1642,6 +1795,17 @@ const onExport = async () => {
     border-radius: $border-radius-md;
     padding: $spacing-md;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .charts-wrapper {
+    display: flex;
+    gap: $spacing-md;
+    height: 400px;
+    
+    .chart-item {
+      flex: 1;
+      height: 100%;
+    }
   }
 }
 
@@ -1714,6 +1878,15 @@ const onExport = async () => {
     .chart-item {
       width: 100%;
       margin-bottom: $spacing-md;
+    }
+    
+    .charts-wrapper {
+      flex-direction: column;
+      height: auto;
+      
+      .chart-item {
+        height: 300px;
+      }
     }
   }
   
