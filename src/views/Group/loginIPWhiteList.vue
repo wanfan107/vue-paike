@@ -355,7 +355,7 @@ const submitForm = async (useFor) => {
       code: googleCode.value
     });
     if (res.Success) {
-      ElMessage.success('保存成功');
+      ElMessage.success(res.Data?.Message || '保存成功');
       if (useFor === '3') {
         form.loginIp = '';
       } else {
