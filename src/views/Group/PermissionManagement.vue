@@ -45,7 +45,7 @@
                       <template v-if="row && row.merchantCodes">
                         <div v-for="(group, groupIdx) in getMerchantGroups(row.merchantCodes)" :key="groupIdx" class="merchant-tag-row">
                           <span v-for="code in group" :key="code" class="merchant-tag-item">
-                            <el-tag size="small">{{ code }}</el-tag>
+                            <el-tag type="info" size="small">{{ code }}</el-tag>
                           </span>
                         </div>
                       </template>
@@ -69,14 +69,14 @@
               </el-table-column>
               <el-table-column prop="isActivated" label="已激活" width="80">
                 <template #default="{ row }">
-                  <el-tag :type="row.isActivated ? 'success' : 'warning'" size="small">
+                  <el-tag :type="row.isActivated ? 'success' : 'danger'" size="small">
                     {{ row.isActivated ? '是' : '否' }}
                   </el-tag>
                 </template>
               </el-table-column>
               <el-table-column prop="hasGoogleAuth" label="MFA2" width="80">
                 <template #default="{ row }">
-                  <el-tag :type="row.hasGoogleAuth ? 'success' : 'info'" size="small">
+                  <el-tag :type="row.hasGoogleAuth ? 'success' : 'danger'" size="small">
                     {{ row.hasGoogleAuth ? '是' : '否' }}
                   </el-tag>
                 </template>
@@ -92,7 +92,7 @@
                     <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
                       编辑
                     </el-button>
-                    <el-button  type="warning" size="small" @click.stop="showResetPasswordDialog(row)">
+                    <el-button  type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
                       重置密码
                     </el-button>
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="deleteOperator(row)">
@@ -349,7 +349,7 @@
             <div class="info-row">
               <div class="info-label">已激活：</div>
               <div class="info-value">
-                <el-tag :type="viewingOperator.isActivated ? 'success' : 'warning'" size="small">
+                <el-tag :type="viewingOperator.isActivated ? 'success' : 'danger'" size="small">
                   {{ viewingOperator.isActivated ? '是' : '否' }}
                 </el-tag>
               </div>
@@ -357,7 +357,7 @@
             <div class="info-row">
               <div class="info-label">MFA2：</div>
               <div class="info-value">
-                <el-tag :type="viewingOperator.hasGoogleAuth ? 'success' : 'info'" size="small">
+                <el-tag :type="viewingOperator.hasGoogleAuth ? 'success' : 'danger'" size="small">
                   {{ viewingOperator.hasGoogleAuth ? '是' : '否' }}
                 </el-tag>
               </div>
@@ -552,9 +552,10 @@ onMounted(() => {
 
 // 获取角色标签类型
 const getRoleTagType = (roleCode) => {
-  if (roleCode === 'admin') return 'danger';
-  if (roleCode === 'financial' || roleCode === 'finance') return 'warning';
-  return 'success';
+  // if (roleCode === 'admin') return 'danger';
+  // if (roleCode === 'financial' || roleCode === 'finance') return 'warning';
+  // return 'success';
+  return 'danger';
 };
 
 // 将商户代码数组分成每组3个
