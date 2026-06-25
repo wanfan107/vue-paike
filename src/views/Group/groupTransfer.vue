@@ -24,9 +24,9 @@
               <el-descriptions-item label="集团可用余额" :span="1">
                 <span class="balance-value">-</span>
               </el-descriptions-item>
-              <el-descriptions-item label="集团待结算余额" :span="1">
+              <!-- <el-descriptions-item label="集团待结算余额" :span="1">
                 <span class="balance-value">-</span>
-              </el-descriptions-item>
+              </el-descriptions-item> -->
               <!-- <el-descriptions-item label="集团授信余额" :span="1">
                 <span class="balance-value">-</span>
               </el-descriptions-item>
@@ -34,10 +34,10 @@
                 <span class="balance-value">-</span>
               </el-descriptions-item> -->
               <el-descriptions-item label="互转手续费" :span="1">
-                <span class="balance-value">-</span>
+                <span class="balance-value">0</span>
               </el-descriptions-item>
               <el-descriptions-item label="最小转账金额" :span="2">
-                <span class="balance-value">-</span>
+                <span class="balance-value">1</span>
               </el-descriptions-item>
             </el-descriptions>
           </div>
@@ -106,8 +106,7 @@
                   <el-input-number
                     v-model="ruleForm.amount"
                     placeholder="请输入转账金额"
-                    :min="10"
-                    :max="9999999999"
+                    :min="0"
                     :step="1"
                     style="width: 100%"
                   ></el-input-number>
