@@ -1345,9 +1345,46 @@ const shortcuts = computed(() => [
   },
 ]);
 
+// 设置默认时间范围（最近7天，基于商户时区）
+const setDefaultTime = () => {
+  const timestamp = Date.now();
+  const localDate = new Date(timestamp);
+  const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
+  const standardTimeOffset = userStore.merchantInfo?.standardtime
+    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
+    : 0;
+
+  const startDate = new Date(
+    timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
+  );
+  const start = new Date(
+    startDate.getFullYear(),
+    startDate.getMonth(),
+    startDate.getDate(),
+  );
+  start.setHours(0, 0, 0, 0);
+
+  const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
+  const end = new Date(
+    endDate.getFullYear(),
+    endDate.getMonth(),
+    endDate.getDate(),
+  );
+  end.setHours(0, 0, 0, 0);
+
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  searchForm.time = [formatDate(start), formatDate(end)];
+};
+
 // 刷新方法
 const clearSearch = () => {
-  searchForm.time = [];
+  setDefaultTime();
   searchForm.merchantOrderNo = "";
   searchForm.orderNo = "";
   pagination.currentPage = 1;
@@ -1544,39 +1581,7 @@ const updateMainCharts = () => {
 
 // 初始化数据
 onMounted(async () => {
-  const timestamp = Date.now();
-  const localDate = new Date(timestamp);
-  const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-  const standardTimeOffset = userStore.merchantInfo?.standardtime
-    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-    : 0;
-
-  const startDate = new Date(
-    timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-  );
-  const start = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate(),
-  );
-  start.setHours(0, 0, 0, 0);
-
-  const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-  const end = new Date(
-    endDate.getFullYear(),
-    endDate.getMonth(),
-    endDate.getDate(),
-  );
-  end.setHours(0, 0, 0, 0);
-
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  searchForm.time = [formatDate(start), formatDate(end)];
+  setDefaultTime();
   
   // 等待数据加载完成后再初始化图表
   await handleSearch();

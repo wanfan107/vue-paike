@@ -1257,9 +1257,26 @@ const shortcuts = computed(() => [
   },
 ]);
 
+// 设置默认时间范围（最近2个月）
+const setDefaultTime = () => {
+  const now = new Date();
+  const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
+  const start = new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), twoMonthsAgo.getDate(), 0, 0, 0, 0);
+  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+  
+  const formatDate = (date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
+  
+  searchForm.time = [formatDate(start), formatDate(end)];
+};
+
 // 刷新方法
 const clearSearch = () => {
-  searchForm.time = [];
+  setDefaultTime();
   searchForm.merchantOrderNo = "";
   searchForm.orderNo = "";
   pagination.currentPage = 1;
@@ -1539,21 +1556,7 @@ const updateMainCharts = () => {
 
 // 初始化数据
 onMounted(async () => {
-  // 设置默认日期范围为最近两个月
-  const now = new Date();
-  const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
-  const start = new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), twoMonthsAgo.getDate(), 0, 0, 0, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  
-  // 格式化为 yyyy-MM-dd 格式
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  searchForm.time = [formatDate(start), formatDate(end)];
+  setDefaultTime();
   
   // 等待数据加载完成后再初始化图表
   await handleSearch();

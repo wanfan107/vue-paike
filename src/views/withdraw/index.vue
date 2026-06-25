@@ -398,8 +398,23 @@ const shortcuts = computed(() => [
   },
 ]);
 
-// 刷新方法
+// 设置默认时间范围（今天）
+const setDefaultTime = () => {
+  const now = new Date();
+  const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+  const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+  
+  const pad = (num) => String(num).padStart(2, '0');
+  const formatDate = (date) => {
+    return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+  };
+  
+  searchForm.orderTime = [formatDate(startOfDay), formatDate(endOfDay)];
+  currentTimeRange.value = 'today';
+};
+
 const clearSearch = () => {
+  setDefaultTime();
       searchForm.platformOrderNo= "",
   searchForm.account= "",
   searchForm.status= -1,
@@ -459,18 +474,7 @@ const closeDetail = () => {
 onMounted(() => {
   // 初始化时设置默认时间范围
   if (searchForm.orderTime.length === 0) {
-    // 设置为今天的时间范围
-    const now = new Date();
-    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
-    const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
-    
-    // 格式化时间
-    const formatDate = (date) => {
-      const pad = (num) => String(num).padStart(2, '0');
-      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-    };
-    
-    searchForm.orderTime = [formatDate(startOfDay), formatDate(endOfDay)];
+    setDefaultTime();
   }
   
   handleSearch();
