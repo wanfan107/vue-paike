@@ -117,11 +117,34 @@ const actualStorageKey = computed(() => {
   return props.storageKey;
 });
 
+// 编码存储的 key（钱包地址）
+const encodeKey = (key) => {
+  try {
+    return btoa(encodeURIComponent(key));
+  } catch (e) {
+    return key;
+  }
+};
+
+// 解码存储的 key
+const decodeKey = (encodedKey) => {
+  try {
+    return decodeURIComponent(atob(encodedKey));
+  } catch (e) {
+    return encodedKey;
+  }
+};
+
 // 加载本地存储并合并选项
 const loadAndMergeOptions = (defaultOptions) => {
   try {
     const stored = localStorage.getItem(actualStorageKey.value);
-    Object.assign(storedAliases, stored ? JSON.parse(stored) : {});
+    const parsed = stored ? JSON.parse(stored) : {};
+    
+    Object.keys(parsed).forEach(encodedKey => {
+      const decodedKey = decodeKey(encodedKey);
+      storedAliases[decodedKey] = parsed[encodedKey];
+    });
   } catch (e) {
     console.error('读取本地存储失败:', e);
     Object.assign(storedAliases, {});
@@ -146,7 +169,8 @@ const saveAliasesToStorage = () => {
     const aliasesToSave = {};
     mergedOptions.value.forEach(option => {
       if (option.alias !== option.original) {
-        aliasesToSave[option.value] = option.alias;
+        const encodedKey = encodeKey(option.value);
+        aliasesToSave[encodedKey] = option.alias;
       }
     });
     

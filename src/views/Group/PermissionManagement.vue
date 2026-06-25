@@ -671,7 +671,7 @@ const updateOperator = async () => {
 
 // 删除操作员
 const deleteOperator = (operator) => {
-  const currentUserEmail = localStorage.getItem('roleCode') || '';
+  const currentUserEmail = userStore.roleCode || '';
   if (operator.roleCode === currentUserEmail) {
     ElMessage.warning('不允许删除当前登录用户！');
     return;

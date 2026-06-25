@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import Request from '@/request/request.js'
-import { getToken, setToken, removeToken, saveUserInfo, loadUserinfo, saveMerchantInfo, loadMerchantInfo, saveMerchantId, loadMerchantId } from '@/utils/ProjectTools.js'
+import { getToken, setToken, removeToken, saveUserInfo, loadUserinfo, saveMerchantInfo, loadMerchantInfo, saveMerchantId, loadMerchantId, getGroupToken, setGroupToken, getMerchants, setMerchants, getCurrentMerchantCode, setCurrentMerchantCode, getRoleCode, setRoleCode, getRoleName, setRoleName, clearGroupData } from '@/utils/ProjectTools.js'
 import { http } from "@/api";
 
 const useUserStore = defineStore('user', {
@@ -15,11 +15,11 @@ const useUserStore = defineStore('user', {
     merchantId: loadMerchantId(),
 
     // 集团相关
-    groupToken: localStorage.getItem('groupToken') || '',  // 集团token
-    merchants: JSON.parse(localStorage.getItem('merchants') || '[]'),  // 商户列表
-    currentMerchantCode: localStorage.getItem('currentMerchantCode') || '',  // 当前商户code
-    roleCode: localStorage.getItem('roleCode') || '',  // 当前角色code
-    roleName: localStorage.getItem('roleName') || '',   // 当前角色名称
+    groupToken: getGroupToken(),  // 集团token
+    merchants: getMerchants(),  // 商户列表
+    currentMerchantCode: getCurrentMerchantCode(),  // 当前商户code
+    roleCode: getRoleCode(),  // 当前角色code
+    roleName: getRoleName(),   // 当前角色名称
     groupMenus: [] // 集团菜单
   }),
 
@@ -96,10 +96,10 @@ const useUserStore = defineStore('user', {
       this.roleName = res.data.roleName || '';
 
       // 保存到 localStorage
-      localStorage.setItem('groupToken', res.data.groupToken);
-      localStorage.setItem('merchants', JSON.stringify(res.data.merchants));
-      localStorage.setItem('roleCode', res.data.roleCode || '');
-      localStorage.setItem('roleName', res.data.roleName || '');
+      setGroupToken(res.data.groupToken);
+      setMerchants(res.data.merchants);
+      setRoleCode(res.data.roleCode || '');
+      setRoleName(res.data.roleName || '');
 
       // 如果只有一个商户，自动选择
       if (res.data.merchantsLen === 1) {
@@ -126,8 +126,8 @@ const useUserStore = defineStore('user', {
           this.token = result.token;
           setToken(result.token);
           saveUserInfo(result.userInfo);
-          localStorage.setItem('currentMerchantCode', selectRes.data.id);
-   await this.getMerchantInfo();
+          setCurrentMerchantCode(selectRes.data.id);
+          await this.getMerchantInfo();
           return { isGroup: true, autoSelected: true }
         } else {
           return Promise.reject(selectRes)
@@ -139,7 +139,7 @@ const useUserStore = defineStore('user', {
     },
     // 集团选择商户
     async selectMerchant(merchantCode) {
-      const token = this.groupToken || localStorage.getItem('groupToken') || '';
+      const token = this.groupToken || getGroupToken() || '';
 
       if (!token) {
         return Promise.reject({ code: 401, msg: '集团Token已失效，请重新登录' });
@@ -158,11 +158,11 @@ const useUserStore = defineStore('user', {
             token: res.data.token
           }
         }
-      this.userInfo = result.userInfo;
-          this.token = result.token;
+        this.userInfo = result.userInfo;
+        this.token = result.token;
         setToken(result.token);
         saveUserInfo(result.userInfo);
-        localStorage.setItem('currentMerchantCode', res.data.id);
+        setCurrentMerchantCode(res.data.id);
         //    // 登录成功后立即获取商户信息
         await this.getMerchantInfo();
         return Promise.resolve(res);
@@ -194,11 +194,7 @@ const useUserStore = defineStore('user', {
       saveMerchantInfo({});
       saveMerchantId('');
       // 清除集团相关数据
-      localStorage.removeItem('groupToken');
-      localStorage.removeItem('merchants');
-      localStorage.removeItem('roleCode');
-      localStorage.removeItem('roleName');
-      localStorage.removeItem('currentMerchantCode');
+      clearGroupData();
       localStorage.removeItem('merchantinfo');
       localStorage.removeItem('merchantid');
 

@@ -33,7 +33,7 @@ export const getToken = () => {
 /**
  * 清除token
  */
-export const removeToken = ()=>{
+export const removeToken = () => {
     localStorage.removeItem(TOKEN)
     localStorage.removeItem(USER_INFOT)
     // sessionStorage.removeItem(TOKEN)
@@ -109,4 +109,79 @@ export const setLocalStorage = (key, value) => {
 // 获取 localStorage
 export const getLocalStorage = key => {
     return localStorage.getItem(key)
+}
+
+// 集团相关加密存储
+const GROUP_TOKEN = 'groupToken';
+const MERCHANTS = 'merchants';
+const CURRENT_MERCHANT_CODE = 'currentMerchantCode';
+const ROLE_CODE = 'roleCode';
+const ROLE_NAME = 'roleName';
+
+export const setGroupToken = (token) => {
+    localStorage.setItem(GROUP_TOKEN, BASE64Helper.encode(JSON.stringify(token)))
+}
+
+export const getGroupToken = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(GROUP_TOKEN) || ''))
+    } catch (err) {
+        return ''
+    }
+}
+
+export const setMerchants = (merchants) => {
+    localStorage.setItem(MERCHANTS, BASE64Helper.encode(JSON.stringify(merchants)))
+}
+
+export const getMerchants = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(MERCHANTS) || '[]'))
+    } catch (err) {
+        return []
+    }
+}
+
+export const setCurrentMerchantCode = (code) => {
+    localStorage.setItem(CURRENT_MERCHANT_CODE, BASE64Helper.encode(JSON.stringify(code)))
+}
+
+export const getCurrentMerchantCode = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(CURRENT_MERCHANT_CODE) || ''))
+    } catch (err) {
+        return ''
+    }
+}
+
+export const setRoleCode = (code) => {
+    localStorage.setItem(ROLE_CODE, BASE64Helper.encode(JSON.stringify(code)))
+}
+
+export const getRoleCode = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(ROLE_CODE) || ''))
+    } catch (err) {
+        return ''
+    }
+}
+
+export const setRoleName = (name) => {
+    localStorage.setItem(ROLE_NAME, BASE64Helper.encode(JSON.stringify(name)))
+}
+
+export const getRoleName = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(ROLE_NAME) || ''))
+    } catch (err) {
+        return ''
+    }
+}
+
+export const clearGroupData = () => {
+    localStorage.removeItem(GROUP_TOKEN);
+    localStorage.removeItem(MERCHANTS);
+    localStorage.removeItem(CURRENT_MERCHANT_CODE);
+    localStorage.removeItem(ROLE_CODE);
+    localStorage.removeItem(ROLE_NAME);
 }
