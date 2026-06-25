@@ -52,9 +52,20 @@
             <el-input
               v-model="loginForm.EmailCode"
               size="default"
-              placeholder="第一次登录请输入邮箱验证码"
+              placeholder="该账户新设备首次登录,请输入邮箱验证码"
               @input="handleInput('EmailCode')"
-            ></el-input>
+            >
+              <template #append>
+                <button
+                  class="email-code-btn"
+                  :disabled="emailCountdown > 0"
+                  @click="sendEmailCode"
+                  size="default"
+                >
+                  {{ emailCountdown > 0 ? `${emailCountdown}秒后重发` : '获取验证码' }}
+                </button>
+              </template>
+            </el-input>
           </el-form-item>
 
           <!-- // aws验证码 -->
@@ -290,7 +301,7 @@
   defer
 ></script> -->
 <script setup>
-import { ref, computed, onMounted, nextTick } from 'vue';
+import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
@@ -329,6 +340,47 @@ const isFirstVisit = ref(true); // 是否是首次访问
 const groupNeedBindGoogle = ref(false); // 是否需要绑定Google验证码
 
 const EmailVerifyshow = ref(false); // 是否显示邮箱验证码输入框
+const emailCountdown = ref(0); // 邮箱验证码倒计时
+let emailCountdownTimer = null; // 倒计时定时器
+
+watch(EmailVerifyshow, (newVal) => {
+  if (newVal) {
+    startEmailCountdown();
+  } else {
+    resetEmailCountdown();
+  }
+});
+
+function startEmailCountdown() {
+  if (emailCountdownTimer) {
+    clearInterval(emailCountdownTimer);
+  }
+  emailCountdown.value = 60;
+  emailCountdownTimer = setInterval(() => {
+    emailCountdown.value--;
+    if (emailCountdown.value <= 0) {
+      clearInterval(emailCountdownTimer);
+      emailCountdownTimer = null;
+    }
+  }, 1000);
+}
+
+function resetEmailCountdown() {
+  if (emailCountdownTimer) {
+    clearInterval(emailCountdownTimer);
+    emailCountdownTimer = null;
+  }
+  emailCountdown.value = 0;
+}
+
+async function sendEmailCode() {
+  try {
+    await groupLoginLogin();
+    startEmailCountdown();
+  } catch (error) {
+    ElMessage.error(error.msg || '获取验证码失败');
+  }
+}
 
 // // 忘记密码表单数据
 // const forgotPasswordForm = ref({
@@ -596,6 +648,10 @@ onMounted(() => {
   dialogValue1.value = false;
 });
 
+onBeforeUnmount(() => {
+  resetEmailCountdown();
+});
+
 // 方法
 // 验证登录指纹，是否是常用设备
 async function compareOnEnter() {
@@ -613,7 +669,7 @@ async function compareOnEnter() {
         previousFingerprint &&
         currentFingerprint !== previousFingerprint
       ) {
-        ElMessage.warning("检测到设备变更，请注意安全！");
+        // ElMessage.warning("检测到设备变更，请注意安全！");
       }
 
       localStorage.setItem("previousFingerprint", currentFingerprint);
@@ -1514,7 +1570,37 @@ async function confirmBind(account) {
 }
 
 .balance-value {
-  color: #67c23a;  // Element Plus 绿色主题色
+  // color: #67c23a;  // Element Plus 绿色主题色
   font-weight: 600;
+}
+
+
+
+:deep(.email-code-btn) {
+  background-color: #db0011 !important;   /* 主题红色背景 */
+  border-color: #db0011 !important;       /* 主题红色边框 */
+  color: #fff !important;                  /* 白色文字 */
+  width: 100%;
+  height: 100%;
+  padding: 0 15px;
+  border-radius: 0 24px 24px 0;           /* 左边直角，右边圆角，和输入框对齐 */
+  margin-left: -1px;                       /* 消除和输入框的缝隙 */
+  transition: all 0.2s ease;
+
+  &:hover:not(:disabled) {
+    background-color: #b8000d !important;  /* hover 深一点的红 */
+    border-color: #b8000d !important;
+    opacity: 0.9;
+  }
+
+  &:disabled {
+    background-color: #f56c6c !important;  /* 禁用时浅红 */
+    border-color: #f56c6c !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+:deep(.el-input-group__append) {
+ padding: 0  !important;
 }
 </style>
