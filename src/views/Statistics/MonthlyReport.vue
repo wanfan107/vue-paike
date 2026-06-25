@@ -83,7 +83,7 @@
                 @expand-change="onExpandChange"
                 :preserve-expanded-content="preserveExpanded"
                 :expand-row-keys="expandRowKeys"
-                row-key="OrderDate"
+                row-key="Month"
               >
                 <el-table-column type="expand" >
                   <template #default="scope">
@@ -111,12 +111,15 @@
                         <el-table-column
                           prop="SuccessAmountPayin"
                           label="收款总金额"
-                          align="center"
+                          align="right"
                         >
+                          <template #default="scope">
+                            <span>{{ formatNumber(scope.row.SuccessAmountPayin) }}</span>
+                          </template>
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
-                          label="成功率"
+                          label="收款笔数成功率"
                           align="center"
                         >
                         </el-table-column>
@@ -129,12 +132,15 @@
                         <el-table-column
                           prop="SuccessAmountPayout"
                           label="付款总金额"
-                          align="center"
+                          align="right"
                         >
+                          <template #default="scope">
+                            <span>{{ formatNumber(scope.row.SuccessAmountPayout) }}</span>
+                          </template>
                         </el-table-column>
                             <el-table-column
                           prop="SuccessRatePayout"
-                          label="成功率"
+                          label="付款笔数成功率"
                           align="center"
                         >
                         </el-table-column>
@@ -150,10 +156,10 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable></el-table-column>
+                <el-table-column prop="Month" label="月份" align="center" width="120" sortable></el-table-column>
                 <el-table-column
                   min-width="140px"
-                  align="center"
+                  align="right"
                   v-for="item in columns"
                   :key="item.prop"
                   :prop="item.prop"
@@ -280,11 +286,11 @@ const searchForm = reactive({
 
 // 表格列配置
 const columns = reactive([
-  { prop: "PreviousDayEndBalance", label: "期初余额" },
+  { prop: "PreviousMonthBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当月收款总额" },
   { prop: "SuccessAmountPayout", label: "当月付款总额" },
-  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当月 收款总额 - 当月付款总额" },
-  { prop: "CurrentDayEndBalance", label: "期末余额" },
+  { prop: "TotalAmountReceived", label: "收款总金额", tooltip: "计算公式：当月 收款总额 - 当月付款总额" },
+  { prop: "CurrentMonthBalance", label: "期末余额" },
 ]);
 
 // 计算属性
@@ -295,7 +301,7 @@ const realTimeChart = computed(() => {
   const paymentAmounts = [];
 
   tableData.value.forEach((item) => {
-    dates.push(item.OrderDate || '');
+    dates.push(item.Month || '');
     collectionAmounts.push(item.SuccessAmountPayin || 0);
     paymentAmounts.push(item.SuccessAmountPayout || 0);
   });
@@ -597,49 +603,41 @@ const onExpandChange = (row, expandedRows) => {
   console.log('展开行数量:', expandedRows.length, 'show值:', show.value);
 
   // 更新expandRowKeys数组
-  expandRowKeys.value = expandedRows.map(item => item.OrderDate);
+  expandRowKeys.value = expandedRows.map(item => item.Month);
 
   // 只在展开时添加数据（expandedRows包含当前展开的行）
-  if (row && row.items && expandedRows.includes(row)) {
+  if (row && expandedRows.includes(row)) {
     // 检查是否已经添加过额外数据（避免重复添加）
-    const hasExtraData = row.items.some(item =>
-      item.typeName === '手续费' || item.typeName === '违规订单'
+    const hasExtraData = row.items && row.items.some(item =>
+      item.typeName === '汇总' || item.typeName === '手续费'
     );
 
     if (!hasExtraData) {
-      // 创建新的items数组，而不是直接修改原数组
-      const updatedItems = row.items.map(item => ({
-        ...item,
-        SuccessRatePayin: toPercent(item.SuccessRatePayin),
-        SuccessRatePayout: toPercent(item.SuccessRatePayout),
-        // SuccessOrderFee: formatNumber(item.SuccessOrderFee),
-      }));
-
-      // 添加手续费和违规订单数据
-      const extraItems = [
+      // 月报表展开行：参考每日报表逻辑，只显示"汇总"和"手续费"2行
+      // 注意：SuccessFeePayin 是代收手续费，应展示在"收款总金额"列（SuccessAmountPayin）
+      const itemsData = [
+        {
+          typeName: '汇总',
+          SuccessCountPayin: row.SuccessCountPayin || 0,
+          SuccessAmountPayin: row.SuccessAmountPayin || 0,
+          SuccessRatePayin: toPercent(row.SuccessRateCountPayin),
+          SuccessCountPayout: row.SuccessCountPayout || 0,
+          SuccessAmountPayout: row.SuccessAmountPayout || 0,
+          SuccessRatePayout: toPercent(row.SuccessRateCountPayout),
+        },
         {
           typeName: '手续费',
           SuccessCountPayin: '-',
-          SuccessAmountPayin: '-',
+          SuccessAmountPayin: row.SuccessFeePayin || 0,
+          SuccessRatePayin: '-',
           SuccessCountPayout: '-',
-          SuccessAmountPayout: row.SuccessOrderFee || 0,
-          SuccessRatePayin: '-',
-        },
-        {
-          typeName: '违规订单',
-          SuccessCountPayin: 0,
-          SuccessAmountPayin: 0,
-          SuccessCountPayout: 0,
-          SuccessAmountPayout: 0,
-          SuccessRatePayin: '-',
+          SuccessAmountPayout: '-',
+          SuccessRatePayout: '-',
         }
       ];
 
-      // 将额外数据添加到updatedItems
-      updatedItems.push(...extraItems);
-
-      // 使用Vue的响应式方式更新items，避免触发不必要的重新渲染
-      Object.assign(row, { items: updatedItems });
+      // 使用Vue的响应式方式更新items
+      Object.assign(row, { items: itemsData });
     }
 
     // 为每个行维护独立的图表数据，使用行的唯一标识作为key
@@ -663,7 +661,7 @@ const onExpandChange = (row, expandedRows) => {
 // 生成唯一的行标识符
 const getRowKey = (row, type) => {
   // 优先使用OrderDate，如果没有则使用索引或其他唯一标识
-  const rowId = row.OrderDate || row.id || Math.random().toString(36).substr(2, 9);
+  const rowId = row.Month || row.id || Math.random().toString(36).substr(2, 9);
   return `${rowId}-${type}`;
 };
 
@@ -841,7 +839,7 @@ const getSummaries = (param) => {
     }
     const values = data.map(item => Number(item[column.property]));
     if (!values.every(value => isNaN(value))) {
-      sums[index] = values.reduce((prev, curr) => {
+      const total = values.reduce((prev, curr) => {
         const value = Number(curr);
         if (!isNaN(value)) {
           return prev + value;
@@ -849,6 +847,12 @@ const getSummaries = (param) => {
           return prev;
         }
       }, 0);
+      // 金额列使用千分位格式化
+      if (column.property === 'SuccessAmountPayin' || column.property === 'SuccessAmountPayout') {
+        sums[index] = formatNumber(total);
+      } else {
+        sums[index] = total;
+      }
     } else {
       sums[index] = 'N/A';
     }
@@ -857,13 +861,15 @@ const getSummaries = (param) => {
   return sums;
 };
 
-// 收款饼图
+// 收款饼图：展示 手续费 + 商户分账
 const getCollectionPieChart = (row) => {
-  // 使用该行的items数据
-  const data = (row.items || []).map((item) => ({
-    name: item.typeName || "未知",
-    value: item.SuccessAmountPayin || 0,
-  })).filter(item => item.value > 0);
+  const feeValue = Number(row.SuccessFeePayin) || 0;
+  const merchantProfitValue = Number(row.MerchantProfit) || 0;
+
+  const data = [
+    { name: '手续费', value: feeValue },
+    { name: '商户分账', value: merchantProfitValue },
+  ].filter(item => item.value > 0);
 
   // 高级渐变色方案
   const colors = [
@@ -950,7 +956,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${params.percent}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -984,7 +990,9 @@ const getCollectionPieChart = (row) => {
         },
         label: {
           show: true,
-          formatter: "{b}\n{d}%",
+          formatter: function(params) {
+            return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
+          },
           color: "#333",
           fontSize: 11,
           fontWeight: 500
@@ -1007,12 +1015,13 @@ const getCollectionPieChart = (row) => {
   };
 };
 
-// 付款饼图
+// 付款饼图：按后端返回的 PayoutByBank 维度统计（如 PIX 金额、USDT 金额）
 const getPaymentPieChart = (row) => {
-  // 使用该行的items数据
-  const data = (row.items || []).map((item) => ({
-    name: item.typeName || "未知",
-    value: item.SuccessAmountPayout || 0,
+  // 使用后端按 bank 维度返回的代付成功金额列表
+  const bankList = row.PayoutByBank || [];
+  const data = bankList.map((it) => ({
+    name: it.bank || "未知",
+    value: Number(it.amount) || 0,
   })).filter(item => item.value > 0);
 
   // 高级渐变色方案（与收款不同的配色）
@@ -1111,7 +1120,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${params.percent}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1145,7 +1154,9 @@ const getPaymentPieChart = (row) => {
         },
         label: {
           show: true,
-          formatter: "{b}\n{d}%",
+          formatter: function(params) {
+            return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
+          },
           color: "#333",
           fontSize: 11,
           fontWeight: 500
@@ -1380,14 +1391,13 @@ const handleSearch = async () => {
     console.log(searchForm.value);
     
     let res = await http.financeReportByMonth({
-      startDate: formatTime(searchForm.time[0]),
-      endDate: formatTime(searchForm.time[1]),
+      startMonth: formatTime(searchForm.time[0]),
+      endMonth: formatTime(searchForm.time[1]),
     });
     if (res.code === 200) {
       if (res.data.list && res.data.list.length > 0) {
         res.data.list.forEach((item) => {
-          item.OrderDate = item.OrderDate ? item.OrderDate.split('T')[0] : '';
-          item.Totalamountreceived = (item.SuccessAmountPayin || 0) - (item.SuccessAmountPayout || 0);
+          // 后端已返回 TotalAmountReceived，无需前端计算
         });
         tableData.value = res.data.list;
       } else {
@@ -1416,12 +1426,15 @@ const toPercent = (num) => {
 };
 
 
-// 格式化数字，保留2位小数
+// 格式化数字，千分位显示，保留2位小数
 const formatNumber = (num) => {
   if (num === null || num === undefined || num === '' || isNaN(num)) {
     return '0.00';
   }
-  return parseFloat(num).toFixed(2);
+  return parseFloat(num).toLocaleString('en-US', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  });
 };
 
 // 分页相关方法
