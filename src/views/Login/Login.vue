@@ -17,6 +17,7 @@
           label-position="top"
           :model="loginForm"
           @keyup.enter.native="checkHuman"
+          @submit.prevent
           :rules="rules"
         >
           <el-form-item label="Account" prop="username">
@@ -305,7 +306,7 @@ import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
-import Fingerprint from 'fingerprintjs2';
+import FingerprintJS from '@fingerprintjs/fingerprintjs';
 import { http } from '@/api';
 import md5 from 'js-md5';
 import AwsCaptcha from '@/components/AwsCaptcha.vue';
@@ -332,7 +333,7 @@ const isVerifyPass = ref(false); // 是否需要验证密码
 const loading = ref(false);  // 登录加载中
 const isLoading = ref(false);  // 是否正在加载中
 const dialogValue1 = ref(false); // 多个商户选择对话框是否显示
-const isFirstVisit = ref(true); // 是否是首次访问
+// const isFirstVisit = ref(true); // 是否是首次访问
 // const showForgotPasswordDialog = ref(false); // 是否显示忘记密码对话框
 // const resettingPassword = ref(false); // 是否正在重置密码
 // const countdown = ref(0); // 验证码倒计时
@@ -637,9 +638,9 @@ onMounted(() => {
     userInput.value.focus();
   });
   
-  const hasVisited = localStorage.getItem("hasVisited");
-  isFirstVisit.value = !hasVisited;
-  localStorage.setItem("hasVisited", "true");
+  // const hasVisited = localStorage.getItem("hasVisited");
+  // isFirstVisit.value = !hasVisited;
+  // localStorage.setItem("hasVisited", "true");
   
   dialogValue.value = false;
   isVerifyPass.value = false;
@@ -654,29 +655,26 @@ onBeforeUnmount(() => {
 
 // 方法
 // 验证登录指纹，是否是常用设备
-async function compareOnEnter() {
-  return new Promise((resolve) => {
-    Fingerprint.get((components) => {
-      const currentFingerprint = md5(
-        components.map((c) => c.value).join("|")
-      );
-      const previousFingerprint = localStorage.getItem(
-        "previousFingerprint"
-      );
+// async function compareOnEnter() {
+//   try {
+//     const fp = await FingerprintJS.load({ monitoring: false });
+//     const result = await fp.get();
+//     const currentFingerprint = result.visitorId;
+//     const previousFingerprint = localStorage.getItem("previousFingerprint");
 
-      // 如果指纹不匹配，提示
-      if (
-        previousFingerprint &&
-        currentFingerprint !== previousFingerprint
-      ) {
-        // ElMessage.warning("检测到设备变更，请注意安全！");
-      }
+//     // 如果指纹不匹配，提示
+//     if (
+//       previousFingerprint &&
+//       currentFingerprint !== previousFingerprint
+//     ) {
+//       // ElMessage.warning("检测到设备变更，请注意安全！");
+//     }
 
-      localStorage.setItem("previousFingerprint", currentFingerprint);
-      resolve();
-    });
-  });
-}
+//     localStorage.setItem("previousFingerprint", currentFingerprint);
+//   } catch (error) {
+//     console.error('获取指纹失败:', error);
+//   }
+// }
 
 
 
@@ -777,9 +775,9 @@ const formatDateTime = (dateStr) => {
 
 // 单商户登录提交
 async function submitForm() {
-  if (!isFirstVisit.value) {
-    await compareOnEnter();
-  }
+  // if (!isFirstVisit.value) {
+  //   await compareOnEnter();
+  // }
 
   loginFormRef.value.validate((valid) => {
     if (!valid) {
@@ -905,10 +903,13 @@ async function groupLoginLogin() {
  */
 async function getDeviceInfo() {
   try {
-    // 🔥 修复：标准 async/await，不再嵌套 Promise
-    const components = await new Promise(resolve => Fingerprint.get(resolve));
-    const fingerprint = md5(components.map(c => c.value || '').join('|'));
-
+    // 使用 FingerprintJS v5 API
+    const fp = await FingerprintJS.load({ monitoring: false });    //  monitoring==true 开启监控模式  monitoring==false 关闭监控模式
+    const result = await fp.get();
+    const fingerprint = result.visitorId;
+    console.log( '设备组件:',result.components);
+    console.log('设备指纹:',result.visitorId);
+    console.log('设备指纹置信度:',result.confidence.score); 
     const os = getOS();
     let osVersion = 'Unknown';
 
