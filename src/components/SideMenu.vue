@@ -791,7 +791,7 @@ function confirmBind(account) {
 }
 
 .balance-value {
-  color: #67c23a;  // Element Plus 绿色主题色
+  // color: #67c23a;  // Element Plus 绿色主题色
   font-weight: 600;
 }
 </style>
