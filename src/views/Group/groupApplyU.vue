@@ -273,7 +273,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted, watch, onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
@@ -424,6 +424,7 @@ const getMerchantBalance = (code) => {
   return merchant ? merchant.balance || 0 : 0;
 };
 
+let refreshTimer = null;
 // 生命周期 - 组件挂载
 onMounted(() => {
   // 初始化表单默认值
@@ -446,6 +447,15 @@ onMounted(() => {
 
   // 加载商户列表
   loadMerchants();
+     // 每10秒刷新一次
+  refreshTimer = setInterval(loadMerchants, 10000);
+});
+// 在组件卸载时清除定时器
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 });
 
 // 获取汇率信息
@@ -968,7 +978,7 @@ const saveWalletAddress = async () => {
   right: 35px;
   top: 50%;
   transform: translateY(-50%);
-  color: #67c23a;
+  // color: #67c23a;
   font-weight: 500;
   font-size: 13px;
   pointer-events: none;
@@ -986,7 +996,7 @@ const saveWalletAddress = async () => {
   }
   
   .option-balance {
-    color: #67c23a;
+    // color: #67c23a;
     font-weight: 500;
     margin-left: 20px;
   }

@@ -107,6 +107,7 @@
                     v-model="ruleForm.amount"
                     placeholder="请输入转账金额"
                     :min="10"
+                    :max="9999999999"
                     :step="1"
                     style="width: 100%"
                   ></el-input-number>
@@ -419,8 +420,8 @@ let refreshTimer = null;
 onMounted(() => {
   // 获取商户列表
   getMerchantList();
-   // 每2秒刷新一次
-  refreshTimer = setInterval(getMerchantList, 2000);
+   // 每10秒刷新一次
+  refreshTimer = setInterval(getMerchantList, 10000);
   // 初始化时间范围和获取转账记录
   initTimeRange();
   getTransferHistory();
@@ -714,7 +715,7 @@ onUnmounted(() => {
   right: 35px;
   top: 50%;
   transform: translateY(-50%);
-  color: #67c23a;
+  // color: #67c23a;
   font-weight: 500;
   font-size: 13px;
   pointer-events: none;
@@ -732,7 +733,7 @@ onUnmounted(() => {
   }
   
   .option-balance {
-    color: #67c23a;
+    // color: #67c23a;
     font-weight: 500;
     margin-left: 20px;
   }
