@@ -91,6 +91,7 @@
                         v-model="ruleForm.walletAddress"
                         :placeholder="'请选择钱包地址'"
                         :options="walletAddressOptions"
+                        :merchant-id="userStore.merchantInfo.id"
                       />
                     </el-form-item>
                   </el-col>

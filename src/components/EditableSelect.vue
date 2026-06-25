@@ -13,29 +13,35 @@
     <transition name="dropdown-fade">
       <div class="select-dropdown" v-show="dropdownOpen" @click.stop>
         <div class="select-options">
-          <div v-for="(option, index) in mergedOptions" :key="index" 
-               class="option-item"
-               :class="{selected: selected && selected.value === option.value, editing: editing.index === index}"
-               @click="handleOptionClick(option, index)">
-            <div class="option-content">
-              <div v-if="editing.index !== index" class="alias-name" 
-                   @dblclick.stop="startEdit(index)">
-                {{ option.alias }}
+          <template v-if="mergedOptions.length > 0">
+            <div v-for="(option, index) in mergedOptions" :key="index" 
+                 class="option-item"
+                 :class="{selected: selected && selected.value === option.value, editing: editing.index === index}"
+                 @click="handleOptionClick(option, index)">
+              <div class="option-content">
+                <div v-if="editing.index !== index" class="alias-name" 
+                     @dblclick.stop="startEdit(index)">
+                  {{ option.alias }}
+                </div>
+                <div v-else>
+                  <input type="text" class="option-edit-input" 
+                         v-model="editing.value" 
+                         @blur="saveEdit"
+                         @keydown.enter="handleEnterKey"
+                         @keyup.esc="cancelEdit" 
+                         ref="editInput">
+                </div>
+                <div class="original-name">钱包地址: {{ option.original }}</div>
               </div>
-              <div v-else>
-                <input type="text" class="option-edit-input" 
-                       v-model="editing.value" 
-                       @blur="saveEdit"
-                       @keydown.enter="handleEnterKey"
-                       @keyup.esc="cancelEdit" 
-                       ref="editInput">
+              <div class="option-actions">
+                <el-button class="edit-btn"  size="small" @click.stop="startEdit(index)">编辑别名</el-button>
+                <el-button class="save-btn" type="success"  size="small" @click.stop="saveAlias(index)">保存</el-button>
               </div>
-              <div class="original-name">钱包地址: {{ option.original }}</div>
             </div>
-            <div class="option-actions">
-              <el-button class="edit-btn"  size="small" @click.stop="startEdit(index)">编辑别名</el-button>
-              <el-button class="save-btn" type="success"  size="small" @click.stop="saveAlias(index)">保存</el-button>
-            </div>
+          </template>
+          <div v-else class="empty-tip">
+            <el-icon class="empty-icon"><CircleClose /></el-icon>
+            <span>暂无钱包地址</span>
           </div>
         </div>
       </div>
@@ -44,6 +50,7 @@
 </template>
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
+import { CircleClose } from '@element-plus/icons-vue';
 
 // 定义props和emit
 const props = defineProps({
@@ -62,7 +69,11 @@ const props = defineProps({
   },
   storageKey: {
     type: String,
-    default: 'editable_select_aliases'
+    default: 'wallet_aliases'
+  },
+  merchantId: {
+    type: [String, Number],
+    default: ''
   },
   placeholder: {
     type: String,
@@ -99,10 +110,17 @@ const selected = computed(() => {
   return mergedOptions.value.find(opt => opt.value === props.modelValue) || null;
 });
 
+const actualStorageKey = computed(() => {
+  if (props.merchantId) {
+    return `${props.storageKey}_${props.merchantId}`;
+  }
+  return props.storageKey;
+});
+
 // 加载本地存储并合并选项
 const loadAndMergeOptions = (defaultOptions) => {
   try {
-    const stored = localStorage.getItem(props.storageKey);
+    const stored = localStorage.getItem(actualStorageKey.value);
     Object.assign(storedAliases, stored ? JSON.parse(stored) : {});
   } catch (e) {
     console.error('读取本地存储失败:', e);
@@ -132,7 +150,7 @@ const saveAliasesToStorage = () => {
       }
     });
     
-    localStorage.setItem(props.storageKey, JSON.stringify(aliasesToSave));
+    localStorage.setItem(actualStorageKey.value, JSON.stringify(aliasesToSave));
   } catch (e) {
     console.error('保存到本地存储失败:', e);
   }
@@ -152,7 +170,7 @@ const loadFromStorage = () => {
 
 // 清除本地存储
 const clearStorage = () => {
-  localStorage.removeItem(props.storageKey);
+  localStorage.removeItem(actualStorageKey.value);
   loadAndMergeOptions(props.options);
   emit('clear-storage');
 };
@@ -336,6 +354,14 @@ watch(
   { immediate: true, deep: true }
 );
 
+// 监听merchantId变化，切换商户时重新加载别名
+watch(
+  () => props.merchantId,
+  () => {
+    loadAndMergeOptions(props.options);
+  }
+);
+
 // 生命周期钩子
 onMounted(() => {
   setupEventListeners();
@@ -359,7 +385,7 @@ defineExpose({
 .editable-select {
   position: relative;
   width: 100%;
-  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', Arial, sans-serif;
+  font-family: Arial, sans-serif;
   margin-bottom: 0;
 }
 
@@ -367,23 +393,22 @@ defineExpose({
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 15px;
+  padding: 0 15px;
+  height: 40px;
   border: 1px solid #dcdfe6;
-  border-radius: 15px;
+  border-radius: 6px;
   background: #fff;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
 }
 
 .select-header:hover {
   border-color: #c0c4cc;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-/* .select-header.active {
-  border-color: #63ff40;
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
-} */
+.select-header.active {
+  border-color: #db0011;
+}
 
 .select-value {
   flex: 1;
@@ -392,7 +417,6 @@ defineExpose({
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: color 0.3s;
 }
 
 .select-value.placeholder {
@@ -401,142 +425,24 @@ defineExpose({
 
 .select-arrow {
   font-size: 12px;
-  color: #909399;
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  margin-left: 5px;
+  color: #c0c4cc;
+  transition: transform 0.3s ease;
+  margin-left: 8px;
 }
 
 .select-arrow.active {
   transform: rotate(180deg);
-}
-
-/* 下拉框过渡动画 */
-.dropdown-fade-enter-active,
-.dropdown-fade-leave-active {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.dropdown-fade-enter,
-.dropdown-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-10px);
-}
-
-.select-dropdown {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  width: 100%;
-  margin-top: 4px;
-  border: 1px solid #dcdfe6;
-  border-radius: 4px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, .1);
-  z-index: 1000 !important;
-  overflow: hidden;
-}
-
-.select-options {
-  max-height: 250px;
-  overflow-y: auto;
-  animation: slideIn 0.3s ease-out;
-}
-
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.option-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  width: auto;
-  padding: 0px 15px;
-  cursor: pointer;
-  border-bottom: 1px solid #f0f0f0;
-  transition: all 0.2s ease;
-}
-
-.option-item:last-child {
-  border-bottom: none;
-}
-
-.option-item.editing {
-  background-color: #f0f9ff;
-  /* transform: translateX(4px); */
-}
-
-.option-item:hover {
-  background: #f5f7fa;
-  /* transform: translateX(4px); */
-}
-
-.option-item.selected {
-  background: #ecf5ff;
-}
-
-.option-content {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  margin-right: 10px;
-  min-width: 0;
-}
-
-.alias-name {
-  font-size: 14px;
-  color: #606266;
-  /* margin-bottom: 4px; */
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  transition: color 0.3s;
-}
-
-.option-item:hover .alias-name {
-  color: #409EFF;
-}
-
-.original-name {
-  font-size: 12px;
   color: #909399;
-  font-style: italic;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.option-edit-input {
-  width: 85%;
-  padding: 6px 10px;
-  border: 1px solid #409EFF;
-  border-radius: 4px;
-  font-size: 14px;
-  outline: none;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 0 0 2px rgba(64, 158, 255, 0.1);
-}
-
-.option-edit-input:focus {
-  border-color: #ff6666;
-  box-shadow: 0 0 0 3px rgba(255, 117, 102, 0.2);
 }
 
 .clear-btn {
-  font-size: 18px;
-  color: #909399;
+  font-size: 16px;
+  color: #c0c4cc;
   cursor: pointer;
-  margin-right: 8px;
-  transition: all 0.3s;
-  width: 20px;
-  height: 20px;
+  margin-right: 4px;
+  transition: all 0.2s ease;
+  width: 18px;
+  height: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -545,44 +451,141 @@ defineExpose({
 }
 
 .clear-btn:hover {
-  color: #fff;
-  background-color: #f56c6c;
-  transform: scale(1.1);
+  color: #909399;
+  background-color: #f5f7fa;
+}
+
+/* 下拉框过渡动画 */
+.dropdown-fade-enter-active,
+.dropdown-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.dropdown-fade-enter,
+.dropdown-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
+}
+
+.select-dropdown {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  border: 1px solid #e4e7ed;
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000 !important;
+  overflow: hidden;
+}
+
+.select-options {
+  max-height: 280px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+
+.option-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.option-item:hover {
+  background-color: #f5f7fa;
+}
+
+.option-item.selected {
+  background-color: #fff0f0;
+}
+
+.option-item.selected .alias-name {
+  color: #db0011;
+  font-weight: 500;
+}
+
+.option-content {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  margin-right: 12px;
+  min-width: 0;
+}
+
+.alias-name {
+  font-size: 14px;
+  color: #303133;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s ease;
+}
+
+.original-name {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'Courier New', monospace;
+}
+
+.option-edit-input {
+  width: 100%;
+  max-width: 300px;
+  padding: 6px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #303133;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.option-edit-input:focus {
+  border-color: #db0011;
+  box-shadow: 0 0 0 2px rgba(219, 0, 17, 0.1);
 }
 
 .option-actions {
   display: flex;
   gap: 8px;
   flex-shrink: 0;
-  margin-top: 18px;
-   /* align-items: center;  */
 }
 
-.edit-btn, .reset-btn {
+.edit-btn,
+.save-btn {
   font-size: 12px;
-  padding: 4px 10px;
+  padding: 4px 12px;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
   background: #fff;
+  color: #606266;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.2s ease;
   outline: none;
+  white-space: nowrap;
 }
 
 .edit-btn:hover {
-  color: #fff;
-  background-color: #db0011;
-  border-color: #db0011;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(255, 64, 64, 0.3);
+  color: #db0011;
+  border-color: #f5b7b7;
+  background-color: #fef0f0;
 }
 
 .save-btn:hover {
-  color: #fff;
-  background-color: #67C23A;
-  border-color: #67C23A;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(103, 194, 58, 0.3);
+  color: #67c23a;
+  border-color: #c2e7b0;
+  background-color: #f0f9eb;
+}
+
+.option-item.editing {
+  background-color: #fafafa;
 }
 
 /* 滚动条样式 */
@@ -591,35 +594,33 @@ defineExpose({
 }
 
 .select-options::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 3px;
+  background: transparent;
 }
 
 .select-options::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #dcdfe6;
   border-radius: 3px;
-  transition: background 0.3s;
+  transition: background 0.2s ease;
 }
 
 .select-options::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #c0c4cc;
 }
 
-/* 编辑按钮的脉冲动画 */
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(255, 64, 64, 0.4);
-  }
-  70% {
-    box-shadow: 0 0 0 6px rgba(255, 83, 64, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(255, 64, 64, 0);
-  }
+/* 空状态样式 */
+.empty-tip {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  color: #909399;
+  font-size: 14px;
 }
 
-.option-item.editing {
-  animation: pulse 2s infinite;
+.empty-icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+  color: #c0c4cc;
 }
-
 </style>
