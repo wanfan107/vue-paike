@@ -652,22 +652,25 @@ const onExpandChange = (row, expandedRows) => {
       }));
 
       // 添加手续费和违规订单数据
+      // 注意：SuccessOrderFee 实际是代收手续费，应展示在"收款总金额"列（SuccessAmountPayin）
       const extraItems = [
         {
           typeName: '手续费',
           SuccessCountPayin: '-',
-          SuccessAmountPayin: '-',
+          SuccessAmountPayin: row.SuccessOrderFee || 0,
           SuccessCountPayout: '-',
-          SuccessAmountPayout: row.SuccessOrderFee || 0,
           SuccessRatePayin: '-',
+          SuccessAmountPayout: '-',
+          SuccessRatePayout: '-',
         },
         {
           typeName: '违规订单',
           SuccessCountPayin: 0,
           SuccessAmountPayin: 0,
+          SuccessRatePayin: '-',
           SuccessCountPayout: 0,
           SuccessAmountPayout: 0,
-          SuccessRatePayin: '-',
+          SuccessRatePayout: '-',
         }
       ];
 
@@ -893,13 +896,15 @@ const getSummaries = (param) => {
   return sums;
 };
 
-// 收款饼图
+// 收款饼图：展示 手续费 + 商户分账
 const getCollectionPieChart = (row) => {
-  // 使用该行的items数据
-  const data = (row.items || []).map((item) => ({
-    name: item.typeName || "未知",
-    value: item.SuccessAmountPayin || 0,
-  })).filter(item => item.value > 0);
+  const feeValue = Number(row.SuccessOrderFee) || 0;
+  const merchantProfitValue = Number(row.MerchantProfit) || 0;
+
+  const data = [
+    { name: '手续费', value: feeValue },
+    { name: '商户分账', value: merchantProfitValue },
+  ].filter(item => item.value > 0);
 
   // 高级渐变色方案
   const colors = [
@@ -986,7 +991,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${params.percent}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1020,7 +1025,9 @@ const getCollectionPieChart = (row) => {
         },
         label: {
           show: true,
-          formatter: "{b}\n{d}%",
+          formatter: function(params) {
+            return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
+          },
           color: "#333",
           fontSize: 11,
           fontWeight: 500
@@ -1043,12 +1050,13 @@ const getCollectionPieChart = (row) => {
   };
 };
 
-// 付款饼图
+// 付款饼图：按后端返回的 PayoutByBank 维度统计（如 PIX 金额、USDT 金额）
 const getPaymentPieChart = (row) => {
-  // 使用该行的items数据
-  const data = (row.items || []).map((item) => ({
-    name: item.typeName || "未知",
-    value: item.SuccessAmountPayout || 0,
+  // 使用后端按 bank 维度返回的代付成功金额列表
+  const bankList = row.PayoutByBank || [];
+  const data = bankList.map((it) => ({
+    name: it.bank || "未知",
+    value: Number(it.amount) || 0,
   })).filter(item => item.value > 0);
 
   // 高级渐变色方案（与收款不同的配色）
@@ -1147,7 +1155,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${params.percent}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1181,7 +1189,9 @@ const getPaymentPieChart = (row) => {
         },
         label: {
           show: true,
-          formatter: "{b}\n{d}%",
+          formatter: function(params) {
+            return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
+          },
           color: "#333",
           fontSize: 11,
           fontWeight: 500
