@@ -1368,7 +1368,7 @@ const handleSearch = async () => {
     const startDate = formatTime(searchForm.time[0]);
     const endDate = formatTime(searchForm.time[1]);
     
-    const res = await http.statisticsByDayBoth({
+    const res = await http.financeReportByDay({
       startDate,
       endDate,
     });
