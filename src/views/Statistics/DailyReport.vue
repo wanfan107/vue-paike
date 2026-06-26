@@ -54,17 +54,24 @@
         <!-- 图表区域 -->
         <div class="fade" >
           <div v-if="show===true && tableData.length > 0" class="chart-container">
-                        <div class="chart-item pie-chart">
-              <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
-                <el-table :data="pieTableData" border :height="tableHeight">
-                  <el-table-column prop="merchantCode" label="商户号" sortable />
-                  <el-table-column prop="todayCollect" label="今日代收总额" sortable />
-                  <el-table-column prop="yesterdayCollect" label="昨日代收总额" sortable />
-                  <el-table-column prop="todayPay" label="今日代付总额" sortable />
-                  <el-table-column prop="yesterdayPay" label="昨日代付总额" sortable />
-                </el-table>
+            <!-- 商户数据汇总 -->
+            <div class="merchant-summary">
+              <div class="summary-card today-collect">
+                <div class="summary-title">今日代收总额</div>
+                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.todayCollect) }}</div>
               </div>
-              <div class="resize-handle" @mousedown="startResize"></div>
+              <div class="summary-card yesterday-collect">
+                <div class="summary-title">昨日代收总额</div>
+                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.yesterdayCollect) }}</div>
+              </div>
+              <div class="summary-card today-pay">
+                <div class="summary-title">今日代付总额</div>
+                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.todayPay) }}</div>
+              </div>
+              <div class="summary-card yesterday-pay">
+                <div class="summary-title">昨日代付总额</div>
+                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.yesterdayPay) }}</div>
+              </div>
             </div>
             <div class="charts-wrapper">
               <div class="chart-item balance-chart">
@@ -82,12 +89,6 @@
 
         <!-- 表格内容区域 -->
         <div class="table-container">
-              <!-- <TimeRangeSelector
-                @change="onTimeRangeChange"
-                :timeRangeOptions="timeRangeOptions"
-                :defaultValue="'7days'"
-                :format="'yyyy-MM-dd'"
-              /> -->
           <!-- 骨架屏 -->
           <el-skeleton :loading="loading" :count="5" animated>
             <template #default>
@@ -102,6 +103,7 @@
                 element-loading-spinner="el-icon-loading"
                 element-loading-background="rgba(255, 255, 255, 0.8)"
                 @expand-change="onExpandChange"
+                @row-click="onRowClick"
                 :preserve-expanded-content="preserveExpanded"
                 :expand-row-keys="expandRowKeys"
                 row-key="OrderDate"
@@ -201,17 +203,6 @@
         </div>
 
         <!-- 分页 -->
-        <div class="pagination-container">
-          <el-pagination
-            v-model:current-page="pagination.currentPage"
-            v-model:page-size="pagination.pageSize"
-            :page-sizes="[10, 20, 30, 50, 100]"
-            :total="pagination.total"
-            layout="total, sizes, prev, pager, next, jumper"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
       </div>
     </main>
   </div>
@@ -234,14 +225,7 @@ const props = defineProps({
   },
 });
 
-const mapping = {
-  ALL: -1,
-  PENDING: 0,
-  SUCCESS: 1,
-  FAILED: 2,
-  // REFUND: "REFUND",
-  // PART_SUC: "PART_SUC",
-};
+
 // 页面状态数据
 const preserveExpanded = ref(false);
 const show = ref(true);
@@ -299,25 +283,7 @@ const realTimeChart = computed(() => {
       }
     },
     tooltip: {
-      trigger: "axis",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
-      formatter: function (params) {
-        let result = params[0].axisValue + "<br/>";
-        params.forEach(function (item) {
-          result +=
-            item.marker +
-            " " +
-            item.seriesName +
-            ": R$" +
-            item.value +
-            "<br/>";
-        });
-        return result;
-      },
+      trigger: "axis"
     },
     legend: {
       data: ["收款金额", "付款金额"],
@@ -329,15 +295,15 @@ const realTimeChart = computed(() => {
     },
     grid: {
       left: '3%',
-      right: '4%',
-      bottom: '8%',
+      right: '3%',
+      bottom: '5%',
       top: '20%',
       containLabel: true
     },
     xAxis: {
       type: "category",
       data: dates,
-      boundaryGap: false,
+      boundaryGap: true,
       axisLine: {
         lineStyle: {
           color: "#d8d8d8",
@@ -372,6 +338,24 @@ const realTimeChart = computed(() => {
           color: "#d8d8d8",
         },
       },
+      axisTick: {
+        show: true,
+        lineStyle: {
+          color: "#d8d8d8",
+        },
+      },
+      axisLabel: {
+        color: "#666",
+        fontSize: 12,
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        },
+      },
       splitLine: {
         show: true,
         lineStyle: {
@@ -379,37 +363,21 @@ const realTimeChart = computed(() => {
           type: "dashed",
         },
       },
-      axisLabel: {
-        color: "#666",
-        formatter: "R${value}",
-        fontSize: 12,
-      },
-      axisTick: {
-        show: false,
-      },
-      nameTextStyle: {
-        color: "#666",
-        fontSize: 12,
-        padding: [0, 30, 0, 0],
-      },
     },
     series: [
       {
         name: "收款金额",
         type: "line",
         data: collectionAmounts,
-        symbol: "circle",
-        symbolSize: 6,
         smooth: true,
-        showSymbol: true,
+        symbol: "circle",
+        symbolSize: 4,
         lineStyle: {
           color: "#48bb78",
-          width: 3,
+          width: 2,
         },
         itemStyle: {
           color: "#48bb78",
-          borderColor: "#fff",
-          borderWidth: 1,
         },
         areaStyle: {
           color: {
@@ -435,18 +403,15 @@ const realTimeChart = computed(() => {
         name: "付款金额",
         type: "line",
         data: paymentAmounts,
-        symbol: "circle",
-        symbolSize: 6,
         smooth: true,
-        showSymbol: true,
+        symbol: "circle",
+        symbolSize: 4,
         lineStyle: {
           color: "#db0011",
-          width: 3,
+          width: 2,
         },
         itemStyle: {
           color: "#db0011",
-          borderColor: "#fff",
-          borderWidth: 1,
         },
         areaStyle: {
           color: {
@@ -491,32 +456,75 @@ const balanceChartOption = computed(() => {
     },
     grid: {
       left: '3%',
-      right: '4%',
-      bottom: '10%',
+      right: '3%',
+      bottom: '5%',
       top: '20%',
       containLabel: true
     },
     xAxis: {
       type: 'category',
       data: dates,
+      boundaryGap: true,
       axisLine: {
         lineStyle: {
           color: '#d8d8d8'
         }
       },
+      axisTick: {
+        show: true,
+        alignWithLabel: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
       axisLabel: {
-        fontSize: 10,
-        color: '#999'
+        fontSize: 12,
+        color: '#666',
+        margin: 15,
+        interval: Math.floor(dates.length / 7) || 0
       }
     },
     yAxis: {
-      show: false,
-      type: 'value'
+      show: true,
+      type: 'value',
+      name: '余额',
+      axisLine: {
+        show: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisTick: {
+        show: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisLabel: {
+        fontSize: 12,
+        color: '#666',
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        }
+      },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: '#f0f0f0',
+          type: 'dashed'
+        }
+      }
     },
     series: [{
       name: '余额',
       type: 'line',
       data: PreviousDayEndBalance,
+      smooth: true,
       itemStyle: {
         color: '#48bb78'
       },
@@ -548,59 +556,75 @@ const balanceChartOption = computed(() => {
   };
 });
 
-const pieTableData = computed(() => {
-  return tableData.value.map((item) => ({
-    merchantCode: item.merchantCode || '-',
-    todayCollect: item.SuccessAmountPayin || '0.00',
-    yesterdayCollect: item.YesterdayPayinAmount || '0.00',
-    todayPay: item.SuccessAmountPayout || '0.00',
-    yesterdayPay: item.YesterdayPayoutAmount || '0.00',
-  }));
-});
-
-// 分页信息
-const pagination = reactive({
-  currentPage: 1,
-  pageSize: 10,
-  total: 0,
-});
-
 // 页面状态
 const loading = ref(false);
 const tableData = ref([]);
 const exportLoading = ref(false);
 
-// 表格可拉伸高度
-const tableHeight = ref(200);
-let isResizing = false;
-let startY = 0;
-let startHeight = 0;
+// 商户汇总数据（单独调用接口）
+const merchantSummaryData = ref({
+  todayCollect: 0,
+  todayPay: 0,
+  yesterdayCollect: 0,
+  yesterdayPay: 0
+});
 
-const startResize = (e) => {
-  isResizing = true;
-  startY = e.clientY;
-  startHeight = tableHeight.value;
-  document.addEventListener('mousemove', doResize);
-  document.addEventListener('mouseup', stopResize);
-  document.body.style.cursor = 'row-resize';
-  document.body.style.userSelect = 'none';
-};
-
-const doResize = (e) => {
-  if (!isResizing) return;
-  const diff = e.clientY - startY;
-  const newHeight = startHeight + diff;
-  if (newHeight >= 100 && newHeight <= 600) {
-    tableHeight.value = newHeight;
+// 获取商户汇总数据（单独调用接口，只传今天和昨天）
+const fetchMerchantSummary = async () => {
+  try {
+    const now = new Date();
+    const yesterday = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+    
+    const formatDate = (date) => {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      return `${year}-${month}-${day}`;
+    };
+    
+    const res = await http.financeReportByDay({
+      startDate: formatDate(yesterday),
+      endDate: formatDate(now),
+    });
+    
+    if (res.code === 200) {
+      const data = res.data?.list || [];
+      
+      const today = formatDate(now);
+      const yesterdayStr = formatDate(yesterday);
+      
+      let todayCollect = 0;
+      let todayPay = 0;
+      let yesterdayCollect = 0;
+      let yesterdayPay = 0;
+      
+      data.forEach(item => {
+        const orderDate = item.OrderDate ? item.OrderDate.split('T')[0] : '';
+        if (orderDate === today) {
+          todayCollect = item.SuccessAmountPayin || 0;
+          todayPay = item.SuccessAmountPayout || 0;
+        } else if (orderDate === yesterdayStr) {
+          yesterdayCollect = item.SuccessAmountPayin || 0;
+          yesterdayPay = item.SuccessAmountPayout || 0;
+        }
+      });
+      
+      merchantSummaryData.value = {
+        todayCollect,
+        todayPay,
+        yesterdayCollect,
+        yesterdayPay
+      };
+    }
+  } catch (error) {
+    console.error('获取商户汇总数据失败:', error);
   }
 };
 
-const stopResize = () => {
-  isResizing = false;
-  document.removeEventListener('mousemove', doResize);
-  document.removeEventListener('mouseup', stopResize);
-  document.body.style.cursor = '';
-  document.body.style.userSelect = '';
+// 格式化金额
+const formatCurrency = (value) => {
+  if (!value || isNaN(value)) return '0.00';
+  return parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 // 图表引用
@@ -624,6 +648,26 @@ const router = useRouter();
 //   handleSearch();
 // };
 
+
+// 点击行展开/收起
+const onRowClick = (row) => {
+  const key = row.OrderDate;
+  const index = expandRowKeys.value.indexOf(key);
+  if (index > -1) {
+    expandRowKeys.value.splice(index, 1);
+  } else {
+    expandRowKeys.value.push(key);
+  }
+  // 更新show状态：有行展开时隐藏图表，没有行展开时显示图表
+  show.value = expandRowKeys.value.length === 0;
+  
+  // 如果图表需要显示，重新初始化图表
+  if (show.value) {
+    nextTick(() => {
+      initMainCharts();
+    });
+  }
+};
 
 // 表格展开行事件
 const onExpandChange = (row, expandedRows) => {
@@ -1370,7 +1414,7 @@ const setDefaultTime = () => {
     endDate.getMonth(),
     endDate.getDate(),
   );
-  end.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
 
   const formatDate = (date) => {
     const year = date.getFullYear();
@@ -1387,8 +1431,9 @@ const clearSearch = () => {
   setDefaultTime();
   searchForm.merchantOrderNo = "";
   searchForm.orderNo = "";
-  pagination.currentPage = 1;
   handleSearch();
+  // 更新商户汇总数据
+  fetchMerchantSummary();
 };
 
 
@@ -1419,7 +1464,8 @@ const handleSearch = async () => {
       startDate,
       endDate,
     });
-    
+    // 更新商户汇总数据
+    await fetchMerchantSummary();
     if (res.code === 200) {
       const data = res.data?.list || [];
       if (Array.isArray(data) && data.length > 0) {
@@ -1479,16 +1525,6 @@ const formatNumber = (num) => {
 };
 
 // 分页相关方法
-const handleSizeChange = (val) => {
-  pagination.pageSize = val;
-  handleSearch(); // 重新搜索
-};
-
-const handleCurrentChange = (val) => {
-  pagination.currentPage = val;
-  handleSearch(); // 重新搜索
-};
-
 // 图表实例
 let lineChart = null;
 let lineChartResizeHandler = null;
@@ -1585,6 +1621,9 @@ onMounted(async () => {
   
   // 等待数据加载完成后再初始化图表
   await handleSearch();
+  
+  // 获取商户汇总数据（单独调用接口，只传今天和昨天）
+  await fetchMerchantSummary();
   
   // 在下一个tick初始化图表
   nextTick(() => {
@@ -1792,12 +1831,6 @@ onUnmounted(() => {
   font-weight: 500;
 }
 
-.pagination-container {
-  margin-top: $spacing-lg;
-  display: flex;
-  justify-content: center;
-}
-
 /* 图表区域样式 */
 .chart-container {
   display: flex;
@@ -1824,16 +1857,56 @@ onUnmounted(() => {
   }
 }
 
-.resize-handle {
-  height: 6px;
-  background: linear-gradient(90deg, transparent, #e0e0e0 20%, #e0e0e0 80%, transparent);
-  cursor: row-resize;
-  margin-top: 4px;
-  border-radius: 3px;
-  transition: background 0.2s;
+/* 商户数据汇总 */
+.merchant-summary {
+  display: flex;
+  gap: $spacing-md;
+  margin-bottom: $spacing-md;
   
-  &:hover {
-    background: linear-gradient(90deg, transparent, #c0c0c0 20%, #c0c0c0 80%, transparent);
+  .summary-card {
+    flex: 1;
+    background-color: #fff;
+    border-radius: $border-radius-md;
+    padding: $spacing-lg;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+    text-align: center;
+    border-left: 4px solid #d8d8d8;
+    
+    .summary-title {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: $spacing-sm;
+    }
+    
+    .summary-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: #333;
+    }
+    
+    &.today-collect {
+      border-left-color: #48bb78;
+      background: linear-gradient(135deg, rgba(72, 187, 120, 0.1) 0%, #fff 100%);
+      .summary-value { color: #48bb78; }
+    }
+    
+    &.yesterday-collect {
+      border-left-color: #90d4a3;
+      background: linear-gradient(135deg, rgba(144, 212, 163, 0.1) 0%, #fff 100%);
+      .summary-value { color: #5aad76; }
+    }
+    
+    &.today-pay {
+      border-left-color: #db0011;
+      background: linear-gradient(135deg, rgba(219, 0, 17, 0.1) 0%, #fff 100%);
+      .summary-value { color: #db0011; }
+    }
+    
+    &.yesterday-pay {
+      border-left-color: #e8666b;
+      background: linear-gradient(135deg, rgba(232, 102, 107, 0.1) 0%, #fff 100%);
+      .summary-value { color: #c4151d; }
+    }
   }
 }
 
