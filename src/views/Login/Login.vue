@@ -306,7 +306,7 @@ import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue'
 import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
-import FingerprintJS from '@fingerprintjs/fingerprintjs';
+import FingerprintJS, { sources as fpSources, loadSources } from '@fingerprintjs/fingerprintjs';
 import { http } from '@/api';
 import md5 from 'js-md5';
 import AwsCaptcha from '@/components/AwsCaptcha.vue';
@@ -903,13 +903,47 @@ async function groupLoginLogin() {
  */
 async function getDeviceInfo() {
   try {
-    // 使用 FingerprintJS v5 API
-    const fp = await FingerprintJS.load({ monitoring: false });    //  monitoring==true 开启监控模式  monitoring==false 关闭监控模式
-    const result = await fp.get();
-    const fingerprint = result.visitorId;
-    console.log( '设备组件:',result.components);
-    console.log('设备指纹:',result.visitorId);
-    console.log('设备指纹置信度:',result.confidence.score); 
+    const excludeSources = [
+      'fonts',
+      'fontPreferences',
+      'plugins',
+      'canvas',
+      'webGlBasics',
+      'webGlExtensions',
+      'audio',
+      'screenFrame',
+      'screenResolution',
+      'localStorage',
+      'sessionStorage',
+      'indexedDB',
+      'openDatabase',
+      'audioBaseLatency',
+      'domBlockers',
+      'colorGamut',
+      'invertedColors',
+      'forcedColors',
+      'monochrome',
+      'contrast',
+      'reducedMotion',
+      'reducedTransparency',
+      'hdr',
+      'pdfViewerEnabled',
+      'applePay',
+      'privateClickMeasurement',
+    ];
+
+    const filteredSources = {};
+    for (const [key, value] of Object.entries(fpSources)) {
+      if (!excludeSources.includes(key)) {
+        filteredSources[key] = value;
+      }
+    }
+
+    const getComponents = await loadSources(filteredSources, { cache: {}, debug: false }, []);
+    const result = await getComponents();
+    const fingerprint = FingerprintJS.hashComponents(result);
+    console.log('设备组件:', result);
+    console.log('设备指纹:', fingerprint);
     const os = getOS();
     let osVersion = 'Unknown';
 
