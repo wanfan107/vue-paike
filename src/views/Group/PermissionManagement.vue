@@ -56,18 +56,18 @@
                     <el-table-column prop="status" label="状态" width="80">
                 <template #default="{ row }">
                   <el-tag :type="row.status === 0 ? 'success' : 'danger'" size="small">
-                    {{ row.status === 0 ? '正常' : '禁用' }}
+                    {{ row.status === 0 ? '启用' : '禁用' }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="isActivated" label="已激活" width="80">
+              <el-table-column prop="isActivated" label="邮箱已激活" width="80">
                 <template #default="{ row }">
                   <el-tag :type="row.isActivated ? 'success' : 'danger'" size="small">
                     {{ row.isActivated ? '是' : '否' }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="hasGoogleAuth" label="MFA2" width="80">
+              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="80">
                 <template #default="{ row }">
                   <el-tag :type="row.hasGoogleAuth ? 'success' : 'danger'" size="small">
                     {{ row.hasGoogleAuth ? '是' : '否' }}
@@ -88,7 +88,7 @@
                     <el-button type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
                       重置密码
                     </el-button>
-                    <el-button v-if="row.roleCode !== 'admin'" type="warning" size="small" @click.stop="openChangeEmailDialog(row)">
+                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="openChangeEmailDialog(row)">
                       变更邮箱
                     </el-button>
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="softDeleteOperator(row)">
@@ -139,6 +139,17 @@
                 </el-radio>
               </el-radio-group>
               <!-- <span class="account-type-tip">运营账户只能查看订单和下载流水，其他不可以查看，财务暂时禁用</span> -->
+            </el-form-item>
+
+            <el-form-item label="账户状态" prop="status">
+              <el-radio-group v-model="formData.status">
+                <el-radio :value="0">
+                  启用
+                </el-radio>
+                <el-radio :value="6">
+                  禁用
+                </el-radio>
+              </el-radio-group>
             </el-form-item>
 
             <el-form-item label="管理商户" prop="merchantCodes">
@@ -231,6 +242,17 @@
               <!-- <span class="account-type-tip">运营账户只能查看订单和下载流水，其他不可以查看，财务暂时禁用</span> -->
             </el-form-item>
 
+            <el-form-item label="账户状态" prop="status">
+              <el-radio-group v-model="editFormData.status">
+                <el-radio :value="0">
+                  启用
+                </el-radio>
+                <el-radio :value="6">
+                  禁用
+                </el-radio>
+              </el-radio-group>
+            </el-form-item>
+
             <el-form-item label="管理商户" prop="merchantCodes">
               <el-select
                 v-model="editFormData.merchantCodes"
@@ -320,7 +342,7 @@
               <div class="info-label">状态：</div>
               <div class="info-value">
                 <el-tag :type="viewingOperator.status === 0 ? 'success' : 'danger'" size="small">
-                  {{ viewingOperator.status === 0 ? '正常' : '禁用' }}
+                  {{ viewingOperator.status === 0 ? '启用' : '禁用' }}
                 </el-tag>
               </div>
             </div>
@@ -471,6 +493,7 @@ const formData = reactive({
   name: '',
   code: '',
   roleCode: 'operator',
+  status: 0,
   googleAuth: false,
   merchantCodes: []
 });
@@ -512,6 +535,7 @@ const editFormData = reactive({
   name: '',
   // code: '',
   roleCode: '',
+  status: 0,
   merchantCodes: [],
   createTime: ''
 });
@@ -669,10 +693,11 @@ const resetEditForm = () => {
 
 // 编辑操作员
 const editOperator = (operator) => {
-  editFormData.userId = operator.autoId || operator.userId || '';
-  editFormData.email = operator.email || operator.email || '';
+  editFormData.userId = operator.userId;
+  editFormData.email = operator.email || '';
   editFormData.name = operator.name || '';
   editFormData.roleCode = operator.roleCode === 'admin' ? 'operator' : operator.roleCode === 'finance' ? 'finance' : 'operator';
+  editFormData.status = operator.status ?? 0;
   editFormData.merchantCodes = operator.merchantCodes ? [...operator.merchantCodes] : [];
   editFormData.createTime = operator.createdOn || operator.createTime || '';
   showEditDialog.value = true;
@@ -689,6 +714,7 @@ const updateOperator = async () => {
       userId: editFormData.userId,
       name: editFormData.name,
       roleCode: editFormData.roleCode,
+      status: editFormData.status,
       merchantCodes: editFormData.merchantCodes,
     });
     
@@ -787,7 +813,7 @@ const changeEmail = async () => {
     changingEmail.value = true;
     
     await http.updateGroupUserEmail({
-      userId: changeEmailOperator.value.autoId || changeEmailOperator.value.userId,
+      userId: changeEmailOperator.value.userId,
       newEmail: changeEmailForm.newEmail,
       gcode: changeEmailForm.gcode
     });
@@ -810,7 +836,7 @@ const resetPassword = async () => {
     resetting.value = true;
     
     await http.resetGroupUserPassword({
-      userId: resettingOperator.value.autoId || resettingOperator.value.userId,
+      userId: resettingOperator.value.userId,
     });
     
     ElMessage.success('密码重置邮件已发送');
@@ -838,6 +864,7 @@ const saveOperator = async () => {
       email: formData.email,
       name: formData.name,
       roleCode: formData.roleCode,
+      status: formData.status,
       merchantCodes: formData.merchantCodes,
      gcode: formData.code
     });
