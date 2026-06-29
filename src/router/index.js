@@ -176,11 +176,12 @@ const router = createRouter({
           children: [
             { path: 'logs', name: 'groupLogs', component: logs, title: '集团登录记录', meta: { roles: ['admin', 'finance', 'operator'] } },
             { path: 'MerchantList', name: 'groupMerchantList', component: MerchantList, title: '集团商户列表', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单模糊查询', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员权限', meta: { roles: ['admin'] } },
+            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单查询', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员列表', meta: { roles: ['admin'] } },
             // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
             { path: 'loginIPWhiteList', name: 'loginIPWhiteList', component: loginIPWhiteList, title: '集团IP白名单', meta: { roles: ['admin'] } },
+            { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             // { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
           ]
         },
@@ -197,7 +198,6 @@ const router = createRouter({
             // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
             // 集团的财务管理
              { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
-             { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
           ]
         },

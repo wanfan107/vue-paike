@@ -22,7 +22,7 @@
             <h3 class="section-title">集团账户信息</h3>
             <el-descriptions border>
               <el-descriptions-item label="集团可用余额" :span="1">
-                <span class="balance-value">-</span>
+                <span class="balance-value">{{ groupBalance }}</span>
               </el-descriptions-item>
               <!-- <el-descriptions-item label="集团待结算余额" :span="1">
                 <span class="balance-value">-</span>
@@ -77,7 +77,7 @@
                 </el-form-item>
                 
                 <!-- 转入商户 -->
-                <el-form-item label="转入商户" prop="toMerchant">
+                <el-form-item label="转入商户" prop="toMerchant" >
                   <div class="merchant-select-container">
                     <el-select
                       v-model="ruleForm.toMerchant"
@@ -156,9 +156,53 @@
           
           <!-- 转账记录 -->
           <div class="transfer-history">
+              <h3 style="color: #000000;">转账记录</h3>
             <div class="history-header">
-              <h3>转账记录</h3>
-              <div class="history-controls">
+            
+            <el-form :inline="true">
+              <el-form-item label="状态">
+                <el-select
+                  v-model="searchForm.status"
+                  placeholder="全部"
+                  style="width: 100px"
+                  size="small"
+                >
+                  <el-option label="全部" :value="null" />
+                  <el-option label="待处理" :value="0" />
+                  <el-option label="处理中" :value="1" />
+                  <el-option label="成功" :value="2" />
+                  <el-option label="失败" :value="3" />
+                  <el-option label="取消" :value="4" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="订单号">
+                <el-input
+                  v-model="searchForm.bizNo"
+                  placeholder="转账单号"
+                  style="width: 180px"
+                  clearable
+                  size="small"
+                />
+              </el-form-item>
+
+              <el-form-item label="转入方">
+                <el-select
+                  v-model="searchForm.counterparty"
+                  placeholder="请选择转入商户"
+                  style="width: 150px"
+                  clearable
+                  size="small"
+                >
+                  <el-option
+                    v-for="merchant in merchantOptions.filter(m => m.code !== ruleForm.fromMerchant)"
+                    :key="merchant.code"
+                    :value="merchant.code"
+                  >
+                    {{ merchant.code }}
+                  </el-option>
+                </el-select>
+              </el-form-item>
+              <el-form-item label="时间范围">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
@@ -166,12 +210,19 @@
                   start-placeholder="开始日期"
                   end-placeholder="结束日期"
                   value-format="YYYY-MM-DD HH:mm:ss"
-                  @change="getTransferHistory"
+                  size="small"
                 />
-                <el-button type="primary" size="small" @click="getTransferHistory">
-                  查询
-                </el-button>
-              </div>
+              </el-form-item>
+            <el-form-item>
+              <el-button type="primary" size="small" @click="getTransferHistory">
+                查询
+              </el-button>
+              <el-button size="small" @click="resetSearch">重置</el-button>
+            </el-form-item>
+
+
+            </el-form>
+
             </div>
             
             <el-table
@@ -181,39 +232,48 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180" />
-              <el-table-column prop="type" label="类型" width="100">
+              <el-table-column prop="orderNo" label="转账单号" width="180">
                 <template #default="scope">
-                  <el-tag :type="scope.row.type === 'K00014' ? 'success' : 'danger'">
-                    {{ scope.row.type === 'K00014' ? '集团转入' : '集团转出' }}
+                  <el-tooltip :content="scope.row.orderNo" placement="top">
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; width: 100%; cursor: pointer;">{{ scope.row.orderNo }}</span>
+                  </el-tooltip>
+                </template>
+              </el-table-column>
+              <el-table-column prop="type" label="类型" width="100" align="center">
+                <template #default="scope">
+                  <!-- 0=空，1=转入，2=转出，3内部互转 -->
+                  <el-tag :type="scope.row.type === 3 ? 'primary' : scope.row.type === 1 ? 'success' : scope.row.type === 2 ? 'danger' : 'default' ">
+                    {{ scope.row.type === 3 ? '内部互转' : scope.row.type === 1 ? '转入' : scope.row.type === 2 ? '转出' : '' }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="fromAccount" label="转出账户" />
-              <el-table-column prop="toAccount" label="转入账户" />
-              <el-table-column prop="amount" label="转账金额" width="120">
+              <el-table-column prop="fromAccount" label="转出商户号" width="150" align="center" />
+              <el-table-column prop="toAccount" label="转入商户号" width="150" align="center" />
+              <el-table-column prop="amount" label="转账金额" width="140" align="center">
                 <template #default="scope">
-                  ¥{{ scope.row.amount.toLocaleString() }}
+                  {{ formatCurrency(scope.row.amount, scope.row.currency) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100">
+              <el-table-column prop="status" label="状态" width="100" align="center">
                 <template #default="scope">
-                  <el-tag :type="scope.row.status === 'SUCCESS' ? 'success' : 'danger'">
-                    {{ scope.row.status === 'SUCCESS' ? '成功' : '失败' }}
+                  <el-tag :type="{ '待处理': 'warning', '处理中': 'info', '成功': 'success', '失败': 'danger', '取消': 'default' }[scope.row.status] || 'default'">
+                    {{ scope.row.status }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" />
-              <el-table-column prop="remark" label="备注" />
+              <el-table-column prop="createTime" label="转账时间" width="180" align="center" />
+              <el-table-column prop="ErrorMsg" label="备注" align="center" />            
             </el-table>
             
-            <div class="history-pagination" v-if="!historyLoading && transferHistory.length > 0" style="display: flex; justify-content: center;">
+            <div class="history-pagination" v-if="!historyLoading && transferHistory.length > 0" style="display: flex; justify-content: center; margin-top: 10px;">
               <el-pagination
                 v-model:current-page="historyPagination.currentPage"
-                :page-size="10"
+                v-model:page-size="historyPagination.pageSize"
+                :page-sizes="[10, 20, 50, 100]"
                 :total="historyPagination.total"
-                layout="total, prev, pager, next"
+                layout="total, sizes, prev, pager, next, jumper"
                 @current-change="handleHistoryCurrentChange"
+                @size-change="handleHistorySizeChange"
               />
             </div>
             
@@ -227,7 +287,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
@@ -243,6 +303,10 @@ const formRef = ref(null);
 
 // 商户选项（模拟数据，实际应从接口获取）
 const merchantOptions = ref([]);
+
+const groupBalance = computed(() => {
+  return merchantOptions.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0);
+});
 
 const ruleForm = reactive({
   fromMerchant: userStore.currentMerchantCode || "",
@@ -264,7 +328,7 @@ const rules = {
   ],
   amount: [
     { required: true, message: '请输入转账金额', trigger: 'blur' },
-    { type: 'number', min: 10, message: '转账金额不能小于10', trigger: 'blur' }
+    { type: 'number', min: 1, message: '转账金额不能小于1', trigger: 'blur' }
   ],
   password: [
     { required: true, message: '请输入支付密码', trigger: 'blur' }
@@ -356,17 +420,28 @@ const historyTimeRange = ref([]);
 const historyLoading = ref(false);
 const transferHistory = ref([]);
 
+const searchForm = reactive({
+  status: null,
+  bizNo: '',
+  groupCode: '',
+  merchantCode: '',
+  counterparty: ''
+});
+
 const historyPagination = reactive({
   currentPage: 1,
   pageSize: 10,
   total: 0
 });
 
-// 初始化时间范围（默认最近7天）
+// 初始化时间范围（默认最近7天全天）
 const initTimeRange = () => {
-  const end = new Date();
-  const start = new Date();
-  start.setDate(start.getDate() - 7);
+  const today = new Date();
+  const start = new Date(today);
+  start.setDate(start.getDate() - 6);
+  start.setHours(0, 0, 0, 0);
+  const end = new Date(today);
+  end.setHours(23, 59, 59, 999);
   
   historyTimeRange.value = [
     start.toISOString().slice(0, 19).replace('T', ' '),
@@ -375,32 +450,46 @@ const initTimeRange = () => {
 };
 
 // 获取转账记录
+const formatCurrency = (amount, currency) => {
+  const currencyConfig = {
+    BRL: { symbol: 'R$', decimals: 2 },
+    CNY: { symbol: '¥', decimals: 2 },
+    USD: { symbol: '$', decimals: 2 },
+    EUR: { symbol: '€', decimals: 2 },
+    JPY: { symbol: '¥', decimals: 0 }
+  };
+  const config = currencyConfig[currency] || currencyConfig.BRL;
+  return `${config.symbol} ${Number(amount).toLocaleString('pt-BR', { minimumFractionDigits: config.decimals, maximumFractionDigits: config.decimals })}`;
+};
+
 const getTransferHistory = async () => {
   historyLoading.value = true;
   try {
-    const res = await http.financePage({
-      billEndTime: historyTimeRange.value[1],
-      billStartTime: historyTimeRange.value[0],
-      id: userStore.userInfo.id,
-      type: 'K00015',
+    const res = await http.groupTransferQuery({
+      status: searchForm.status,
+      bizNo: searchForm.bizNo || '',
+      groupCode: searchForm.groupCode || '',
+      merchantCode: userStore.merchantId || '',
+      counterparty: searchForm.counterparty || '',
+      startTime: historyTimeRange.value[0],
+      endTime: historyTimeRange.value[1],
       pageNo: historyPagination.currentPage,
-      pageSize: historyPagination.pageSize,
-      orderNo:'',
-      merchantOrderNo:''
+      pageSize: historyPagination.pageSize
     });
     
-    if (res.data && res.data.list) {
-      historyPagination.total = res.data.total;
-      transferHistory.value = res.data.list.map(item => ({
-        orderNo: item.orderno || '-',
-        fromAccount: item.merchantorderno || '-',
-        toAccount: '-',
-        amount: item.orderamount || 0,
-        status: 'SUCCESS',
-        createTime: item.createtime || '-',
-        remark: item.memo || '-',
-        type: item.type
-        }));
+    if (res.Data && res.Data.Items) {
+      historyPagination.total = res.Data.Total;
+      transferHistory.value = res.Data.Items.map(item => ({
+        orderNo: item.BizNo || '-',
+        fromAccount: item.Merchant || '-',
+        toAccount: item.Counterparty || '-',
+        amount: item.Amount || 0,
+        currency: item.Currency || 'BRL',
+        status: ['待处理', '处理中', '成功', '失败', '取消'][item.Status] || '-',
+        type: item.Direction,
+        createTime: item.CreatedOn ? item.CreatedOn.replace('T', ' ').slice(0, 19) : '-',
+        ErrorMsg: item.ErrorMsg || '-'
+      }));
     }
   } catch (error) {
     ElMessage.error('获取转账记录失败');
@@ -409,8 +498,26 @@ const getTransferHistory = async () => {
   }
 };
 
+const resetSearch = () => {
+  searchForm.status = null;
+  searchForm.bizNo = '';
+  searchForm.groupCode = '';
+  searchForm.merchantCode = '';
+  searchForm.counterparty = '';
+  historyTimeRange.value = [];
+  historyPagination.currentPage = 1;
+  initTimeRange();
+  getTransferHistory();
+};
+
 const handleHistoryCurrentChange = (val) => {
   historyPagination.currentPage = val;
+  getTransferHistory();
+};
+
+const handleHistorySizeChange = (val) => {
+  historyPagination.pageSize = val;
+  historyPagination.currentPage = 1;
   getTransferHistory();
 };
 
@@ -785,20 +892,7 @@ onUnmounted(() => {
       color: #333;
     }
     
-    .history-controls {
-      display: flex;
-      gap: $spacing-md;
-      align-items: center;
-      
-      .el-date-picker {
-        width: 300px;
-      }
-      
-      .el-button {
-        padding: 8px 16px;
-        border-radius: 8px;
-      }
-    }
+
   }
   
   .el-table {
@@ -834,20 +928,6 @@ onUnmounted(() => {
       flex-direction: column;
       align-items: flex-start;
       gap: $spacing-md;
-      
-      .history-controls {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-        
-        .el-date-picker {
-          width: 100%;
-        }
-        
-        .el-button {
-          width: 100%;
-        }
-      }
     }
     
     .el-table {

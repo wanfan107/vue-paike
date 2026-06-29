@@ -111,11 +111,11 @@
                 <span v-else>-</span>
               </template>
             </el-table-column> -->
-            <el-table-column prop="siteUrl" label="网站" min-width="280">
+            <el-table-column prop="telegram" label="网站" min-width="280">
               <template #default="{ row }">
-                <a :href="row.siteUrl" target="_blank" v-if="row.siteUrl">
-                  {{ row.siteUrl }}
-                </a>
+                <span v-if="row.telegram">
+                  {{ row.telegram }}
+                </span>
                 <span v-else>-</span>
               </template>
             </el-table-column>
@@ -211,7 +211,7 @@ const loadData = async () => {
   try {
     const res = await http.getGroupMerchants();
     if (res.code === 200) {
-      merchantList.value = res.data || [];
+      merchantList.value = res.data.filter(m => !m.code?.startsWith('G')) || [];
     } else {
       ElMessage.error(res.msg || "加载数据失败");
     }
