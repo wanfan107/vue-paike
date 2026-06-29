@@ -127,7 +127,9 @@
               {{ account.id }}
               <el-tag v-if="account.id === userStore.currentMerchantCode " type="info" size="small">当前</el-tag>
             </div>
-            <div class="account-type">{{ account.type }}</div>
+            <el-tooltip :content="account.type" placement="left">
+              <div class="account-type">{{ account.type }}</div>
+            </el-tooltip>
           </div>
           <div class="right-column">
             <!-- <div class="account-company"><span>余额：</span>{{ account.balance || ' ' }}</div> -->
@@ -175,7 +177,7 @@
         id: m.code,
         code: m.code,
         siteUrl: m.siteUrl || '',
-        type: m.isGroup ? '集团' : '商户',
+        type: m.telegram || '',
         balance: m.balance || '0.00',
         createdOn: formatDateTime(m.createdOn) || '',
       }));
@@ -756,8 +758,12 @@ function confirmBind(account) {
 }
 
 .account-type {
+  width: 90%;
   font-size: 14px;
   color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-company {

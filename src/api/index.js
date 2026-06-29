@@ -14,6 +14,8 @@ export const http = {
     form: defaultApi('form'),
     // 集团预登录
     groupPrelogin: (data) => request_group.post("/Auth/group/prelogin", data),
+    // 集团邮箱验证码验证
+    verifyEmailCode: (data) => request_group.post("/auth/group/verify-email-code", data),
     // 集团登录
     groupLogin: (data) => request_group.post("/Auth/group/login", data),
     // 集团选择商户
@@ -80,6 +82,8 @@ export const http = {
     deleteIpWhiteList: (data, headers) => request.post('/wfipwhitelist/delete', data, { headers }),
     // 集团互转审批-刘强
     groupTransferApproval: (data, headers) => request.post("/wftransfer/apply", data, { headers }),
+    // 集团互转查询-刘强
+    groupTransferQuery: (data) => request.post("/WfTransfer/records", data), 
 
 
 

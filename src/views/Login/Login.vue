@@ -49,7 +49,7 @@
                         
           </el-form-item>
           <!-- 验证邮箱是否已验证的密码输入框 -->
-          <el-form-item label="EmailCode" prop="EmailCode" v-if="EmailVerifyshow">
+          <el-form-item label="Email Verification Code" prop="EmailCode" v-if="EmailVerifyshow">
             <el-input
               v-model="loginForm.EmailCode"
               size="default"
@@ -229,7 +229,9 @@
         >
           <div class="left-column">
             <div class="account-id">{{ account.id }}</div>
-            <div class="account-type">{{ account.type }}</div>
+             <el-tooltip :content="account.type" placement="left">
+              <div class="account-type">{{ account.type }}</div>
+            </el-tooltip>
           </div>
           <div class="right-column">
 <div class="account-company"><span>余额：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
@@ -724,7 +726,7 @@ async function _groupLogin() {
                   id: m.code,
                   code: m.code,
                   siteUrl: m.siteUrl || '',
-                  type: m.isGroup ? '集团' : '商户',
+                  type: m.telegram ||'',
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));
@@ -868,7 +870,20 @@ async function groupLoginLogin() {
           return;
         }
         if (loginForm.value.EmailCode) {
-          isVerifyPass.value = true;
+          // 这里用来验证邮箱验证码是否正确
+          // 如果邮箱验证码正确，isVerifyPass.value 为 true
+          // 如果邮箱验证码错误，isVerifyPass.value 为 false
+          const verifyRes = await http.verifyEmailCode({
+            email: loginForm.value.username,
+            groupCode: res.data.id,
+            code: loginForm.value.EmailCode,
+          });
+          if (verifyRes.code == 200) {
+            isVerifyPass.value = true;
+          } else {
+            ElMessage.error(verifyRes.msg || "邮箱验证码错误");
+            isVerifyPass.value = false;
+          }
         }
       }else{
       isVerifyPass.value = true;
@@ -1526,8 +1541,12 @@ async function confirmBind(account) {
 }
 
 .account-type {
+  width: 90%;
   font-size: 14px;
   color: #888;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .account-company {
