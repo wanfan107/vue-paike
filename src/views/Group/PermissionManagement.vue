@@ -60,13 +60,6 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="isSuspended" label="冻结" width="80">
-                <template #default="{ row }">
-                  <el-tag :type="row.isSuspended ? 'danger' : 'success'" size="small">
-                    {{ row.isSuspended ? '已冻结' : '正常' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
               <el-table-column prop="isActivated" label="已激活" width="80">
                 <template #default="{ row }">
                   <el-tag :type="row.isActivated ? 'success' : 'danger'" size="small">
@@ -86,17 +79,20 @@
                   {{ formatDate(row.createdOn) }}
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="220" fixed="right" >
+              <el-table-column label="操作" width="300" fixed="right" >
                 <template #default="{ row }">
                   <div class="action-cell" @click.stop.prevent>
                     <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
                       编辑
                     </el-button>
-                    <el-button  type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
+                    <el-button type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
                       重置密码
                     </el-button>
-                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="deleteOperator(row)">
-                      删除
+                    <el-button v-if="row.roleCode !== 'admin'" type="warning" size="small" @click.stop="openChangeEmailDialog(row)">
+                      变更邮箱
+                    </el-button>
+                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="softDeleteOperator(row)">
+                      逻辑删除
                     </el-button>
                   </div>
                 </template>
@@ -273,16 +269,6 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="是否冻结">
-              <el-switch 
-                v-model="editFormData.isSuspended" 
-                active-text="已冻结" 
-                inactive-text="正常"
-                active-color="#F56C6C"
-                inactive-color="#67C23A"
-              />
-            </el-form-item>
-
             <el-form-item label="创建时间">
               <div class="create-time-display">
                 <el-icon><Clock /></el-icon>
@@ -335,14 +321,6 @@
               <div class="info-value">
                 <el-tag :type="viewingOperator.status === 0 ? 'success' : 'danger'" size="small">
                   {{ viewingOperator.status === 0 ? '正常' : '禁用' }}
-                </el-tag>
-              </div>
-            </div>
-            <div class="info-row">
-              <div class="info-label">冻结：</div>
-              <div class="info-value">
-                <el-tag :type="viewingOperator.isSuspended ? 'danger' : 'success'" size="small">
-                  {{ viewingOperator.isSuspended ? '已冻结' : '正常' }}
                 </el-tag>
               </div>
             </div>
@@ -405,6 +383,42 @@
           </template>
         </el-dialog>
 
+        <!-- 变更邮箱对话框 -->
+        <el-dialog
+          v-model="showChangeEmailDialog"
+          title="变更邮箱"
+          width="450px"
+          :close-on-click-modal="false"
+        >
+          <el-form :model="changeEmailForm" :rules="changeEmailRules" ref="changeEmailFormRef" label-width="100px">
+            <el-form-item label="当前邮箱">
+              <span>{{ changeEmailOperator.email }}</span>
+            </el-form-item>
+            <el-form-item label="新邮箱" prop="newEmail">
+              <el-input 
+                v-model="changeEmailForm.newEmail" 
+                placeholder="请输入新邮箱"
+                clearable
+                maxlength="80"
+              />
+            </el-form-item>
+            <el-form-item label="MFA2验证码" prop="gcode">
+              <el-input 
+                v-model="changeEmailForm.gcode" 
+                placeholder="请输入MFA2验证码"
+                clearable
+                maxlength="6"
+              />
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <el-button @click="showChangeEmailDialog = false">取消</el-button>
+            <el-button type="primary" @click="changeEmail" :loading="changingEmail">
+              确定
+            </el-button>
+          </template>
+        </el-dialog>
+
       </div>
     </main>
   </div>
@@ -439,13 +453,17 @@ const showAddDialog = ref(false);
 const showEditDialog = ref(false);
 const showViewDialog = ref(false);
 const showResetDialog = ref(false);
+const showChangeEmailDialog = ref(false);
 const saving = ref(false);
 const updating = ref(false);
 const resetting = ref(false);
+const changingEmail = ref(false);
 const formRef = ref(null);
 const editFormRef = ref(null);
+const changeEmailFormRef = ref(null);
 const viewingOperator = ref({});
 const resettingOperator = ref({});
+const changeEmailOperator = ref({});
 
 // 表单数据
 const formData = reactive({
@@ -467,6 +485,25 @@ const resetFormRules = {
   ]
 };
 
+// 变更邮箱表单数据
+const changeEmailForm = reactive({
+  newEmail: '',
+  gcode: ''
+});
+
+// 变更邮箱表单验证规则
+const changeEmailRules = {
+  newEmail: [
+    { required: true, message: '请输入新邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
+    { max: 80, message: '邮箱长度不能超过80个字符', trigger: 'blur' }
+  ],
+  gcode: [
+    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
+    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+  ]
+};
+
 // 编辑表单数据
 const editFormData = reactive({
   userId: null,
@@ -475,7 +512,6 @@ const editFormData = reactive({
   name: '',
   // code: '',
   roleCode: '',
-  isSuspended: false,
   merchantCodes: [],
   createTime: ''
 });
@@ -604,7 +640,6 @@ const handleRowClick = (row, event) => {
     roleName: row.roleName || '',
     roleCode: row.roleCode || '',
     status: row.status || 0,
-    isSuspended: row.isSuspended || false,
     isActivated: row.isActivated || false,
     hasGoogleAuth: row.hasGoogleAuth || false,
     merchantCodes: row.merchantCodes || [],
@@ -638,7 +673,6 @@ const editOperator = (operator) => {
   editFormData.email = operator.email || operator.email || '';
   editFormData.name = operator.name || '';
   editFormData.roleCode = operator.roleCode === 'admin' ? 'operator' : operator.roleCode === 'finance' ? 'finance' : 'operator';
-  editFormData.isSuspended = operator.isSuspended || false;
   editFormData.merchantCodes = operator.merchantCodes ? [...operator.merchantCodes] : [];
   editFormData.createTime = operator.createdOn || operator.createTime || '';
   showEditDialog.value = true;
@@ -655,7 +689,6 @@ const updateOperator = async () => {
       userId: editFormData.userId,
       name: editFormData.name,
       roleCode: editFormData.roleCode,
-      isSuspended: editFormData.isSuspended,
       merchantCodes: editFormData.merchantCodes,
     });
     
@@ -669,7 +702,7 @@ const updateOperator = async () => {
   }
 };
 
-// 删除操作员
+// 删除操作员（物理删除，已隐藏，保留代码备用）
 const deleteOperator = (operator) => {
   const currentUserEmail = userStore.roleCode || '';
   if (operator.roleCode === currentUserEmail) {
@@ -699,10 +732,74 @@ const deleteOperator = (operator) => {
   }).catch(() => {});
 };
 
+// 逻辑删除操作员
+const softDeleteOperator = (operator) => {
+  const currentUserEmail = userStore.roleCode || '';
+  if (operator.roleCode === currentUserEmail) {
+    ElMessage.warning('不允许删除当前登录用户！');
+    return;
+  }
+  
+  ElMessageBox.confirm(
+    `确定要逻辑删除操作员 "${operator.email || operator.email}" 吗？\n删除后该账号将无法登录，邮箱将被释放。`,
+    '提示',
+    {
+      confirmButtonText: '确定删除',
+      cancelButtonText: '取消',
+      type: 'warning'
+    }
+  ).then(async () => {
+    try {
+      await http.softDeleteGroupUser({ userId: operator.autoId || operator.userId });
+      const index = operators.value.findIndex(op => op.autoId === (operator.autoId || operator.userId));
+      if (index !== -1) {
+        operators.value.splice(index, 1);
+      }
+      ElMessage.success('逻辑删除成功');
+    } catch (error) {
+      ElMessage.error(error.response?.data?.msg || '逻辑删除失败');
+    }
+  }).catch(() => {});
+};
+
 // 显示重置密码对话框
 const showResetPasswordDialog = (operator) => {
   resettingOperator.value = operator;
   showResetDialog.value = true;
+};
+
+// 显示变更邮箱对话框
+const openChangeEmailDialog = (operator) => {
+  changeEmailOperator.value = operator;
+  changeEmailForm.newEmail = '';
+  changeEmailForm.gcode = '';
+  if (changeEmailFormRef.value) {
+    changeEmailFormRef.value.resetFields();
+  }
+  showChangeEmailDialog.value = true;
+};
+
+// 变更邮箱
+const changeEmail = async () => {
+  try {
+    await changeEmailFormRef.value.validate();
+    
+    changingEmail.value = true;
+    
+    await http.updateGroupUserEmail({
+      userId: changeEmailOperator.value.autoId || changeEmailOperator.value.userId,
+      newEmail: changeEmailForm.newEmail,
+      gcode: changeEmailForm.gcode
+    });
+    
+    ElMessage.success('变更邮箱成功');
+    showChangeEmailDialog.value = false;
+    loadOperators();
+  } catch (error) {
+    ElMessage.error(error.response?.data?.msg || '变更邮箱失败');
+  } finally {
+    changingEmail.value = false;
+  }
 };
 
 

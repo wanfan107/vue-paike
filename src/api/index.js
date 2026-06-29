@@ -30,6 +30,10 @@ export const http = {
     updateGroupUser: (data) => request_group.post("/Auth/group/users/update", data),
     // 删除集团用户 （删除）
     deleteGroupUser: (data) => request_group.post("/Auth/group/users/delete", data),
+    // 逻辑删除集团用户
+    softDeleteGroupUser: (data) => request_group.post("/Auth/group/users/softDelete", data),
+    // 修改集团用户邮箱
+    updateGroupUserEmail: (data) => request_group.post("/Auth/group/users/updateEmail", data),
     // 重置集团用户密码 （重置密码）
     resetGroupUserPassword: (data) => request_group.post("/Auth/group/users/resetPassword", data),
     // 集团登录记录
