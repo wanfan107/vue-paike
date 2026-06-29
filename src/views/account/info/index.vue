@@ -119,16 +119,16 @@ const submit = () => {};
   padding: 32px 40px 40px;
 }
 
-::v-deep .el-form-item {
+:v-deep .el-form-item {
   margin-bottom: 28px;
   transition: all 0.3s ease;
 }
 
-::v-deep .el-form-item:last-child {
+:v-deep .el-form-item:last-child {
   margin-bottom: 0;
 }
 
-::v-deep .el-form-item__label {
+:v-deep .el-form-item__label {
   font-weight: 600;
   color: #2c3e50;
   font-size: 14px;
@@ -136,11 +136,11 @@ const submit = () => {};
   display: block;
 }
 
-::v-deep .el-input {
+:v-deep .el-input {
   width: 100%;
 }
 
-::v-deep .el-input__inner {
+:v-deep .el-input__inner {
   height: 48px;
   padding: 0 16px;
   font-size: 15px;
@@ -157,39 +157,39 @@ const submit = () => {};
   }
 }
 
-::v-deep .el-input.is-disabled .el-input__inner {
+:v-deep .el-input.is-disabled .el-input__inner {
   background-color: #f8f9fa;
   border-color: #e9ecef;
   color: #6c757d;
   cursor: default;
 }
 
-::v-deep .el-switch {
+:v-deep .el-switch {
   margin-top: 8px;
 }
 
-::v-deep .el-switch__input.is-checked + .el-switch__core {
+:v-deep .el-switch__input.is-checked + .el-switch__core {
   background-color: #4facfe;
   border-color: #4facfe;
 }
 
-::v-deep .el-switch__core {
+:v-deep .el-switch__core {
   border-radius: 15px;
   width: 50px;
   height: 30px;
 }
 
-::v-deep .el-switch__core::after {
+:v-deep .el-switch__core::after {
   width: 26px;
   height: 26px;
   border-radius: 50%;
 }
 
-::v-deep .el-switch__input.is-checked + .el-switch__core::after {
+:v-deep .el-switch__input.is-checked + .el-switch__core::after {
   margin-left: -28px;
 }
 
-::v-deep .el-divider--horizontal {
+:v-deep .el-divider--horizontal {
   margin: 0;
   background-color: #e9ecef;
 }
@@ -215,7 +215,7 @@ const submit = () => {};
     padding: 24px 28px 32px;
   }
 
-  ::v-deep .el-form-item {
+  :v-deep .el-form-item {
     margin-bottom: 24px;
   }
 }

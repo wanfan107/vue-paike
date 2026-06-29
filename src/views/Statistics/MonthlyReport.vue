@@ -81,6 +81,7 @@
                 element-loading-spinner="el-icon-loading"
                 element-loading-background="rgba(255, 255, 255, 0.8)"
                 @expand-change="onExpandChange"
+                @row-click="onRowClick"
                 :preserve-expanded-content="preserveExpanded"
                 :expand-row-keys="expandRowKeys"
                 row-key="Month"
@@ -309,53 +310,35 @@ const realTimeChart = computed(() => {
   return {
     title: {
       text: "收款金额与付款金额趋势",
-      left: "center",
-      top: 20,
+    left: '0%',
+      top: '0%',
       textStyle: {
-        color: "#666",
-        fontSize: 16,
-      },
+        fontSize: 14,
+        color: '#666'
+      }
     },
     tooltip: {
-      trigger: "axis",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
-      formatter: function (params) {
-        let result = params[0].axisValue + "<br/>";
-        params.forEach(function (item) {
-          result +=
-            item.marker +
-            " " +
-            item.seriesName +
-            ": R$" +
-            item.value +
-            "<br/>";
-        });
-        return result;
-      },
+      trigger: "axis"
     },
     legend: {
       data: ["收款金额", "付款金额"],
-      bottom: "5%",
+      top: "5%",
       textStyle: {
         color: "#666",
         fontSize: 13,
       },
     },
     grid: {
-      top: "25%",
-      left: "5%",
-      right: "5%",
-      bottom: "15%",
-      containLabel: true,
+      left: '3%',
+      right: '3%',
+      bottom: '5%',
+      top: '20%',
+      containLabel: true
     },
     xAxis: {
       type: "category",
       data: dates,
-      boundaryGap: false,
+      boundaryGap: true,
       axisLine: {
         lineStyle: {
           color: "#d8d8d8",
@@ -390,6 +373,24 @@ const realTimeChart = computed(() => {
           color: "#d8d8d8",
         },
       },
+      axisTick: {
+        show: true,
+        lineStyle: {
+          color: "#d8d8d8",
+        },
+      },
+      axisLabel: {
+        color: "#666",
+        fontSize: 12,
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        },
+      },
       splitLine: {
         show: true,
         lineStyle: {
@@ -397,37 +398,21 @@ const realTimeChart = computed(() => {
           type: "dashed",
         },
       },
-      axisLabel: {
-        color: "#666",
-        formatter: "R${value}",
-        fontSize: 12,
-      },
-      axisTick: {
-        show: false,
-      },
-      nameTextStyle: {
-        color: "#666",
-        fontSize: 12,
-        padding: [0, 30, 0, 0],
-      },
     },
     series: [
       {
         name: "收款金额",
         type: "line",
         data: collectionAmounts,
-        symbol: "circle",
-        symbolSize: 6,
         smooth: true,
-        showSymbol: true,
+        symbol: "circle",
+        symbolSize: 4,
         lineStyle: {
           color: "#48bb78",
-          width: 3,
+          width: 2,
         },
         itemStyle: {
           color: "#48bb78",
-          borderColor: "#fff",
-          borderWidth: 1,
         },
         areaStyle: {
           color: {
@@ -453,18 +438,15 @@ const realTimeChart = computed(() => {
         name: "付款金额",
         type: "line",
         data: paymentAmounts,
-        symbol: "circle",
-        symbolSize: 6,
         smooth: true,
-        showSymbol: true,
+        symbol: "circle",
+        symbolSize: 4,
         lineStyle: {
           color: "#db0011",
-          width: 3,
+          width: 2,
         },
         itemStyle: {
           color: "#db0011",
-          borderColor: "#fff",
-          borderWidth: 1,
         },
         areaStyle: {
           color: {
@@ -593,6 +575,27 @@ const chartInstances = ref(new Map()); // 存储展开行的图表实例
 
 // 路由实例
 const router = useRouter();
+
+
+// 点击行展开/收起
+const onRowClick = (row) => {
+  const key = row.OrderDate;
+  const index = expandRowKeys.value.indexOf(key);
+  if (index > -1) {
+    expandRowKeys.value.splice(index, 1);
+  } else {
+    expandRowKeys.value.push(key);
+  }
+  // 更新show状态：有行展开时隐藏图表，没有行展开时显示图表
+  show.value = expandRowKeys.value.length === 0;
+  
+  // 如果图表需要显示，重新初始化图表
+  if (show.value) {
+    nextTick(() => {
+      initMainCharts();
+    });
+  }
+};
 
 
 
@@ -1922,7 +1925,7 @@ const onExport = async () => {
 }
 
 /* 展开行表格样式 */
-::v-deep(.expand-table) {
+:v-deep(.expand-table) {
   background-color: #fafafa;
   
   & th {

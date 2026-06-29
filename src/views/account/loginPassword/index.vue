@@ -319,18 +319,18 @@ watch(
   padding: 24px;
 }
 
-::v-deep(.el-form-item) {
+:v-deep(.el-form-item) {
   margin-bottom: 20px;
 }
 
-::v-deep(.el-form-item__label) {
+:v-deep(.el-form-item__label) {
   font-weight: 500;
   color: #333;
   font-size: 14px;
 }
 
-::v-deep(.el-input__inner),
-::v-deep(.el-textarea__inner) {
+:v-deep(.el-input__inner),
+:v-deep(.el-textarea__inner) {
   height: 40px;
   border-radius: 6px;
   border: 1px solid #dcdfe6;
@@ -338,14 +338,14 @@ watch(
   font-size: 14px;
 }
 
-::v-deep(.el-textarea__inner) {
+:v-deep(.el-textarea__inner) {
   height: auto;
   min-height: 80px;
 }
 
 
 
-::v-deep(.el-button--primary) {
+:v-deep(.el-button--primary) {
   // background-color: #409eff;
   // border-color: #409eff;
   // border-radius: 6px;
@@ -354,14 +354,14 @@ watch(
   transition: all 0.3s;
 }
 
-::v-deep(.el-button) {
+:v-deep(.el-button) {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.3s;
 }
 
 /* 针对标题样式的优化 */
-::v-deep(.el-form-item__label[for=""]) {
+:v-deep(.el-form-item__label[for=""]) {
   font-size: 16px;
   font-weight: 600;
   color: #333;
@@ -394,7 +394,7 @@ watch(
 }
 
 
-::v-deep(.password-strength-container) {
+:v-deep(.password-strength-container) {
   width: 100%;
   // margin-top: 10px;
   // padding: 10px;
@@ -402,19 +402,19 @@ watch(
   border-radius: 6px;
 }
 
-::v-deep(.password-strength-header) {
+:v-deep(.password-strength-header) {
   font-size: 14px;
   font-weight: 500;
   color: #606266;
   margin-bottom: 8px;
 }
 
-::v-deep(.password-strength-boxes) {
+:v-deep(.password-strength-boxes) {
   display: flex;
   margin: 8px 0;
 }
 
-::v-deep(.password-strength-box) {
+:v-deep(.password-strength-box) {
   width: 25%;
   height: 5px;
   background-color: #e4e7ed;
@@ -422,7 +422,7 @@ watch(
   margin-left: 5px;
 }
 
-::v-deep(.password-strength-text) {
+:v-deep(.password-strength-text) {
   margin-top: 5px;
   font-size: 12px;
   font-weight: 500;

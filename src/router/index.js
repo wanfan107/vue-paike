@@ -119,6 +119,11 @@ import loginIPWhiteList from '../views/Group/loginIPWhiteList.vue'
 import groupOrderFuzzyQuery from '../views/Group/groupOrderFuzzyQuery.vue'
 import groupApplyU from '../views/Group/groupApplyU.vue'
 
+// 集团统计报表
+import GroupStatistics from '../views/GroupStatistics/index.vue'
+import GroupDailyReport from '../views/GroupStatistics/DailyReport.vue'
+import GroupMonthlyReport from '../views/GroupStatistics/MonthlyReport.vue'
+
 
 
 const router = createRouter({
@@ -153,6 +158,7 @@ const router = createRouter({
             { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
           ]
         },
+
 
         // 收款订单
         { path: 'ReceiptOrder', name: 'ReceiptOrder', title: '收款订单', icon: WalletFilled, component: ReceiptOrder, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
@@ -193,6 +199,15 @@ const router = createRouter({
              { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
              { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
+          ]
+        },
+        // 集团统计报表
+        {
+          path: 'groupStatistics', name: 'groupStatistics', title: '集团统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin','finance', 'operator'] },
+          children: [
+            { path: 'groupRealtime', name: 'groupRealtime', component: GroupStatistics, title: '即时统计', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'groupDailyReport', name: 'groupDailyReport', component: GroupDailyReport, title: '每日报表', meta: { roles: ['admin', 'finance', 'operator'] } },
+            { path: 'groupMonthlyReport', name: 'groupMonthlyReport', component: GroupMonthlyReport, title: '每月报表', meta: { roles: ['admin', 'finance', 'operator'] } },
           ]
         },
         // 导出记录

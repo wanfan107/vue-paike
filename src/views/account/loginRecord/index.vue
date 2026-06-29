@@ -163,13 +163,13 @@ onMounted(() => {
 
 <style scoped lang="scss">
 /* 隐藏 gutter 列 */
- ::v-deep(col[name="gutter"]) {
+ :v-deep(col[name="gutter"]) {
   display: none !important;
   width: 0 !important;
 }
 
 /* 隐藏 gutter th */
-::v-deep(th.gutter) {
+:v-deep(th.gutter) {
   display: none !important;
   width: 0 !important;
   padding: 0 !important;

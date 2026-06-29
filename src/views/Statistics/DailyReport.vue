@@ -481,7 +481,6 @@ const balanceChartOption = computed(() => {
         fontSize: 12,
         color: '#666',
         margin: 15,
-        interval: Math.floor(dates.length / 7) || 0
       }
     },
     yAxis: {
@@ -2047,7 +2046,7 @@ onUnmounted(() => {
 }
 
 /* 展开行表格样式 */
-::v-deep(.expand-table) {
+:v-deep(.expand-table) {
   background-color: #fafafa;
   
   & th {

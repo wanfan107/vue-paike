@@ -125,7 +125,7 @@
           <div class="left-column">
             <div class="account-id">
               {{ account.id }}
-              <el-tag v-if="account.id === userStore.currentMerchantCode " type="success" size="small">当前</el-tag>
+              <el-tag v-if="account.id === userStore.currentMerchantCode " type="info" size="small">当前</el-tag>
             </div>
             <div class="account-type">{{ account.type }}</div>
           </div>
