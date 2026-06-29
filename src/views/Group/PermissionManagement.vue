@@ -60,14 +60,14 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="isActivated" label="邮箱已激活" width="80">
+              <el-table-column prop="isActivated" label="邮箱已激活" width="120">
                 <template #default="{ row }">
                   <el-tag :type="row.isActivated ? 'success' : 'danger'" size="small">
                     {{ row.isActivated ? '是' : '否' }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="80">
+              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="120">
                 <template #default="{ row }">
                   <el-tag :type="row.hasGoogleAuth ? 'success' : 'danger'" size="small">
                     {{ row.hasGoogleAuth ? '是' : '否' }}
@@ -79,7 +79,7 @@
                   {{ formatDate(row.createdOn) }}
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="300" fixed="right" >
+              <el-table-column label="操作" width="340" fixed="right" >
                 <template #default="{ row }">
                   <div class="action-cell" @click.stop.prevent>
                     <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
@@ -347,7 +347,7 @@
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">已激活：</div>
+              <div class="info-label">邮箱已激活：</div>
               <div class="info-value">
                 <el-tag :type="viewingOperator.isActivated ? 'success' : 'danger'" size="small">
                   {{ viewingOperator.isActivated ? '是' : '否' }}
@@ -355,7 +355,7 @@
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">MFA2：</div>
+              <div class="info-label">MFA2已绑定：</div>
               <div class="info-value">
                 <el-tag :type="viewingOperator.hasGoogleAuth ? 'success' : 'danger'" size="small">
                   {{ viewingOperator.hasGoogleAuth ? '是' : '否' }}
