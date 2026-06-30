@@ -486,12 +486,14 @@ onMounted(() => {
 // 获取查询参数
 const getQueryParams = () => {
   return {
-    billEndTime: searchForm.orderTime[1],
-    billStartTime: searchForm.orderTime[0],
-    id: userStore.userInfo.id,
-    merchantOrderNo: '',
-    orderNo: '',
-    type: '',
+    "pageNo": pagination.currentPage,
+    "pageSize": pagination.pageSize,
+    "id": userStore.userInfo.id,
+    "platformOrderNo": searchForm.platformOrderNo,
+    "account": searchForm.account,
+    "status": searchForm.status,
+    "orderStartTime": searchForm.orderTime[0],
+    "orderEndTime": searchForm.orderTime[1]
   };
 };
 

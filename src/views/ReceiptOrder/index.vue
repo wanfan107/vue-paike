@@ -615,12 +615,17 @@ onMounted(() => {
 // 获取查询参数
 const getQueryParams = () => {
   return {
-    billEndTime: searchForm.orderTime[1],
-    billStartTime: searchForm.orderTime[0],
-    id: userStore.userInfo.id,
-    merchantOrderNo: searchForm.merchantOrderNo,
-    orderNo: searchForm.orderNo,
-    type: searchForm.type,
+   "pageNo": pagination.currentPage,
+    "pageSize": pagination.pageSize,
+    "id": userStore.userInfo.id,
+    "merchantOrderNo": searchForm.merchantOrderNo,
+    "platformOrderNo": searchForm.platformOrderNo,
+    "status": searchForm.status,
+    "notifyStatus": searchForm.notifyStatus,
+    "orderStartTime": searchForm.orderTime[0],
+    "orderEndTime": searchForm.orderTime[1],
+    "handleStartTime": searchForm.handleTime[0],
+    "handleEndTime": searchForm.handleTime[1]
   };
 };
 
@@ -642,7 +647,7 @@ const onExport = async () => {
       ElMessage.success( res.msg||"导出请求已提交，请到导出记录页面查看");
           // 跳转到导出记录页面
     router.push({ name: "exportRecord" });
-    } else {
+    } else if(res.code !== 400) {
       ElMessage.error( res.msg||"导出失败，请稍后重试");
     }
     

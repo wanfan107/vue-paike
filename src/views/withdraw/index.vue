@@ -105,11 +105,11 @@
                   width="150"
                   align="center"
                 /> -->
-                <el-table-column prop="platformOrderNo" label="平台订单号" align="center" />
+                <el-table-column prop="platformOrderNo" label="平台订单号" align="center" show-overflow-tooltip />
                 <el-table-column prop="orderAmount" label="订单金额" align="center" />
                 <el-table-column prop="expectAmount" label="预期金额" align="center" />
                 <el-table-column prop="actualPay" label="实际支付" align="center"/>
-                <el-table-column prop="fee" label="手续费" align="center" />
+                <!-- <el-table-column prop="fee" label="手续费" align="center" /> -->
                 <el-table-column prop="status" label="状态" align="center">
                   <template #default="{ row }">
                     <el-tag :type="row.status === 'PENDING' ? 'warning' : row.status === 'SUCCESS' ? 'success' : 'danger'">
@@ -118,9 +118,12 @@
                   </template>
                 </el-table-column>
                 <el-table-column prop="applyTime" label="申请时间" align="center" />
-                <el-table-column label="凭证" align="center" width="100">
+                <el-table-column label="凭证" align="center" width="100" show-overflow-tooltip>
                   <template #default="{ row }">
- 
+                    <span v-if="row.credential">
+                      <a :href="'https://tronscan.org/#/transaction/'+ row.credential" target="_blank" @click.stop>查看凭证</a>
+                    </span>
+                    <span v-else>无凭证</span>
                   </template>
                 </el-table-column>
               </el-table>
@@ -161,7 +164,7 @@
           <el-descriptions-item label="订单金额">{{ currentRow.orderAmount || '-' }}</el-descriptions-item>
           <el-descriptions-item label="预期金额">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
           <el-descriptions-item label="实际支付">{{ currentRow.actualPay || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="银行（类型）">{{ currentRow.bank || '-' }}</el-descriptions-item>
           <el-descriptions-item label="客户姓名">{{ currentRow.customerName || '-' }}</el-descriptions-item>
           <!-- <el-descriptions-item label="客户电话">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
@@ -175,6 +178,10 @@
             <span v-else>-</span>
           </el-descriptions-item>
           <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="凭证">
+            <a :href="'https://tronscan.org/#/transaction/'+ currentRow.credential" v-if="currentRow.credential" style="word-break: break-all; word-wrap: break-word; display: block;">{{ 'https://tronscan.org/#/transaction/'+ currentRow.credential }}</a>
+            <span v-else>无凭证</span>
+          </el-descriptions-item>
         </el-descriptions>
       </div>
     </el-drawer>
@@ -483,12 +490,14 @@ onMounted(() => {
 // 获取查询参数
 const getQueryParams = () => {
   return {
-    billEndTime: searchForm.orderTime[1],
-    billStartTime: searchForm.orderTime[0],
-    id: userStore.userInfo.id,
-    merchantOrderNo: '',
-    orderNo: '',
-    type: '',
+    "pageNo": pagination.currentPage,
+    "pageSize": pagination.pageSize,
+    "id": userStore.userInfo.id,
+    "platformOrderNo": searchForm.platformOrderNo,
+    "account": searchForm.account,
+    "status": searchForm.status,
+    "orderStartTime": searchForm.orderTime[0],
+    "orderEndTime": searchForm.orderTime[1]
   };
 };
 
