@@ -642,7 +642,7 @@ const onExport = async () => {
     exportLoading.value = true;
 
     // 创建导出
-  let res = await http.exportFinance(getQueryParams());
+  let res = await http.exportCollect(getQueryParams());
     if(res.code === 200){
       ElMessage.success( res.msg||"导出请求已提交，请到导出记录页面查看");
           // 跳转到导出记录页面
