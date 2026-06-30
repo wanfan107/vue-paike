@@ -15,7 +15,7 @@ export const http = {
     // 集团预登录
     groupPrelogin: (data) => request_group.post("/Auth/group/prelogin", data),
     // 集团邮箱验证码验证
-    verifyEmailCode: (data) => request_group.post("/auth/group/verify-email-code", data),
+    verifyEmailCode: (data) => request_group.get("/auth/group/verify-email-code", { params: data }),
     // 集团登录
     groupLogin: (data) => request_group.post("/Auth/group/login", data),
     // 集团选择商户

@@ -881,7 +881,6 @@ async function groupLoginLogin() {
           if (verifyRes.code == 200) {
             isVerifyPass.value = true;
           } else {
-            ElMessage.error(verifyRes.msg || "邮箱验证码错误");
             isVerifyPass.value = false;
           }
         }
