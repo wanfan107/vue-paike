@@ -59,7 +59,7 @@
               <template #append>
                 <button
                   class="email-code-btn"
-                  :disabled="emailCountdown > 0"
+                  :disabled="emailCountdown > 0 || !!loginForm.EmailCode"
                   @click="sendEmailCode"
                   size="default"
                 >
@@ -804,6 +804,9 @@ if (loginForm.value.username.includes('@')) {
   // 集团商户登录
   if(EmailVerifyshow.value==true&&loginForm.value.EmailCode==""){
     ElMessage.error("请输入邮箱验证码");
+    return;
+  } else if(EmailVerifyshow.value==true&&loginForm.value.EmailCode.length !== 6){
+    ElMessage.error("邮箱验证码长度不正确");
     return;
   } else {
 groupLoginLogin();
