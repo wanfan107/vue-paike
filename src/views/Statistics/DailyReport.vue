@@ -930,7 +930,7 @@ const getSummaries = (param) => {
         } else {
           return prev;
         }
-      }, 0);
+      }, 0).toFixed(2);
     } else {
       sums[index] = 'N/A';
     }

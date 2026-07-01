@@ -849,7 +849,7 @@ const getSummaries = (param) => {
         } else {
           return prev;
         }
-      }, 0);
+      }, 0).toFixed(2);
       // 金额列使用千分位格式化
       if (column.property === 'SuccessAmountPayin' || column.property === 'SuccessAmountPayout') {
         sums[index] = formatNumber(total);
