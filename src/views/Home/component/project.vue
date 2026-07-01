@@ -14,10 +14,9 @@
           <div class="project-name">{{ item.name }}</div>
           <div class="project-icon" :class="['icon' + index]">
              <!-- 添加图标 --->
-            <el-icon v-if="index === 0"><Plus /></el-icon>
-            <el-icon v-if="index === 1"><Coin /></el-icon>
+            <el-icon v-if="index === 0"><Coin /></el-icon>
+            <el-icon v-if="index === 1"><Plus /></el-icon>
             <el-icon v-if="index === 2"><Minus /></el-icon>
-            <!-- <el-icon v-if="index === 3"><CreditCard /></el-icon> -->
           </div>
         </div>
         <div class="project-amount">
@@ -78,18 +77,18 @@ const userStore = useUserStore();
 // 响应式项目列表
 const projectList = reactive([
   {
-    name: "收款",
+    name: "期初金额",
     amount: 0,
-    desc: "成功收款数",
-    count: 0,
+    desc: "今日开始金额",
+    count: '',
     currency: "R$"
   },
  
-  // 提现/转账、成功单数
+  // 收款、成功收款数
   {
-    name: "可用余额",
+    name: "收款",
     amount: 0,
-    desc: "待结算余额",
+    desc: "成功收款数",
     count: 0,
     currency: "R$"
   },
@@ -101,14 +100,6 @@ const projectList = reactive([
     count: 0,
     currency: "R$"
   },
-  // 授信卡片
-  // {
-  //   name: "可授信",
-  //   amount: 0,
-  //   desc: "待还金额",
-  //   count: 0,
-  //   currency: "R$"
-  // },
 ]);
 
 // 为每个金额创建独立的响应式ref，初始值为0
@@ -124,19 +115,27 @@ const animatedValues = sourceRefs.map(sourceRef => {
 // 获取数据的函数
 const getdata = async () => {
   try {
-    // 获取商户信息
-    const merchantRes = await http.merchant({
-      id: userStore.merchantInfo.id,
-    });
-    console.log("merchantRes", merchantRes);
+    // // 获取商户信息
+    // const merchantRes = await http.merchant({
+    //   id: userStore.merchantInfo.id,
+    // });
+    // console.log("merchantRes", merchantRes);
     
-    // 更新货币类型
-    // projectList.forEach((item) => {
-    //   // item.currency = merchantRes.data.currency || "R$";
-    //   item.currency = "R$";
-    //         projectList[3].amount = Number(merchantRes.data.CreditMax); // 授信最大额度， 
-    //   projectList[3].count = merchantRes.data.CreditUsed;  // 授信已用额度（>0的数就是待还金额，说明有预付未还清。=0已还清，<=0不用理会）
-    //    });
+    // 获取期初金额（使用financeReportByDay接口）
+    const today = new Date();
+    const startDate = today.toISOString().split('T')[0] ;
+    const endDate = today.toISOString().split('T')[0] ;
+    
+    const financeRes = await http.financeReportByDay({
+      startDate,
+      endDate,
+    });
+    
+    if (financeRes.code === 200 && financeRes.data?.list?.length > 0) {
+      projectList[0].amount = financeRes.data.list[0].PreviousDayEndBalance ? Number(financeRes.data.list[0].PreviousDayEndBalance) : 0;
+    } else {
+      projectList[0].amount = 0;
+    }
     
     // 获取收款成功率数据
     const collectRes = await http.collectSuccessRate({
@@ -144,32 +143,16 @@ const getdata = async () => {
     });
     
     if (collectRes.data.list.length) {
-      // 转换为数字并保留2位小数
-      projectList[0].amount = Number(collectRes.data.list[0].SuccessAmount);
-      projectList[0].count = collectRes.data.list[0].SuccessOrders;
+      projectList[1].amount = Number(collectRes.data.list[0].SuccessAmount);
+      projectList[1].count = collectRes.data.list[0].SuccessOrders;
     }
     
     // 获取总付款数据
     const payRes = await http.totalPay({});
     
     if (payRes.data.list.length) {
-      // 转换为数字并保留2位小数
       projectList[2].amount = Number(payRes.data.list[0].SuccessAmount);
       projectList[2].count = payRes.data.list[0].SuccessOrders;
-    }
-    
-    // 获取提现配置数据
-    const withdrawRes = await http.withdrawConfig({
-      id: userStore.merchantInfo.id,
-    });
-    
-    console.log("withdrawRes", withdrawRes);
-    
-    if (withdrawRes.data) {
-      // 转换为数字并保留2位小数
-      projectList[1].amount = withdrawRes.data.balance ? Number(withdrawRes.data.balance) : 0;
-      projectList[1].count = withdrawRes.data.unsettledBalance == '0.00' ? '0' : Number(withdrawRes.data.unsettledBalance);
-      console.log("projectList[1].amount", projectList[1].amount);
     }
     
   } catch (error) {
@@ -253,7 +236,7 @@ onMounted(() => {
 
 /* 不同卡片的图标背景色 */
 .project-card0 .project-icon {
-  background-color: #48bb78;
+  background-color: #fff;
 }
 
 .project-card2 .project-icon {
@@ -261,9 +244,9 @@ onMounted(() => {
 }
 
 .project-card1 .project-icon {
-  background-color: #fff;
+  background-color: #48bb78;
 }
-.project-card1 .project-icon i {
+.project-card0 .project-icon i {
   color: #a5dc3d;
 }
 

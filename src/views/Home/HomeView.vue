@@ -4,7 +4,10 @@
       <header class="page-header">
         <h1>Univepay | 首 页</h1>
         <div class="user-actions">
-          <!-- 简洁风格按钮 -->
+          <div class="balance-display">
+            <span class="balance-label">可用余额</span>
+            <span class="balance-amount">{{ showData ? formatBalance(availableBalance) : '****' }}</span>
+          </div>
           <el-tooltip
             class="box-item"
             effect="dark"
@@ -107,6 +110,7 @@ const loading = ref(false);
 const tableData = ref([]);
 const showData = ref(true); // 控制project.vue数据显示/隐藏的状态
 const projectBoxRef = ref(null); // 用于访问ProjectBox组件的方法
+const availableBalance = ref(0); // 可用余额
 // 初始化store
 const userStore = useUserStore();
 const columns = [
@@ -194,13 +198,36 @@ const toggleShowData = () => {
   showData.value = !showData.value;
 };
 
+// 格式化余额显示
+const formatBalance = (balance) => {
+  if (!balance && balance !== 0) return '0.00';
+  return 'R$ ' + Number(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+};
+
 // 刷新ProjectBox数据
-const refreshData = () => {
+const refreshData = async () => {
+  // 获取可用余额
+  await getMerchantBalance();
+  
   if (projectBoxRef.value && projectBoxRef.value.getdata) {
     projectBoxRef.value.getdata();
   }
   // 同时刷新最近交易数据
   getdata();
+};
+
+// 获取商户余额
+const getMerchantBalance = async () => {
+  try {
+    const merchantRes = await http.merchant({
+      id: userStore.merchantInfo.id,
+    });
+    if (merchantRes.code === 200 && merchantRes.data) {
+      availableBalance.value = merchantRes.data.Balance || 0;
+    }
+  } catch (error) {
+    console.error("获取商户余额失败:", error);
+  }
 };
 
 // 10条数据获取函数
@@ -256,6 +283,7 @@ async function getdata() {
 
 // 页面挂载时获取数据
 onMounted(() => {
+  getMerchantBalance();
   getdata();
 });
 </script>
@@ -293,6 +321,26 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: $spacing-lg;
+}
+
+.balance-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: $spacing-lg;
+  border-right: 1px solid #e0e0e0;
+  
+  .balance-label {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 2px;
+  }
+  
+  .balance-amount {
+    font-size: 18px;
+    font-weight: bold;
+    color: #a5dc3d;
+  }
 }
 // 简洁按钮样式
 .simple-button {
