@@ -94,7 +94,7 @@
               />
               <!-- 表格 -->
               <el-table :data="tableData" stripe >
-                <el-table-column label="商户单号" align="center">
+                <el-table-column label="商户单号" width="280" align="center">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.merchantorderno" 
@@ -102,7 +102,7 @@
                     />
                   </template>
                 </el-table-column>
-                <el-table-column label="平台订单号" align="center">
+                <el-table-column label="平台订单号" width="280" align="center">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.orderno" 
@@ -115,7 +115,7 @@
                 <el-table-column prop="realamount" label="入账金额" align="center" />
                 <el-table-column prop="balance" label="变后金额" align="center">
                 </el-table-column>
-                <el-table-column prop="createtime" label="入账时间" align="center" />
+                <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
                 <el-table-column prop="type" label="类型" align="center">
                   <template #default="{ row }">
                               <el-tag :type="tagTypeColor[row.type] || row.type">

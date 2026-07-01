@@ -138,19 +138,21 @@
                 @row-click="showDetail"
               >
                 <el-table-column type="selection"  width="55" />
-                <el-table-column label="商户单号" align="center">
+                <el-table-column label="商户单号" width="230" align="center">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.merchantOrderNo" 
+                      :max-width="200"
                       title="点击复制订单号"
                     />
                   </template>
                 </el-table-column>
-                <el-table-column label="平台订单号" align="center" width="150">
+                <el-table-column label="平台订单号" align="center" width="270">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.platformOrderNo" 
                       :id="'orderno-' + row.platformOrderNo"
+                      :max-width="200"
                       title="点击复制平台订单号"
                     />
                   </template>
@@ -167,7 +169,7 @@
                     </el-tag>
                   </template>
                 </el-table-column>
-                <el-table-column prop="createTime" label="申请时间" align="center" />
+                <el-table-column prop="createTime" label="申请时间" width="180" align="center" />
                 <el-table-column label="操作" align="center" width="100">
                   <template #default="{ row }">
                     <el-button type="primary" size="small" @click.stop="handleCallback(row)" >

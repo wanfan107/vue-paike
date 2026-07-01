@@ -44,7 +44,7 @@ const props = defineProps({
   },
   maxWidth: {
     type: String,
-    default: '170px'
+    default: '240px'
   }
 });
 
@@ -55,17 +55,53 @@ const copyId = computed(() => {
   return props.id || props.text;
 });
 
-const handleCopy = async () => {
+const handleCopy = () => {
   if (!props.text) return;
-  try {
-    await navigator.clipboard.writeText(props.text);
+  
+  const copySuccess = () => {
     isCopied.value = true;
     ElMessage.success('复制成功');
     setTimeout(() => {
       isCopied.value = false;
     }, 2000);
+  };
+  
+  const copyFail = () => {
+    ElMessage.error('复制失败，请手动复制');
+  };
+  
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(props.text).then(copySuccess).catch(() => {
+      fallbackCopy(props.text, copySuccess, copyFail);
+    });
+  } else {
+    fallbackCopy(props.text, copySuccess, copyFail);
+  }
+};
+
+const fallbackCopy = (text, success, fail) => {
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.left = '-9999px';
+  textarea.style.top = '-9999px';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  
+  textarea.select();
+  textarea.setSelectionRange(0, text.length);
+  
+  try {
+    const successful = document.execCommand('copy');
+    if (successful) {
+      success();
+    } else {
+      fail();
+    }
   } catch (err) {
-    ElMessage.error('复制失败');
+    fail();
+  } finally {
+    document.body.removeChild(textarea);
   }
 };
 </script>
