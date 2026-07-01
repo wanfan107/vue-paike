@@ -69,28 +69,35 @@
             element-loading-spinner="el-icon-loading"
             element-loading-background="rgba(255, 255, 255, 0.8)"
           >
-            <el-table-column
-              show-overflow-tooltip
-              align="center"
-              v-for="item in columns"
-              :key="item.prop"
-              :prop="item.prop"
-              :label="item.label"
-            >
-              <template #default="scope">
-                <template v-if="scope && scope.row">
-                  <template v-if="item.type === 'select'">
-                    <el-tag
-                      v-if="item.isTag"
-                      :type="tagTypeColor[scope.row[item.prop]] || item.tagType"
-                      >{{ item.mapping[scope.row[item.prop]] || scope.row[item.prop] }}</el-tag
-                    >
-                    <span v-else>{{ item.mapping[scope.row[item.prop]] || scope.row[item.prop] }}</span>
-                  </template>
-                  <span v-else>{{ scope.row[item.prop] }}</span>
-                </template>
+            <el-table-column label="商户单号" width="280" align="center">
+              <template #default="{ row }">
+                <CopyText 
+                  :text="row.merchantorderno" 
+                  title="点击复制订单号"
+                />
               </template>
             </el-table-column>
+            <el-table-column label="平台订单号" width="280" align="center">
+              <template #default="{ row }">
+                <CopyText 
+                  :text="row.orderno" 
+                  :id="'orderno-' + row.orderno"
+                  title="点击复制平台订单号"
+                />
+              </template>
+            </el-table-column>
+            <el-table-column prop="orderamount" label="订单金额" align="center" />
+            <el-table-column prop="realamount" label="入账金额" align="center" />
+            <el-table-column prop="balance" label="变后余额" align="center" />
+            <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
+            <el-table-column prop="type" label="类型" align="center">
+              <template #default="{ row }">
+                <el-tag :type="tagTypeColor[row.type] || 'success'">
+                  {{ typeMapping[row.type] || row.type }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="memo" label="类型说明" show-overflow-tooltip align="center" />
           </el-table>
         </section>
       </main>
@@ -102,6 +109,7 @@ import { ref, onMounted } from 'vue';
 import ProjectBox from "./component/project.vue";
 import FastBox from "./component/fast.vue";
 import { View, Hide, Refresh } from "@element-plus/icons-vue";
+import CopyText from '@/components/CopyText.vue';
 import useUserStore from '../../stores/user';
 import { http } from '@/api'; // 假设http是从api/index.js导入的
 
@@ -113,42 +121,27 @@ const projectBoxRef = ref(null); // 用于访问ProjectBox组件的方法
 const availableBalance = ref(0); // 可用余额
 // 初始化store
 const userStore = useUserStore();
-const columns = [
-  { prop: "merchantorderno", label: "商户单号" },
-  { prop: "orderno", label: "平台订单号" },
-  { prop: "orderamount", label: "订单金额" },
-  { prop: "realamount", label: "入账金额" },
-  { prop: "balance", label: "变后余额" },
-  { prop: "createtime", label: "入账时间" },
-  {
-    prop: "type",
-    label: "类型",
-    type: "select",
-    isTag: true,
-    tagType: "success",
-    mapping: {
-      K00001: "冻结订单",
-      K00002: "收款入款",
-      K00003: "付款出款",
-      K00004: "冻结申请",
-      K00005: "付款失败",
-      K00006: "付款手续费",
-      K00007: "历史数据结算",
-      K00008: "风控解冻",
-      K00009: "人工上帐",
-      K00010: "付款单笔手续费",
-      K00011: "付款比例手续费",
-      K00012: "付款冲正",
-      K00013: "人工扣款",
-      K00014: "集团转入",
-      K00015: "集团转出",
-      K00016: "提现",
-      K00017: "授信",
-      K00018: "授信还款",
-    },
-  },
-  { prop: "memo", label: "类型说明" },
-];
+
+const typeMapping = {
+  K00001: "冻结订单",
+  K00002: "收款入款",
+  K00003: "付款出款",
+  K00004: "冻结申请",
+  K00005: "付款失败",
+  K00006: "付款手续费",
+  K00007: "历史数据结算",
+  K00008: "风控解冻",
+  K00009: "人工上帐",
+  K00010: "付款单笔手续费",
+  K00011: "付款比例手续费",
+  K00012: "付款冲正",
+  K00013: "人工扣款",
+  K00014: "集团转入",
+  K00015: "集团转出",
+  K00016: "提现",
+  K00017: "授信",
+  K00018: "授信还款",
+};
 
 const tagTypeColor = {
   K00001: "danger",

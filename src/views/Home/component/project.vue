@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, reactive, computed, nextTick } from 'vue';
+import { ref, onMounted, reactive, computed, nextTick, watch } from 'vue';
 import { TransitionPresets, useTransition } from '@vueuse/core';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
@@ -162,8 +162,22 @@ const getdata = async () => {
 
 // 格式化显示值
 const formatValue = (value) => {
-  return '*'.repeat(value.toString().length);
+  // return '*'.repeat(value.toString().length);
+  return '****';
 };
+
+watch(() => props.showData, (newVal) => {
+  if (newVal) {
+    nextTick(() => {
+      projectList.forEach((item, index) => {
+        sourceRefs[index].value = 0;
+        setTimeout(() => {
+          sourceRefs[index].value = item.amount;
+        }, 50);
+      });
+    });
+  }
+});
 
 // 暴露getdata方法给父组件
 defineExpose({
@@ -171,12 +185,8 @@ defineExpose({
 });
 
 onMounted(() => {
-  // 组件挂载后，调用获取数据的函数，更新项目列表
   getdata().then(() => {
-    // 确保数据获取完成后，同时触发所有动画
-    // 使用 nextTick 确保 DOM 已更新
     nextTick(() => {
-      // 同时为所有 sourceRefs 赋值，触发同步动画
       projectList.forEach((item, index) => {
         sourceRefs[index].value = item.amount;
       });

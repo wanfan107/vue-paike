@@ -59,8 +59,9 @@
 
           <div class="user-details">
             <div class="user-name">{{ userStore.merchantId || userStore.userInfo?.username }}</div>
-            <!-- <div class="user-company">Zir 有限公司</div> -->
-            <!-- <div class="user-account">15503982089@QQ.com</div> -->
+            <el-tooltip :content="userStore.userInfo?.email" placement="bottom" :show-after="300">
+              <div class="user-account" v-if="isGroupLogin">{{ userStore.userInfo?.email }}</div>
+            </el-tooltip>
           </div>
           <div class="user-dropdown-icon">
             <el-icon><Switch /></el-icon>
@@ -655,6 +656,9 @@ function confirmBind(account) {
 
 .user-details {
   flex: 1;
+  min-width: 0;
+  max-width: 100px;
+  overflow: hidden;
 }
 
 .user-name {
@@ -662,6 +666,9 @@ function confirmBind(account) {
   color: #333;
   font-size: 14px;
   margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .user-company {
@@ -671,10 +678,8 @@ function confirmBind(account) {
 }
 
 .user-account {
-width: 60%;
   color: #999;
   font-size: 12px;
-  /* 单行省略 */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

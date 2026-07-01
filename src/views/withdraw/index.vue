@@ -105,7 +105,7 @@
                   width="150"
                   align="center"
                 /> -->
-                <el-table-column label="平台订单号" width="230" align="center">
+                <el-table-column label="平台订单号" width="240" align="center">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.platformOrderNo" 

@@ -91,8 +91,9 @@
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="openChangeEmailDialog(row)">
                       变更邮箱
                     </el-button>
+                    <!-- 这里的删除是，逻辑删除 -->
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="softDeleteOperator(row)">
-                      逻辑删除
+                      删除
                     </el-button>
                   </div>
                 </template>
@@ -784,9 +785,9 @@ const softDeleteOperator = (operator) => {
     try {
       await http.softDeleteGroupUser({ userId: operator.autoId || operator.userId });
       loadOperators();
-      ElMessage.success('逻辑删除成功');
+      ElMessage.success('删除成功');
     } catch (error) {
-      ElMessage.error(error.response?.data?.msg || '逻辑删除失败');
+      ElMessage.error(error.response?.data?.msg || '删除失败');
     }
   }).catch(() => {});
 };
