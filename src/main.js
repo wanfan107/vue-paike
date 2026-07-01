@@ -26,7 +26,7 @@ app.use(ElementPlus, {
 })
 app.use(FingerprintPlugin, {
   apiKey: "Bq4su0RWMT4dfgNQGub8",
-  endpoints: 'https://newusmc.univepay.com',
+  endpoints: 'https://newusmc.univepay.com/',
   region: 'us',
   timeout: 15000
 })

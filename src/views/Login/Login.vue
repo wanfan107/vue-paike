@@ -924,7 +924,7 @@ async function getDeviceInfo() {
     const visitorData = await getData();
     console.log(visitorData);
     
-    const fingerprint = visitorData?.visitor_id || 'unknown';
+    const fingerprint = visitorData?.visitor_id || '';
     
     const os = getOS();
     let osVersion = 'Unknown';
@@ -954,7 +954,7 @@ async function getDeviceInfo() {
   } catch (err) {
     console.error('❌ 获取设备信息失败', err);
     return {
-      fingerprint: 'unknown',
+      fingerprint: '',
       deviceInfo: {
         os: 'Unknown',
         osVersion: 'Unknown',
