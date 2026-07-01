@@ -82,7 +82,7 @@
               <el-table-column label="操作" width="340" fixed="right" >
                 <template #default="{ row }">
                   <div class="action-cell" @click.stop.prevent>
-                    <el-button v-if="row.roleCode !== 'admin'" type="primary" size="small" @click.stop="editOperator(row)">
+                    <el-button  type="primary" size="small" @click.stop="editOperator(row)">
                       编辑
                     </el-button>
                     <el-button type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
@@ -231,13 +231,18 @@
             </el-form-item>
 
             <el-form-item label="账户类型" prop="roleCode">
-              <el-radio-group v-model="editFormData.roleCode">
-                <el-radio value="finance" >
-                  财务账户
+              <el-radio-group v-model="editFormData.roleCode" :disabled="editFormData.roleCode === 'admin'">
+                <el-radio v-if="editFormData.roleCode === 'admin'" value="admin">
+                  管理员
                 </el-radio>
-                <el-radio value="operator">
-                  运营账户
-                </el-radio>
+                <template v-else>
+                  <el-radio value="finance">
+                    财务账户
+                  </el-radio>
+                  <el-radio value="operator">
+                    运营账户
+                  </el-radio>
+                </template>
               </el-radio-group>
               <!-- <span class="account-type-tip">运营账户只能查看订单和下载流水，其他不可以查看，财务暂时禁用</span> -->
             </el-form-item>
@@ -590,11 +595,11 @@ const loadOperators = async () => {
   try {
     const res = await http.getGroupUsers();
       if (res.code==200) {
-        res.data.forEach(item => {
-          if (item.roleCode == 'admin') {
-            item.merchantCodes=userStore.merchants.filter(m => !m.code?.startsWith('G')).map(merchant => merchant.code);
-          }
-        });
+        // res.data.forEach(item => {
+        //   if (item.roleCode == 'admin') {
+        //     item.merchantCodes=userStore.merchants.filter(m => !m.code?.startsWith('G')).map(merchant => merchant.code);
+        //   }
+        // });
       operators.value = res.data;
 
     }
@@ -696,7 +701,7 @@ const editOperator = (operator) => {
   editFormData.userId = operator.userId;
   editFormData.email = operator.email || '';
   editFormData.name = operator.name || '';
-  editFormData.roleCode = operator.roleCode === 'admin' ? 'operator' : operator.roleCode === 'finance' ? 'finance' : 'operator';
+  editFormData.roleCode = operator.roleCode === 'admin' ? 'admin' : operator.roleCode === 'finance' ? 'finance' : 'operator';
   editFormData.status = operator.status ?? 0;
   editFormData.merchantCodes = operator.merchantCodes ? [...operator.merchantCodes] : [];
   editFormData.createTime = operator.createdOn || operator.createTime || '';
@@ -710,13 +715,14 @@ const updateOperator = async () => {
     
     updating.value = true;
     
-    await http.updateGroupUser({
+    const res = await http.updateGroupUser({
       userId: editFormData.userId,
       name: editFormData.name,
       roleCode: editFormData.roleCode,
       status: editFormData.status,
       merchantCodes: editFormData.merchantCodes,
     });
+    console.log(res);
     
     ElMessage.success('操作员信息更新成功');
     showEditDialog.value = false;
@@ -767,7 +773,7 @@ const softDeleteOperator = (operator) => {
   }
   
   ElMessageBox.confirm(
-    `确定要逻辑删除操作员 "${operator.email || operator.email}" 吗？\n删除后该账号将无法登录，邮箱将被释放。`,
+    `确定要删除操作员 "${operator.email || operator.email}" 吗？\n删除后该账号将无法登录，邮箱将被释放。`,
     '提示',
     {
       confirmButtonText: '确定删除',
@@ -777,10 +783,7 @@ const softDeleteOperator = (operator) => {
   ).then(async () => {
     try {
       await http.softDeleteGroupUser({ userId: operator.autoId || operator.userId });
-      const index = operators.value.findIndex(op => op.autoId === (operator.autoId || operator.userId));
-      if (index !== -1) {
-        operators.value.splice(index, 1);
-      }
+      loadOperators();
       ElMessage.success('逻辑删除成功');
     } catch (error) {
       ElMessage.error(error.response?.data?.msg || '逻辑删除失败');
