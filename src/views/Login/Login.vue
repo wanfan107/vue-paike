@@ -309,6 +309,7 @@ import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
 import FingerprintJS, { sources as fpSources, loadSources } from '@fingerprintjs/fingerprintjs';
+import { useVisitorData } from '@fingerprint/vue';
 import { http } from '@/api';
 import md5 from 'js-md5';
 import AwsCaptcha from '@/components/AwsCaptcha.vue';
@@ -912,59 +913,21 @@ async function groupLoginLogin() {
 
 
 
-// -----------------------获取设备信息（终极闭环版 · 修复async）-----------------------
+// -----------------------获取设备信息（使用 @fingerprint/vue）-----------------------
 
-/**
- * 获取设备信息
- * @returns {Promise<{fingerprint: string, deviceInfo: object}>} 包含指纹和设备信息的对象
- */
+const { getData } = useVisitorData({
+  immediate: false,
+});
+
 async function getDeviceInfo() {
   try {
-    const excludeSources = [
-      'fonts',
-      'fontPreferences',
-      'plugins',
-      'canvas',
-      'webGlBasics',
-      'webGlExtensions',
-      'audio',
-      'screenFrame',
-      'screenResolution',
-      'localStorage',
-      'sessionStorage',
-      'indexedDB',
-      'openDatabase',
-      'audioBaseLatency',
-      'domBlockers',
-      'colorGamut',
-      'invertedColors',
-      'forcedColors',
-      'monochrome',
-      'contrast',
-      'reducedMotion',
-      'reducedTransparency',
-      'hdr',
-      'pdfViewerEnabled',
-      'applePay',
-      'privateClickMeasurement',
-    ];
-
-    const filteredSources = {};
-    for (const [key, value] of Object.entries(fpSources)) {
-      if (!excludeSources.includes(key)) {
-        filteredSources[key] = value;
-      }
-    }
-
-    const getComponents = await loadSources(filteredSources, { cache: {}, debug: false }, []);
-    const result = await getComponents();
-    const fingerprint = FingerprintJS.hashComponents(result);
-    console.log('设备组件:', result);
-    console.log('设备指纹:', fingerprint);
+    const visitorData = await getData();
+    console.log(visitorData);
+    
+    const fingerprint = visitorData?.visitor_id || 'unknown';
+    
     const os = getOS();
     let osVersion = 'Unknown';
-
-    // 精准获取系统版本
     if (os === 'MacOS') {
       osVersion = await getAccurateMacVersion();
     } else if (os === 'Windows') {

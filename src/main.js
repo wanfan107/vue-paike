@@ -4,6 +4,7 @@ import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
+import { FingerprintPlugin } from '@fingerprint/vue'
 import App from './App.vue'
 import router from './router'
 // 导入全局样式
@@ -22,5 +23,11 @@ app.use(router)
 app.component('SvgIcon', SvgIcon);
 app.use(ElementPlus, {
   locale: zhCn,
+})
+app.use(FingerprintPlugin, {
+  apiKey: "Bq4su0RWMT4dfgNQGub8",
+  endpoints: 'https://newusmc.univepay.com',
+  region: 'us',
+  timeout: 15000
 })
 app.mount('#app')
