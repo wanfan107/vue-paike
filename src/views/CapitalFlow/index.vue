@@ -94,8 +94,23 @@
               />
               <!-- 表格 -->
               <el-table :data="tableData" stripe >
-                <el-table-column prop="merchantorderno" label="商户单号" align="center" />
-                <el-table-column prop="orderno" label="平台订单号" show-overflow-tooltip align="center" />
+                <el-table-column label="商户单号" align="center">
+                  <template #default="{ row }">
+                    <CopyText 
+                      :text="row.merchantorderno" 
+                      title="点击复制订单号"
+                    />
+                  </template>
+                </el-table-column>
+                <el-table-column label="平台订单号" align="center">
+                  <template #default="{ row }">
+                    <CopyText 
+                      :text="row.orderno" 
+                      :id="'orderno-' + row.orderno"
+                      title="点击复制平台订单号"
+                    />
+                  </template>
+                </el-table-column>
                 <el-table-column prop="orderamount" label="订单金额" align="center" />
                 <el-table-column prop="realamount" label="入账金额" align="center" />
                 <el-table-column prop="balance" label="变后金额" align="center">
@@ -139,6 +154,7 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from "element-plus";
 import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
+import CopyText from "@/components/CopyText.vue";
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
 // 资金流水

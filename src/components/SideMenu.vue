@@ -60,7 +60,7 @@
           <div class="user-details">
             <div class="user-name">{{ userStore.merchantId || userStore.userInfo?.username }}</div>
             <!-- <div class="user-company">Zir 有限公司</div> -->
-            <!-- <div class="user-account">账户 11525 </div> -->
+            <!-- <div class="user-account">15503982089@QQ.com</div> -->
           </div>
           <div class="user-dropdown-icon">
             <el-icon><Switch /></el-icon>
@@ -73,6 +73,7 @@
           </el-dropdown-menu>
         </template>
       </el-dropdown>
+      
     </div>
   </div>
 
@@ -670,8 +671,13 @@ function confirmBind(account) {
 }
 
 .user-account {
+width: 60%;
   color: #999;
   font-size: 12px;
+  /* 单行省略 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* 下拉菜单样式 */

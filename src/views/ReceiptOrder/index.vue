@@ -138,14 +138,23 @@
                 @row-click="showDetail"
               >
                 <el-table-column type="selection"  width="55" />
-                <el-table-column prop="merchantOrderNo" label="商户单号" align="center" />
-                <el-table-column
-                  prop="platformOrderNo"
-                  label="平台订单号"
-                  show-overflow-tooltip
-                  width="150"
-                  align="center"
-                />
+                <el-table-column label="商户单号" align="center">
+                  <template #default="{ row }">
+                    <CopyText 
+                      :text="row.merchantOrderNo" 
+                      title="点击复制订单号"
+                    />
+                  </template>
+                </el-table-column>
+                <el-table-column label="平台订单号" align="center" width="150">
+                  <template #default="{ row }">
+                    <CopyText 
+                      :text="row.platformOrderNo" 
+                      :id="'orderno-' + row.platformOrderNo"
+                      title="点击复制平台订单号"
+                    />
+                  </template>
+                </el-table-column>
                 <el-table-column prop="amount" label="订单金额" align="center" />
                 <el-table-column prop="merchantProfit" label="商户分账" align="center"/>
                 <el-table-column prop="actualAmount" label="实际支付" align="center" />
@@ -243,6 +252,7 @@ import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
+import CopyText from "@/components/CopyText.vue";
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
 // 收款订单
