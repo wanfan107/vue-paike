@@ -731,8 +731,8 @@ async function _groupLogin() {
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));
-                // dialogValue.value = false; // 关闭谷歌验证码弹窗
-                closeDialog(); // 关闭谷歌验证码弹窗
+                // dialogValue.value = false; // 关闭MFA2验证码弹窗
+                closeDialog(); // 关闭MFA2验证码弹窗
       dialogValue1.value = true;  // 显示选择商户弹窗
      loading.value = false;
     }
@@ -743,13 +743,13 @@ async function _groupLogin() {
       if (!IsBinding) {
         qrcode.value = qrCodeImageUrl;  // 赋值给二维码图片
         groupNeedBindGoogle.value = true;
-        // dialogValue.value = true;  // dialogValue.value 为 true 时，显示谷歌验证码弹窗
+        // dialogValue.value = true;  // dialogValue.value 为 true 时，显示MFA2验证码弹窗
       } else if (isVerified === false) {
-        ElMessage.error("谷歌验证码错误，请重新输入");
+        ElMessage.error("MFA2验证码错误，请重新输入");
       }
     }
     //  else if (error.code === 401) {
-    //   ElMessage.error(error.msg || "谷歌验证码1错误");
+    //   ElMessage.error(error.msg || "MFA2验证码1错误");
     // }
   } finally {
     loading.value = false;
@@ -1173,7 +1173,7 @@ async function confirmBind(account) {
 
   if (groupNeedBindGoogle.value) {
       dialogValue.value = false;
-    groupNeedBindGoogle.value = false;  // 关闭谷歌验证码弹窗
+    groupNeedBindGoogle.value = false;  // 关闭MFA2验证码弹窗
     // isVerifyPass.value = true;
     // nextTick(() => {
     //   codeInput.value.focus();

@@ -257,8 +257,8 @@
           <el-form-item label="USDT地址" prop="usdtAddress">
             <el-input v-model="walletForm.usdtAddress"  placeholder="请输入USDT地址"></el-input>
           </el-form-item>
-          <el-form-item label="谷歌验证码" prop="googleCode">
-            <el-input v-model="walletForm.googleCode" placeholder="请输入谷歌验证码" ></el-input>
+          <el-form-item label="MFA2验证码" prop="googleCode">
+            <el-input v-model="walletForm.googleCode" placeholder="请输入MFA2验证码" ></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -366,7 +366,7 @@ const walletRules = {
     }
   ],
   googleCode: [
-    { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
+    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
   ]
 };
 
@@ -637,19 +637,19 @@ const getWalletAddresses = () => {
     });
 };
 
-// 删除钱包地址的谷歌验证码
+// 删除钱包地址的MFA2验证码
 
 // 处理删除钱包地址
 const handleDeleteWallet = async (wallet) => {
   try {
     await ElMessageBox.prompt(
-      `请输入谷歌验证码以删除钱包地址 ${wallet.address}`,
+      `请输入MFA2验证码以删除钱包地址 ${wallet.address}`,
       '确认删除',
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
         inputPattern: /^\d{6}$/,
-        inputErrorMessage: '请输入6位谷歌验证码',
+        inputErrorMessage: '请输入6位MFA2验证码',
         inputValue: ''
       }
     ).then(async (googleCode) => {

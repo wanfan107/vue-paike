@@ -227,8 +227,8 @@
               <el-button type="primary"  style="width: 30%;">获取验证码</el-button>
             </div>
           </el-form-item>
-          <el-form-item label="谷歌验证码" prop="googleCode">
-            <el-input v-model="walletForm.googleCode" placeholder="请输入谷歌验证码" ></el-input>
+          <el-form-item label="MFA2验证码" prop="googleCode">
+            <el-input v-model="walletForm.googleCode" placeholder="请输入MFA2验证码" ></el-input>
           </el-form-item>
         </el-form>
       </div>
@@ -315,7 +315,7 @@ const walletAddressOptions = computed(() => {
 //     { required: true, message: '请输入USDT地址', trigger: 'blur' }
 //   ],
 //   googleCode: [
-//     { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
+//     { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
 //   ],
 //   emailCode: [
 //     { required: true, message: '请输入原邮箱验证码', trigger: 'blur' }

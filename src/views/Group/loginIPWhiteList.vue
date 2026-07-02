@@ -104,10 +104,10 @@
               </el-select>
             </el-form-item>
 
-            <!-- <el-form-item label="谷歌验证码">
+            <!-- <el-form-item label="MFA2验证码">
               <el-input
                 v-model="queryForm.code"
-                placeholder="请输入谷歌验证码"
+                placeholder="请输入MFA2验证码"
                 style="width: 150px;"
                 clearable
               />
@@ -333,7 +333,7 @@ const submitForm = async (useFor) => {
   
   try {
     const googleCode = await ElMessageBox.prompt(
-      '请输入谷歌验证码',
+      '请输入MFA2验证码',
       '验证',
       {
         confirmButtonText: '确定',
@@ -376,7 +376,7 @@ const queryIpWhiteList = async () => {
     return;
   }
   // if (!queryForm.code) {
-  //   ElMessage.warning('请输入谷歌验证码');
+  //   ElMessage.warning('请输入MFA2验证码');
   //   return;
   // }
 

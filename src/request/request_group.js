@@ -65,7 +65,8 @@ service.interceptors.response.use(response => {
         window.location.href = "/Login";
         break;
       case 403:
-        error.message = '拒绝访问'
+        error.message = error.response.data.msg || '拒绝访问',
+        ElMessage.error(error.message);  // 用来提示角色已变更，请重新登录
         break;
       case 404:
         error.message = '请求错误,未找到该资源'

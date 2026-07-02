@@ -128,8 +128,8 @@
                   ></el-input>
                 </el-form-item>
                 
-                <!-- 谷歌验证码 -->
-                <el-form-item label="谷歌验证码" prop="googleCode">
+                <!-- MFA2验证码 -->
+                <el-form-item label="MFA2验证码" prop="googleCode">
                   <el-input
                     v-model="ruleForm.googleCode"
                     placeholder="如未绑定请至账号管理->基本信息中设置"
@@ -258,7 +258,7 @@ const rules = {
     { required: true, message: '请输入支付密码', trigger: 'blur' }
   ],
   googleCode: [
-    { required: true, message: '请输入谷歌验证码', trigger: 'blur' }
+    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
   ]
 };
 
