@@ -332,7 +332,7 @@ onMounted(() => {
   .balance-amount {
     font-size: 18px;
     font-weight: bold;
-    color: #a5dc3d;
+    color: #191919;
   }
 }
 // 简洁按钮样式

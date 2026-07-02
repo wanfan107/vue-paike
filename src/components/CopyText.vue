@@ -1,5 +1,6 @@
 <template>
   <div 
+    v-if="text !== null && text !== undefined && text !== ''"
     class="copy-cell" 
     @mouseenter="isHovered = true"
     @mouseleave="isHovered = false"

@@ -277,7 +277,7 @@ const fetchLoginLogs = async () => {
     if (res.code === 200) {
       loginLogs.value = (res.data.list || []).filter(item => item.LoginResult === 'success');
       // pagination.total = res.data.total || 0; 
-      pagination.total = loginLogs.value.length || 0; 
+      pagination.total = res.data.total || 0; 
     }
     else {
       ElMessage.error(res.msg || '获取登录记录失败');

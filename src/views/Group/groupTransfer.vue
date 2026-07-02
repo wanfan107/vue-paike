@@ -232,11 +232,13 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180">
-                <template #default="scope">
-                  <el-tooltip :content="scope.row.orderNo" placement="top">
-                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: inline-block; width: 100%; cursor: pointer;">{{ scope.row.orderNo }}</span>
-                  </el-tooltip>
+              <el-table-column label="转账单号" width="220" align="center">
+                <template #default="{ row }">
+                  <CopyText 
+                    :text="row.orderNo" 
+                    :id="'orderno-' + row.orderNo"
+                    title="点击复制转账单号"
+                  />
                 </template>
               </el-table-column>
               <el-table-column prop="type" label="类型" width="100" align="center">
@@ -262,7 +264,7 @@
                 </template>
               </el-table-column>
               <el-table-column prop="createTime" label="转账时间" width="180" align="center" />
-              <el-table-column prop="ErrorMsg" label="备注" align="center" />            
+              <el-table-column prop="ErrorMsg" label="备注" align="center"  />            
             </el-table>
             
             <div class="history-pagination" v-if="!historyLoading && transferHistory.length > 0" style="display: flex; justify-content: center; margin-top: 10px;">
@@ -291,6 +293,7 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+import CopyText from '@/components/CopyText.vue';
 
 const userStore = useUserStore();
 
