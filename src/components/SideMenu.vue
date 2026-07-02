@@ -59,8 +59,8 @@
 
           <div class="user-details">
             <div class="user-name">{{ userStore.merchantId || userStore.userInfo?.username }}</div>
-            <el-tooltip :content="userStore.userInfo?.email" placement="bottom" :show-after="300">
-              <div class="user-account" v-if="isGroupLogin">{{ userStore.userInfo?.email }}</div>
+            <el-tooltip :content="userStore.groupUserInfo?.email" placement="bottom" :show-after="300">
+              <div class="user-account" v-if="isGroupLogin">{{ userStore.groupUserInfo?.email }}</div>
             </el-tooltip>
           </div>
           <div class="user-dropdown-icon">

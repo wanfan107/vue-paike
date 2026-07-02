@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia'
 import Request from '@/request/request.js'
-import { getToken, setToken, removeToken, saveUserInfo, loadUserinfo, saveMerchantInfo, loadMerchantInfo, saveMerchantId, loadMerchantId, getGroupToken, setGroupToken, getMerchants, setMerchants, getCurrentMerchantCode, setCurrentMerchantCode, getRoleCode, setRoleCode, getRoleName, setRoleName, clearGroupData } from '@/utils/ProjectTools.js'
+import { getToken, setToken, removeToken, saveUserInfo, loadUserinfo, saveMerchantInfo, loadMerchantInfo, saveMerchantId, loadMerchantId, getGroupToken, setGroupToken, getMerchants, setMerchants, getCurrentMerchantCode, setCurrentMerchantCode, getRoleCode, setRoleCode, getRoleName, setRoleName, clearGroupData, getGroupUserInfo, setGroupUserInfo } from '@/utils/ProjectTools.js'
 import { http } from "@/api";
 
 const useUserStore = defineStore('user', {
@@ -20,6 +20,7 @@ const useUserStore = defineStore('user', {
     currentMerchantCode: getCurrentMerchantCode(),  // 当前商户code
     roleCode: getRoleCode(),  // 当前角色code
     roleName: getRoleName(),   // 当前角色名称
+    groupUserInfo: getGroupUserInfo(), // 集团用户信息
     groupMenus: [] // 集团菜单
   }),
 
@@ -94,12 +95,14 @@ const useUserStore = defineStore('user', {
       this.merchants = res.data.merchants;
       this.roleCode = res.data.roleCode || '';
       this.roleName = res.data.roleName || '';
+      this.groupUserInfo = res.data;
 
       // 保存到 localStorage
       setGroupToken(res.data.groupToken);
       setMerchants(res.data.merchants);
       setRoleCode(res.data.roleCode || '');
       setRoleName(res.data.roleName || '');
+      setGroupUserInfo(res.data);
 
       // 如果只有一个商户，自动选择
       if (res.data.merchantsLen === 1) {
@@ -186,6 +189,7 @@ const useUserStore = defineStore('user', {
       this.merchants = [];
       this.roleCode = '';
       this.roleName = '';
+      this.groupUserInfo = {};
       this.groupMenus = [];
       this.currentMerchantCode = '';
 

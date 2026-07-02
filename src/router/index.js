@@ -211,7 +211,7 @@ const router = createRouter({
           ]
         },
         // 导出记录
-        { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+        { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord, meta: { roles: ['admin', 'merchant', 'finance'] } },
         // 接口文档
         { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc, meta: { roles: ['admin','merchant'] } },
         // 商户费率

@@ -117,6 +117,7 @@ const MERCHANTS = 'merchants';
 const CURRENT_MERCHANT_CODE = 'currentMerchantCode';
 const ROLE_CODE = 'roleCode';
 const ROLE_NAME = 'roleName';
+const GROUP_USER_INFO = 'groupUserInfo';
 
 export const setGroupToken = (token) => {
     localStorage.setItem(GROUP_TOKEN, BASE64Helper.encode(JSON.stringify(token)))
@@ -178,10 +179,23 @@ export const getRoleName = () => {
     }
 }
 
+export const setGroupUserInfo = (info) => {
+    localStorage.setItem(GROUP_USER_INFO, BASE64Helper.encode(JSON.stringify(info)))
+}
+
+export const getGroupUserInfo = () => {
+    try {
+        return JSON.parse(BASE64Helper.decode(localStorage.getItem(GROUP_USER_INFO) || '{}'))
+    } catch (err) {
+        return {}
+    }
+}
+
 export const clearGroupData = () => {
     localStorage.removeItem(GROUP_TOKEN);
     localStorage.removeItem(MERCHANTS);
     localStorage.removeItem(CURRENT_MERCHANT_CODE);
     localStorage.removeItem(ROLE_CODE);
     localStorage.removeItem(ROLE_NAME);
+    localStorage.removeItem(GROUP_USER_INFO);
 }

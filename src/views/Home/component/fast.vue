@@ -28,16 +28,15 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { Wallet, WalletFilled, CreditCard, InfoFilled, Download } from '@element-plus/icons-vue'
+import useUserStore from '@/stores/user'
 
-
-// 获取路由实例
+const userStore = useUserStore()
 const router = useRouter()
 
-// 定义快速访问项数据
-const fastItems = ref([
+const baseItems = ref([
   { 
     name: 'withdraw', 
     path: '/withdraw', 
@@ -62,21 +61,24 @@ const fastItems = ref([
     elIcon: 'InfoFilled', 
     text: '基本信息', 
   },
-  // { 
-  //   name: 'config', 
-  //   path: '/account/config', 
-  //   elIcon: 'Setting', 
-  //   text: '应用配置', 
-  // },
-  { 
-    name: 'exportRecord', 
-    path: '/ExportRecord', 
-    elIcon: 'Download', 
-    text: '导出记录', 
-  }
 ])
 
-// 路由跳转方法
+const exportRecordItem = { 
+  name: 'exportRecord', 
+  path: '/ExportRecord', 
+  elIcon: 'Download', 
+  text: '导出记录', 
+}
+
+const fastItems = computed(() => {
+  // const isGroup = !!userStore.groupToken
+  const isOperator = userStore.roleCode === 'operator'
+  if (isOperator) {
+    return baseItems.value
+  }
+  return [...baseItems.value, exportRecordItem]
+})
+
 const routerJump = (path) => {
   console.log("path", path)
   router.push(path)
