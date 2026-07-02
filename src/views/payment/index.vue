@@ -95,6 +95,7 @@
                 刷新
               </el-button>
               <el-button
+                v-if="userStore.roleCode !== 'operator'"
                 :icon="Download"
                 @click="onExport"
                 type="primary"

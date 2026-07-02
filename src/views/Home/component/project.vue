@@ -79,7 +79,7 @@ const projectList = reactive([
   {
     name: "期初金额",
     amount: 0,
-    desc: "今日开始金额",
+    desc: "当日初始余额",
     count: '',
     currency: "R$"
   },

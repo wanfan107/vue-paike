@@ -71,6 +71,7 @@
                 刷新
               </el-button>
               <el-button
+                v-if="userStore.roleCode !== 'operator'"
                 :icon="Download"
                 @click="onExport"
                 type="primary"
@@ -439,8 +440,6 @@ const handleSearch = async () => {
 
     tableData.value = res.data.list;
     pagination.total = res.data.total;
-  } catch (error) {
-    ElMessage.error("搜索失败");
   } finally {
     loading.value = false;
   }
