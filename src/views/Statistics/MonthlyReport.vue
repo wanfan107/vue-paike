@@ -111,7 +111,7 @@
                         > </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="收款总金额"
+                          label="净收款总额"
                           align="right"
                         >
                           <template #default="scope">
@@ -290,7 +290,7 @@ const columns = reactive([
   { prop: "PreviousMonthBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当月收款总额" },
   { prop: "SuccessAmountPayout", label: "当月付款总额" },
-  { prop: "TotalAmountReceived", label: "收款总金额", tooltip: "计算公式：当月 收款总额 - 当月付款总额" },
+  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当月 收款总额 - 当月付款总额" },
   { prop: "CurrentMonthBalance", label: "期末余额" },
 ]);
 
@@ -617,7 +617,7 @@ const onExpandChange = (row, expandedRows) => {
 
     if (!hasExtraData) {
       // 月报表展开行：参考每日报表逻辑，只显示"汇总"和"手续费"2行
-      // 注意：SuccessFeePayin 是代收手续费，应展示在"收款总金额"列（SuccessAmountPayin）
+      // 注意：SuccessFeePayin 是代收手续费，应展示在"净收款总额"列（SuccessAmountPayin）
       const itemsData = [
         {
           typeName: '汇总',

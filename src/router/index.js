@@ -203,7 +203,7 @@ const router = createRouter({
         },
         // 集团统计报表
         {
-          path: 'groupStatistics', name: 'groupStatistics', title: '集团统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin','finance'] },
+          path: 'groupStatistics', name: 'groupStatistics', title: '集团统计报表', icon: DataAnalysis, redirect: 'groupRealtime', meta: { roles: ['admin','finance'] },
           children: [
             { path: 'groupRealtime', name: 'groupRealtime', component: GroupStatistics, title: '即时统计', meta: { roles: ['admin', 'finance'] } },
             { path: 'groupDailyReport', name: 'groupDailyReport', component: GroupDailyReport, title: '每日报表', meta: { roles: ['admin', 'finance'] } },

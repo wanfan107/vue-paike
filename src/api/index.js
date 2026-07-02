@@ -53,6 +53,10 @@ export const http = {
     // 集团订单模糊查询
     groupOrderQuery: (data, headers) => request_group.post("/Auth/group/orderQuery", data, { headers }),
 
+    // 集团统计报表
+    groupRealtime:   (params) => request_group.get("/groupStatistics/realtime", { params }),
+    groupDailyRpt:   (params) => request_group.get("/groupStatistics/dailyRpt", { params }),
+    groupMonthlyRpt: (params) => request_group.get("/groupStatistics/monthlyRpt", { params }),
 
 
     

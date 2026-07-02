@@ -133,7 +133,13 @@
                         > </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="收款总金额"
+                          label="收款总额"
+                          align="center"
+                        >
+                        </el-table-column>
+                        <el-table-column
+                          prop="SuccessOrderFee"
+                          label="收款手续费"
                           align="center"
                         >
                         </el-table-column>
@@ -151,7 +157,7 @@
                         </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayout"
-                          label="付款总金额"
+                          label="付款总额"
                           align="center"
                         >
                         </el-table-column>
@@ -255,7 +261,7 @@ const columns = reactive([
   { prop: "PreviousDayEndBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当日收款总额" },
   { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
+  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 
@@ -681,7 +687,7 @@ const onExpandChange = (row, expandedRows) => {
   if (row && row.items && expandedRows.includes(row)) {
     // 检查是否已经添加过额外数据（避免重复添加）
     const hasExtraData = row.items.some(item =>
-      item.typeName === '手续费' || item.typeName === '违规订单'
+      item.typeName === '收款手续费' || item.typeName === '违规订单'
     );
 
     if (!hasExtraData) {
@@ -689,27 +695,17 @@ const onExpandChange = (row, expandedRows) => {
       const updatedItems = row.items.map(item => ({
         ...item,
         SuccessRatePayin: toPercent(item.SuccessRatePayin),
-        // SuccessAmountPayin: formatNumber(item.SuccessAmountPayin),
         SuccessRatePayout: toPercent(item.SuccessRatePayout),
-        // SuccessOrderFee: formatNumber(item.SuccessOrderFee),
+        SuccessOrderFee: item.SuccessOrderFee || 0,
       }));
 
-      // 添加手续费和违规订单数据
-      // 注意：SuccessOrderFee 实际是代收手续费，应展示在"收款总金额"列（SuccessAmountPayin）
+      // 添加违规订单数据（收款手续费作为一列，不再单独一行）
       const extraItems = [
-        {
-          typeName: '手续费',
-          SuccessCountPayin: '-',
-          SuccessAmountPayin: row.SuccessOrderFee || 0,
-          SuccessCountPayout: '-',
-          SuccessRatePayin: '-',
-          SuccessAmountPayout: '-',
-          SuccessRatePayout: '-',
-        },
         {
           typeName: '违规订单',
           SuccessCountPayin: 0,
           SuccessAmountPayin: 0,
+          SuccessOrderFee: 0,
           SuccessRatePayin: '-',
           SuccessCountPayout: 0,
           SuccessAmountPayout: 0,
@@ -945,7 +941,7 @@ const getCollectionPieChart = (row) => {
   const merchantProfitValue = Number(row.MerchantProfit) || 0;
 
   const data = [
-    { name: '手续费', value: feeValue },
+    { name: '收款手续费', value: feeValue },
     { name: '商户分账', value: merchantProfitValue },
   ].filter(item => item.value > 0);
 
@@ -1470,7 +1466,7 @@ const handleSearch = async () => {
       if (Array.isArray(data) && data.length > 0) {
         data.forEach((item) => {
           item.OrderDate = item.OrderDate ? item.OrderDate.split('T')[0] : '';
-          item.Totalamountreceived = (item.SuccessAmountPayin || 0) - (item.SuccessAmountPayout || 0);
+          item.TotalAmountReceived = (item.SuccessAmountPayin || 0) - (item.SuccessAmountPayout || 0);
         });
         tableData.value = data;
         

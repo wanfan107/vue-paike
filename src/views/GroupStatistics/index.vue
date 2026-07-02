@@ -11,12 +11,12 @@
       <div class="content-wrapper">
         <div class="table-layout">
           <div class="table_time">
-            <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+            <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
               <!-- 日期时间选择器 -->
               <el-date-picker
                 v-model="selectedTime"
                 type="datetime"
-                placeholder="选择时间"            
+                placeholder="选择时间"
                 format="YYYY-MM-DD HH:mm:ss"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 :show-now="false"
@@ -28,7 +28,7 @@
               <el-select
                 v-model="timeRange"
                 placeholder="选择时间范围"
-                style="width: 180px; border-radius: 4px;"
+                style="width: 140px; border-radius: 4px;"
                 size="small"
                 @change="getdata"
               >
@@ -45,14 +45,36 @@
                 <template #reference><el-icon><WarningFilled /></el-icon></template>
               </el-popover>
               <el-tooltip class="item" effect="dark" content="刷新数据" placement="bottom">
-                <el-button circle :icon="Refresh" style="margin-right: 20px;" @click.stop="getdata()"></el-button>
+                <el-button circle :icon="Refresh" style="margin-right: 10px;" @click.stop="getdata()"></el-button>
               </el-tooltip>
             </div>
           </div>
-          <!-- 动画金额图 -->
-          <div style="flex-shrink: 0;">
-            <ProjectBox :showAll="true" :data="projectData"/>
+          <!-- 商户多选 + 表格 -->
+          <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 13px; color: #666;">商户筛选：</span>
+            <el-select
+              v-model="selectedMerchants"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="选择商户（默认全部）"
+              style="width: 360px;"
+              size="small"
+            >
+              <el-option
+                v-for="m in merchantOptions"
+                :key="m.code"
+                :label="m.code"
+                :value="m.code"
+              />
+            </el-select>
           </div>
+          <el-table :data="tableRows" border size="small" style="margin-bottom: 20px;" max-height="320">
+            <el-table-column prop="code" label="商户代码" align="center" width="160" />
+            <el-table-column prop="orderCount" label="创建订单" align="center" />
+            <el-table-column prop="successCount" label="成功订单" align="center" />
+            <el-table-column prop="successRate" label="成功率" align="center" />
+          </el-table>
           <!-- 图表 -->
           <div class="chart-wrapper">
             <div ref="chartContainer" style="width: 100%; height: 600px;"></div>
@@ -64,133 +86,176 @@
 </template>
 
 <script setup>
-import { Search, Refresh, ArrowRight, Calendar } from "@element-plus/icons-vue";
-import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { Refresh } from "@element-plus/icons-vue";
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
-import ProjectBox from "./component/project.vue";
 import * as echarts from 'echarts';
-import useUserStore from "@/stores/user";
 
-const userStore = useUserStore();
-
-// 银行页面
+// 集团即时统计
 const props = defineProps({
   title: {
     type: String,
-    default: "即时报表",
+    default: "集团即时统计",
   },
 });
 
-// 动画金额数据
-const projectData = ref({
-  orderCount: 0,
-  successCount: 0,
-  successRate: 0,
-});
-
-// DailyReport相关数据
+// 时间控件
 const selectedTime = ref('');
 const timeRange = ref('5');
 
-// 格式化当前时间
+// 商户列表
+const merchantOptions = ref([]);
+const selectedMerchants = ref([]);
+
+// 接口返回数据
+const apiData = ref({
+  merchants: [],
+  group: { orderCount: 0, successCount: 0, successRate: "0.00%" },
+  groupChart: [],
+  merchantCharts: [],
+});
+
+// 格式化当前时间（按币种时区）
 const formatCurrentTime = (currency) => {
   const pad = (n) => String(n).padStart(2, '0');
   let targetDate;
-
   if (currency === 'BRL') {
-    // 巴西时区 UTC-3 计算逻辑
     const now = new Date();
-    // 当前时间距离UTC的毫秒偏移
     const utcOffsetMs = now.getTimezoneOffset() * 60 * 1000;
-    // UTC-3 = UTC时间 - 3小时
     const brazilTs = now.getTime() + utcOffsetMs - 3 * 3600 * 1000;
     targetDate = new Date(brazilTs);
   } else {
-    // 非巴西币种，使用本地浏览器时间
     targetDate = new Date();
   }
-
   const year = targetDate.getFullYear();
   const month = pad(targetDate.getMonth() + 1);
   const day = pad(targetDate.getDate());
   const hour = pad(targetDate.getHours());
   const minute = pad(targetDate.getMinutes());
   const second = pad(targetDate.getSeconds());
-
   return `${year}-${month}-${day} ${hour}:${minute}:${second}`;
 };
-
 
 // 图表容器引用
 const chartContainer = ref(null);
 let chartInstance = null;
 
+// 解析成功率字符串为数值
+const parseRate = (rateStr) => {
+  if (!rateStr) return 0;
+  return parseFloat(String(rateStr).replace('%', '')) || 0;
+};
 
-
-// 搜索方法
-// DailyReport方法
-// const refreshData = () => {
-//   // 刷新数据逻辑
-//   getdata();
-// };
-
-// 图表数据
-const chartData = ref({
-  dates: [],
-  collectionSuccessRates: [],
-  collectionAmounts: [],
-  collectionCounts: []
+// 表格行（按多选过滤，末行集团汇总）
+const tableRows = computed(() => {
+  const rows = apiData.value.merchants.filter(m =>
+    selectedMerchants.value.length === 0 || selectedMerchants.value.includes(m.code)
+  ).map(m => ({
+    code: m.code,
+    orderCount: m.orderCount,
+    successCount: m.successCount,
+    successRate: m.successRate,
+  }));
+  // 集团汇总行
+  rows.push({
+    code: '集团汇总',
+    orderCount: apiData.value.group.orderCount,
+    successCount: apiData.value.group.successCount,
+    successRate: apiData.value.group.successRate,
+  });
+  return rows;
 });
 
 // 图表配置
 const realTimeChart = computed(() => {
-  const { dates, collectionSuccessRates, collectionAmounts, collectionCounts } = chartData.value;
+  const groupChart = apiData.value.groupChart || [];
+  const times = groupChart.map(p => p.time);
+
+  // 集团成功率曲线
+  const groupRates = groupChart.map(p => parseRate(p.successRate));
+
+  const series = [
+    {
+      name: "集团成功率",
+      type: "line",
+      data: groupRates,
+      symbol: "circle",
+      symbolSize: 6,
+      smooth: true,
+      showSymbol: true,
+      lineStyle: { color: "#48bb78", width: 3 },
+      itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
+      areaStyle: {
+        color: {
+          type: "linear",
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
+            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
+          ],
+        },
+      },
+    },
+  ];
+
+  // 已选商户的曲线（控制表格的 selectedMerchants 同时控制曲线展示）
+  const merchantCharts = apiData.value.merchantCharts || [];
+  const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '#fd79a8', '#0984e3', '#e17055'];
+  let colorIdx = 0;
+  merchantCharts.forEach(mc => {
+    if (selectedMerchants.value.includes(mc.code)) {
+      const color = merchantColors[colorIdx % merchantColors.length];
+      colorIdx++;
+      series.push({
+        name: mc.code + " 成功率",
+        type: "line",
+        data: mc.points.map(p => parseRate(p.successRate)),
+        symbol: "circle",
+        symbolSize: 5,
+        smooth: true,
+        showSymbol: false,
+        lineStyle: { color, width: 2 },
+        itemStyle: { color },
+      });
+    }
+  });
 
   return {
     title: {
-      text: "收款成功率趋势",
+      text: "集团收款成功率趋势",
       left: "center",
       top: 20,
-      textStyle: {
-        color: "#666",
-        fontSize: 16,
-      },
+      textStyle: { color: "#666", fontSize: 16 },
     },
     tooltip: {
       trigger: "axis",
       backgroundColor: "rgba(0,0,0,0.8)",
       borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
+      textStyle: { color: "#fff" },
       formatter: function (params) {
-        const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
-        result += "收款笔数成功率: " + collectionSuccessRates[index] + "%<br/>";
-        result += "收款金额: R$ " + collectionAmounts[index].toLocaleString() + "<br/>";
-        result += "收款笔数: " + collectionCounts[index] + "笔";
+        params.forEach(p => {
+          result += p.seriesName + ": " + p.value.toFixed(2) + "%<br/>";
+        });
         return result;
       },
     },
     legend: {
-      data: ["收款成功率"],
+      data: series.map(s => s.name),
       bottom: "5%",
-      textStyle: {
-        color: "#666",
-        fontSize: 13,
-      },
+      textStyle: { color: "#666", fontSize: 13 },
     },
     grid: {
-      top: "25%",
+      top: "15%",
       left: "5%",
       right: "5%",
-      bottom: "10%",
+      bottom: "12%",
       containLabel: true,
     },
     xAxis: {
       type: "category",
-      data: dates,
+      data: times,
       boundaryGap: false,
       axisLine: { lineStyle: { color: "#d8d8d8" } },
       splitLine: { show: false },
@@ -200,78 +265,42 @@ const realTimeChart = computed(() => {
     yAxis: {
       type: "value",
       name: "成功率 (%)",
-      min: 70,
-      max: 100,
       axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
       axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
       axisTick: { show: false },
       nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
     },
-    series: [
-      {
-        name: "收款成功率",
-        type: "line",
-        data: collectionSuccessRates,
-        symbol: "circle",
-        symbolSize: 6,
-        smooth: true,
-        showSymbol: true,
-        lineStyle: { color: "#48bb78", width: 3 },
-        itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
-        areaStyle: {
-          color: {
-            type: "linear",
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
-              { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
-            ],
-          },
-        },
-      },
-    ],
+    series,
   };
 });
 
 // 初始化图表
 const initChart = () => {
   if (chartContainer.value) {
-    // 检查容器尺寸
     const checkSize = () => {
       if (!chartContainer.value) return;
       const clientWidth = chartContainer.value.clientWidth;
       const clientHeight = chartContainer.value.clientHeight;
-      
       if (clientWidth > 0 && clientHeight > 0) {
-        // 先销毁可能存在的旧实例
         if (chartInstance) {
           chartInstance.dispose();
         }
-        // 创建新实例
         chartInstance = echarts.init(chartContainer.value);
-        // 清空并设置新选项
         chartInstance.setOption(realTimeChart.value, true);
-        
-        // 监听窗口大小变化，自适应图表
         window.addEventListener('resize', handleResize);
       } else {
-        // 等待下一帧再检查
         requestAnimationFrame(checkSize);
       }
     };
-    
-    // 开始检查尺寸
     checkSize();
   }
 };
 
-// 图表自适应
 const handleResize = () => {
   chartInstance?.resize();
 };
 
-// 销毁图表
 const destroyChart = () => {
   window.removeEventListener('resize', handleResize);
   if (chartInstance) {
@@ -289,7 +318,6 @@ const formatTime = (date) => {
 const getdata = async () => {
   try {
     let endTime, startTime;
-    
     if (selectedTime.value) {
       const endDate = new Date(selectedTime.value.replace(/-/g, '/'));
       const adjustedEndDate = new Date(endDate.getTime() - 2 * 60 * 1000);
@@ -302,63 +330,54 @@ const getdata = async () => {
       startTime = formatTime(new Date(adjustedNow.getTime() - parseInt(timeRange.value) * 60 * 1000));
     }
 
-    const collectRes = await http.collectSuccessRatio({ startTime, endTime });
+    const res = await http.groupRealtime({ startTime, endTime });
+    const data = res.data;
+    if (!data) {
+      ElMessage.warning(res.msg || "获取数据失败");
+      return;
+    }
 
-    console.log("代收成功率数据", collectRes);
-
-    const collectList = collectRes.data?.list || [];
-    
-    projectData.value.orderCount = parseInt(collectRes.data?.totalOrderCount || '0');
-    projectData.value.successCount = parseInt(collectRes.data?.totalSuccessCount || '0');
-    projectData.value.successRate = parseFloat(collectRes.data?.totalSuccessRate.replace('%', '') || '0');
-
-    const sortedTimes = collectList.map(item => item.time).sort();
-    
-    chartData.value = {
-      dates: sortedTimes,
-      collectionSuccessRates: sortedTimes.map(time => {
-        const item = collectList.find(i => i.time === time);
-        return item ? parseFloat(item.successRate?.replace('%', '') || '0') : 0;
-      }),
-      collectionAmounts: sortedTimes.map(time => {
-        const item = collectList.find(i => i.time === time);
-        return item ? parseFloat(item.totalAmount || '0') : 0;
-      }),
-      collectionCounts: sortedTimes.map(time => {
-        const item = collectList.find(i => i.time === time);
-        return item ? item.orderCount || 0 : 0;
-      })
+    apiData.value = {
+      merchants: data.merchants || [],
+      group: data.group || { orderCount: 0, successCount: 0, successRate: "0.00%" },
+      groupChart: data.groupChart || [],
+      merchantCharts: data.merchantCharts || [],
     };
 
     if (chartInstance) {
       chartInstance.setOption(realTimeChart.value, true);
     }
-
   } catch (error) {
     ElMessage.error(error.msg || "获取数据失败");
     console.error(error);
   }
 };
 
-
 // 监听图表配置变化，更新图表
 watch(realTimeChart, (newOption) => {
   if (chartInstance) {
-    // 强制清空并设置新选项
     chartInstance.setOption(newOption, true);
   }
 }, { deep: true });
 
-onMounted(() => {
-  // 设置默认时间为当前时间
-  selectedTime.value = formatCurrentTime(userStore.merchantInfo.currency);
-  getdata();
-  // 组件挂载后初始化图表
+onMounted(async () => {
+  // 拉取集团商户列表（前端过滤掉 G 开头的 code，不展示给用户）
+  try {
+    const mres = await http.getGroupMerchants();
+    const list = (mres.data || []).filter(m => !m.code.startsWith('G'));
+    merchantOptions.value = list;
+    selectedMerchants.value = list.map(m => m.code);
+  } catch (e) {
+    console.error("获取集团商户列表失败", e);
+  }
+  // 默认时间
+  const currency = merchantOptions.value.find(m => m.isDefault)?.currency || 'BRL';
+  selectedTime.value = formatCurrentTime(currency);
+  await getdata();
   initChart();
 });
 
 onBeforeUnmount(() => {
-  // 组件卸载前销毁图表
   destroyChart();
 });
 </script>
@@ -378,7 +397,6 @@ onBeforeUnmount(() => {
     font-size: $font-size-xl;
     color: $text-color;
   }
- 
 }
 
 .balance-info {
@@ -392,13 +410,10 @@ onBeforeUnmount(() => {
   position: relative;
 }
 
-
-
 .content-wrapper {
   background-color: white;
   padding: $spacing-lg;
   border-radius: $border-radius-md;
-  // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .empty-state {
@@ -423,10 +438,11 @@ onBeforeUnmount(() => {
   margin: 0;
   font-size: $font-size-base;
 }
+
 .search-container {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 12px;
   margin-bottom: $spacing-lg;
   input{
@@ -434,9 +450,7 @@ onBeforeUnmount(() => {
   }
 }
 
-
-
-// DailyReport相关样式
+// 每日报表相关样式
 .table-layout {
   width: 100%;
   margin: 0;

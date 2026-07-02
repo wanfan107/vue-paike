@@ -126,7 +126,7 @@
                         > </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="收款总金额"
+                          label="净收款总额"
                           align="center"
                         >
                         </el-table-column>
@@ -255,7 +255,7 @@ const columns = reactive([
   { prop: "PreviousDayEndBalance", label: "期初余额" },
   { prop: "SuccessAmountPayin", label: "当日收款总额" },
   { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "Totalamountreceived", label: "收款总金额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
+  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 
@@ -662,7 +662,7 @@ const onExpandChange = (row, expandedRows) => {
       }));
 
       // 添加手续费和违规订单数据
-      // 注意：SuccessOrderFee 实际是代收手续费，应展示在"收款总金额"列（SuccessAmountPayin）
+      // 注意：SuccessOrderFee 实际是代收手续费，应展示在"净收款总额"列（SuccessAmountPayin）
       const extraItems = [
         {
           typeName: '手续费',
