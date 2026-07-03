@@ -308,7 +308,7 @@ const formRef = ref(null);
 const merchantOptions = ref([]);
 
 const groupBalance = computed(() => {
-  return merchantOptions.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0);
+  return merchantOptions.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0).toFixed(4);
 });
 
 const ruleForm = reactive({
@@ -408,7 +408,7 @@ const reset = () => {
     formRef.value.resetFields();
   }
   Object.assign(ruleForm, {
-    fromMerchant: "",
+    // fromMerchant: "",
     toMerchant: "",
     amount: 0,
     currency: "BRL",
@@ -437,19 +437,33 @@ const historyPagination = reactive({
   total: 0
 });
 
-// 初始化时间范围（默认最近7天全天）
+// 初始化时间范围（默认最近7天全天，本地东八区时间，无UTC偏移）
 const initTimeRange = () => {
-  const today = new Date();
-  const start = new Date(today);
+  const now = new Date();
+
+  // 起始：7天前 00:00:00
+  const start = new Date(now);
   start.setDate(start.getDate() - 6);
   start.setHours(0, 0, 0, 0);
-  const end = new Date(today);
+
+  // 结束：当天 23:59:59
+  const end = new Date(now);
   end.setHours(23, 59, 59, 999);
-  
-  historyTimeRange.value = [
-    start.toISOString().slice(0, 19).replace('T', ' '),
-    end.toISOString().slice(0, 19).replace('T', ' ')
-  ];
+
+  // 补零工具
+  const pad = (num) => String(num).padStart(2, '0');
+  // 格式化本地时间 yyyy-MM-dd HH:mm:ss
+  const formatLocal = (date) => {
+    const y = date.getFullYear();
+    const m = pad(date.getMonth() + 1);
+    const d = pad(date.getDate());
+    const h = pad(date.getHours());
+    const mi = pad(date.getMinutes());
+    const s = pad(date.getSeconds());
+    return `${y}-${m}-${d} ${h}:${mi}:${s}`;
+  };
+
+  historyTimeRange.value = [formatLocal(start), formatLocal(end)];
 };
 
 // 获取转账记录

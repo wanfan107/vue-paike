@@ -50,6 +50,7 @@
                 ref="submitFormRef"
                 class="submit-form"
                 :model="ruleForm"
+                :rules="rules"
                 :label-width="'120px'"
                 :label-position="'right'"
                 @keyup.enter.native="onSave"
@@ -211,7 +212,7 @@
 
 
     <!-- 新增钱包地址弹窗 -->
-    <el-dialog
+    <!-- <el-dialog
       v-model="showWalletDialog"
       title="新增钱包地址"
       width="500px"
@@ -238,12 +239,12 @@
           <el-button type="primary" @click="saveWalletAddress">保存</el-button>
         </span>
       </template>
-    </el-dialog>
+    </el-dialog> -->
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted,onUnmounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
@@ -270,10 +271,52 @@ const ruleForm = reactive({
   amount: "",
   uAmount: "",
   fee: 0,
-  walletAddress: userStore.merchantInfo.usdtAddress || "",
+  walletAddress:  "",
   password: "",
   code: "",
 });
+
+const rules = {
+  amount: [
+    { required: true, message: '请输入金额', trigger: 'blur' }
+  ],
+  uAmount: [
+    { required: true, message: '请输入到账U数', trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (value && (!isNaN(value) && Number(value) > 0)) {
+          if (Number(value) < 1) {
+            callback(new Error('到账U数最低为1000'));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ],
+  walletAddress: [
+    { required: true, message: '请选择钱包地址', trigger: 'change' }
+  ],
+  password: [
+    { required: true, message: '请输入支付密码', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (value && value.length === 6) {
+          callback();
+        } else {
+          callback(new Error('MFA2验证码长度必须为6位'));
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ],
+};
 
 // 钱包地址选项
 const walletAddressOptions = computed(() => {
@@ -294,7 +337,7 @@ const walletAddressOptions = computed(() => {
     options.push({
       name:  "暂无钱包地址，请先新增钱包地址",
       original:  "暂无钱包地址，请先新增钱包地址",
-      value:  "暂无钱包地址，请先新增钱包地址",
+      value:  "",
     });
   }
   
@@ -325,6 +368,22 @@ const walletAddressOptions = computed(() => {
 // 弹窗状态
 const showPrepayDialog = ref(false);
 
+let refreshTimer = null;
+
+// 获取钱包地址
+const getWalletAddresses = async () => {
+  try {
+    const res = await http.merchant({
+      id: userStore.merchantInfo.id,
+    });
+    if (res.code === 200 && res.data) {
+      Object.assign(userStore.merchantInfo, res.data || {});
+    }
+  } catch (error) {
+    console.error('获取钱包地址失败:', error);
+  }
+};
+
 
 
 // 检查授信款状态
@@ -354,17 +413,25 @@ const handleDialogClose = () => {
 
 // 生命周期 - 组件挂载
 onMounted(() => {
-  // 初始化表单默认值
-  // ruleForm.walletAddress = userStore.merchantInfo.usdtAddress || "";
-  
   // 获取汇率信息
   getExchangeRate();
   
   // 检查授信款状态
   checkPrepayStatus();
 
-  // 初始化钱包地址数据
-  // initWalletAddresses();
+  // 获取钱包地址
+  getWalletAddresses();
+
+  // 每10秒刷新一次钱包地址
+  refreshTimer = setInterval(getWalletAddresses, 10000);
+});
+
+// 生命周期 - 组件卸载
+onUnmounted(() => {
+  if (refreshTimer) {
+    clearInterval(refreshTimer);
+    refreshTimer = null;
+  }
 });
 
 // 获取汇率信息
@@ -473,10 +540,10 @@ ElMessageBox.alert(
     }
   }
 );
-      }else{
-        ElMessage.error(res.msg || "提现失败");
+      } else if(res.code==201){
+        ElMessage.error(res.msg || '提交失败');
       }
-    })
+    }) 
     .catch(() => {
       loading.value = false;
     });

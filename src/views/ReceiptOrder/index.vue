@@ -273,10 +273,10 @@ const mapping = {
 };
 
 const options = [
-  {
-    label: "未通知",
-    value: 0,
-  },
+  // {
+  //   label: "未通知",
+  //   value: 0,
+  // },
   {
     label: "通知成功",
     value: 1,

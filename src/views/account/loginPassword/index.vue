@@ -15,6 +15,13 @@
         ></SubmitForm>
       </div>
     </el-card>
+        <SuccessDialog
+      v-model="showSuccessDialog"
+      title="操作成功"
+      message="登录密码设置成功"
+      description="下次登录请使用新密码"
+      @confirm="handleSuccessConfirm"
+    />
   </div>
 </template>
 

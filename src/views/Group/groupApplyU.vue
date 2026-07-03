@@ -50,6 +50,7 @@
                 ref="submitFormRef"
                 class="submit-form"
                 :model="ruleForm"
+                :rules="rules"
                 :label-width="'120px'"
                 :label-position="'right'"
                 @keyup.enter.native="onSave"
@@ -97,6 +98,7 @@
                       <el-input
                         v-model="ruleForm.uAmount"
                         type="number"
+                        min="1000"
                         placeholder="单位：USDT"
                         @input="() => convertUToAmount()"
                       ></el-input>
@@ -300,6 +302,41 @@ const ruleForm = reactive({
   code: "",
   merchantCode: "",
 });
+
+const rules = {
+  merchantCode: [
+    { required: true, message: '请选择商户号', trigger: 'change' }
+  ],
+  amount: [
+    { required: true, message: '请输入金额', trigger: 'blur' }
+  ],
+  uAmount: [
+    { required: true, message: '请输入到账U数', trigger: 'blur' },
+    { 
+      validator: (rule, value, callback) => {
+        if (value && (!isNaN(value) && Number(value) > 0)) {
+          if (Number(value) < 1000) {
+            callback(new Error('到账U数最低为1000'));
+          } else {
+            callback();
+          }
+        } else {
+          callback();
+        }
+      }, 
+      trigger: 'blur' 
+    }
+  ],
+  walletAddress: [
+    { required: true, message: '请选择钱包地址', trigger: 'change' }
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' }
+  ],
+  code: [
+    { required: true, message: '请输入6位MFA2验证码', trigger: 'blur', min: 6, max: 6 }
+  ],
+};
 
 const merchantOptions = ref([
 
