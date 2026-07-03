@@ -190,9 +190,21 @@ const router = createRouter({
 
         // 财务管理
         {
-          path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', 'merchant'] },
+          path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['merchant'] },
           children: [
             { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
+            // { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
+             // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
+            // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
+            // 集团的财务管理
+            //  { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
+            // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
+          ]
+        },
+        {
+          path: 'groupFinance', name: 'groupFinance', title: '集团财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', ] },
+          children: [
+            // { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
             // { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
              // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
             // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
