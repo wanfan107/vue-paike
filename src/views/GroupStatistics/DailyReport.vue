@@ -346,10 +346,11 @@ const lineChartOption = computed(() => {
     tooltip: {
       trigger: "axis",
       formatter: function (params) {
+        if (!params || params.length === 0) return '';
         let result = params[0].axisValue + "<br/>";
         params.forEach(p => {
           result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + p.value.toLocaleString() + "<br/>";
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
         });
         return result;
       },
@@ -463,10 +464,11 @@ const balanceChartOption = computed(() => {
     tooltip: {
       trigger: "axis",
       formatter: function (params) {
+        if (!params || params.length === 0) return '';
         let result = params[0].axisValue + "<br/>";
         params.forEach(p => {
           result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + p.value.toLocaleString() + "<br/>";
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
         });
         return result;
       },
@@ -582,29 +584,11 @@ const loadData = async () => {
     groupChart.value = data.groupChart || [];
     merchantCharts.value = data.merchantCharts || [];
 
-    // 补充 TotalAmountReceived 字段（当日收款 - 当日付款），并从 merchantCharts 提取商户明细
-    const list = (data.list || []).map(row => {
-      const merchantItems = merchantCharts.value.map(mc => {
-        const point = mc.points.find(p => p.date === row.OrderDate);
-        if (!point) return null;
-        return {
-          code: mc.code,
-          SuccessCountPayin: point.payinCount || 0,
-          TotalAmountReceived: (point.payinAmount || 0) - (point.payoutAmount || 0),
-          SuccessFeePayin: point.payinFee || 0,
-          SuccessRateCountPayin: point.payinRate || 0,
-          SuccessCountPayout: point.payoutCount || 0,
-          SuccessAmountPayout: point.payoutAmount || 0,
-          SuccessRateCountPayout: point.payoutRate || 0,
-        };
-      }).filter(item => item !== null);
-
-      return {
-        ...row,
-        TotalAmountReceived: (row.SuccessAmountPayin || 0) - (row.SuccessAmountPayout || 0),
-        merchantItems: merchantItems,
-      };
-    });
+    // 补充 TotalAmountReceived 字段（当日收款 - 当日付款）；merchantItems 由后端直接返回
+    const list = (data.list || []).map(row => ({
+      ...row,
+      TotalAmountReceived: (row.SuccessAmountPayin || 0) - (row.SuccessAmountPayout || 0),
+    }));
     tableData.value = list;
     show.value = true;
 
