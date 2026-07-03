@@ -26,7 +26,12 @@ app.use(ElementPlus, {
 })
 app.use(FingerprintPlugin, {
   apiKey: "Bq4su0RWMT4dfgNQGub8",
-  endpoints: 'https://newusmc.univepay.com',   // 测试环境先不用，正式环境再开启
+  // 1. 优先走你刚配置好 A 记录的新子域名
+  // 2. 后面加上官方的默认 endpoint 作为 fallback 兜底（防止你的子域名解析故障）
+  endpoints: [
+    'https://newusmc.univepay.com',
+    'https://fpcdn.io' //兜底
+  ],
   region: 'us',
   timeout: 15000
 })

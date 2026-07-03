@@ -41,15 +41,13 @@
             <el-form-item label="交易类型">
               <el-select
                 v-model="searchForm.type"
-                placeholder="请选择交易类型"
-                clearable
                 style="width: 140px"
               >
                 <el-option
-                  v-for="key in Object.keys(mapping)"
-                  :key="key"
-                  :label="mapping[key]"
-                  :value="key"
+                  v-for="item in orderTypes"
+                  :key="item.code"
+                  :label="item.name"
+                  :value="item.code"
                 />
               </el-select>
             </el-form-item>
@@ -119,9 +117,9 @@
                 <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
                 <el-table-column prop="type" label="类型" align="center">
                   <template #default="{ row }">
-                              <el-tag :type="tagTypeColor[row.type] || row.type">
-      {{ mapping[row.type] || row.type }}
-    </el-tag>
+                    <el-tag :type="getTypeColor(row.type)">
+                      {{ getTypeName(row.type) }}
+                    </el-tag>
                   </template>
                 </el-table-column>
                 <el-table-column prop="memo" label="类型说明" show-overflow-tooltip align="center" />
@@ -166,25 +164,11 @@ const props = defineProps({
   },
 });
 
-const mapping = {
-  K00001: "冻结订单",
-  K00002: "收款入款",
-  K00003: "付款出款",
-  K00004: "冻结申请",
-  K00005: "付款失败",
-  K00006: "付款手续费",
-  K00007: "历史数据结算",
-  K00008: "风控解冻",
-  K00009: "人工上帐",
-  K00010: "付款单笔手续费",
-  K00011: "付款比例手续费",
-  K00012: "付款冲正",
-  K00013: "人工扣款",
-  K00014: "集团转入",
-  K00015: "集团转出",
-  K00016: "提现",
-  K00017: "授信",
-  K00018: "授信还款",
+const orderTypes = ref([]);
+
+const getTypeName = (code) => {
+  const type = orderTypes.value.find(item => item.code === code);
+  return type ? type.name : code;
 };
 
 const tagTypeColor = {
@@ -206,6 +190,11 @@ const tagTypeColor = {
   K00016: "danger",
   K00017: "success",
   K00018: "danger",
+};
+
+const getTypeColor = (code) => {
+  if (!code) return 'info';
+  return tagTypeColor[code] || 'info';
 };
 
 // 搜索表单
@@ -459,12 +448,36 @@ const handleCurrentChange = (val) => {
   handleSearch(); // 重新搜索
 };
 
+const loadOrderTypes = async () => {
+  try {
+    const res = await http.orderTypesCount({
+      pageNo: 1,
+      pageSize: 100
+    });
+    if (res.code === 200 && res.data.list) {
+      orderTypes.value = [{ code: '', name: '不限' }, ...res.data.list];
+    } else {
+      orderTypes.value = [{ code: '', name: '不限' }];
+    }
+  } catch (error) {
+    console.error('获取订单类型失败:', error);
+    orderTypes.value = [{ code: '', name: '不限' }];
+  } finally {
+    if (!searchForm.type) {
+      searchForm.type = '';
+    }
+  }
+};
+
 // 初始化数据
-onMounted(() => {
+onMounted(async () => {
   // 初始化时设置默认时间范围
   if (searchForm.time.length === 0) {
     setDefaultTime();
   }
+  
+  // 先加载订单类型
+  await loadOrderTypes();
   
   // 执行初始搜索
   handleSearch();

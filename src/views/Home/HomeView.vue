@@ -92,8 +92,8 @@
             <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
             <el-table-column prop="type" label="类型" align="center">
               <template #default="{ row }">
-                <el-tag :type="tagTypeColor[row.type] || 'success'">
-                  {{ typeMapping[row.type] || row.type }}
+                <el-tag :type="getTypeColor(row.type)">
+                  {{ getTypeName(row.type) }}
                 </el-tag>
               </template>
             </el-table-column>
@@ -122,26 +122,7 @@ const availableBalance = ref(0); // 可用余额
 // 初始化store
 const userStore = useUserStore();
 
-const typeMapping = {
-  K00001: "冻结订单",
-  K00002: "收款入款",
-  K00003: "付款出款",
-  K00004: "冻结申请",
-  K00005: "付款失败",
-  K00006: "付款手续费",
-  K00007: "历史数据结算",
-  K00008: "风控解冻",
-  K00009: "人工上帐",
-  K00010: "付款单笔手续费",
-  K00011: "付款比例手续费",
-  K00012: "付款冲正",
-  K00013: "人工扣款",
-  K00014: "集团转入",
-  K00015: "集团转出",
-  K00016: "提现",
-  K00017: "授信",
-  K00018: "授信还款",
-};
+const orderTypes = ref([]);
 
 const tagTypeColor = {
   K00001: "danger",
@@ -162,6 +143,16 @@ const tagTypeColor = {
   K00016: "danger",
   K00017: "success",
   K00018: "danger",
+};
+
+const getTypeName = (code) => {
+  const type = orderTypes.value.find(item => item.code === code);
+  return type ? type.name : code;
+};
+
+const getTypeColor = (code) => {
+  if (!code) return 'info';
+  return tagTypeColor[code] || 'info';
 };
 
 // 格式化日期函数
@@ -274,8 +265,23 @@ async function getdata() {
   }
 }
 
+const loadOrderTypes = async () => {
+  try {
+    const res = await http.orderTypesCount({
+      pageNo: 1,
+      pageSize: 100
+    });
+    if (res.code === 200 && res.data.list) {
+      orderTypes.value = res.data.list;
+    }
+  } catch (error) {
+    console.error('获取订单类型失败:', error);
+  }
+};
+
 // 页面挂载时获取数据
-onMounted(() => {
+onMounted(async () => {
+  await loadOrderTypes();
   getMerchantBalance();
   getdata();
 });

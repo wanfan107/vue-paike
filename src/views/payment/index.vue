@@ -398,7 +398,7 @@ const searchForm = reactive({
         // handleTime: [],
         status: -1,
         notify: -1,
-        notifyStatus: 0,
+        notifyStatus: -1,
         account: "",
         merchantOrderNo: "",
         platformOrderNo: "",

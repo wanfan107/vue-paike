@@ -61,6 +61,8 @@ export const http = {
 
     
     // 即时报表
+    // 订单类型统计
+    orderTypesCount: (params) => request.get('/Finance/ordertypes', { params }),
     // 代付成功率统计
     paySuccessRatio: (params) => request.get('/pay/successratio', { params }),
     // 代收成功率统计
