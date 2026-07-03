@@ -726,8 +726,8 @@ async function _groupLogin() {
         accounts.value = res.merchants.filter(m => !m.code?.startsWith('G')).map(m => ({
                   id: m.code,
                   code: m.code,
-                  siteUrl: m.siteUrl || '',
-                  type: m.telegram ||'',
+                  // siteUrl: m.siteUrl || '',
+                  type: m.siteUrl || '未配置网站',
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));
