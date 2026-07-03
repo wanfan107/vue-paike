@@ -10,6 +10,21 @@
         <!-- 搜索和筛选区域 -->
         <div class="search-container">
           <el-form :inline="false" :model="searchForm" class="search-form">
+            <!-- 商户多选（控制曲线图，默认空=只显示集团） -->
+            <el-form-item label="曲线商户筛选">
+              <el-select
+                v-model="selectedMerchants"
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+                placeholder="选择商户（默认仅展示集团）"
+                style="width: 200px;"
+                size="small"
+                @change="updateCharts"
+              >
+                <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
+              </el-select>
+            </el-form-item>
             <el-form-item label="订单时间">
               <el-date-picker
                 v-model="searchForm.time"
@@ -29,28 +44,22 @@
           </el-form>
         </div>
 
-        <!-- 商户多选（控制曲线图，默认空=只显示集团） -->
-        <div style="margin-bottom: 15px; display: flex; align-items: center; gap: 10px;">
-          <span style="font-size: 13px; color: #666;">曲线商户筛选：</span>
-          <el-select
-            v-model="selectedMerchants"
-            multiple
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="选择商户（默认仅展示集团）"
-            style="width: 360px;"
-            size="small"
-            @change="updateCharts"
-          >
-            <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
-          </el-select>
-        </div>
-
-        <!-- 图表区域（无饼图） -->
+        <!-- 图表区域 -->
         <div class="fade">
           <div v-if="show === true && tableData.length > 0" class="chart-container">
-            <div class="chart-item line-chart">
-              <div ref="lineChartRef" style="width: 100%; height: 450px"></div>
+            <div class="charts-wrapper">
+              <div class="chart-item balance-chart">
+                <div ref="balanceChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
+              </div>
+              <div class="chart-item line-chart">
+                <div class="chart-header">
+                  <el-select v-model="paymentFilter" size="small" style="width: 100px;" @change="updateCharts">
+                    <el-option label="收款" value="payin" />
+                    <el-option label="付款" value="payout" />
+                  </el-select>
+                </div>
+                <div ref="lineChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
+              </div>
             </div>
           </div>
           <div v-else-if="show === true && tableData.length === 0" class="empty-chart-state">
@@ -162,6 +171,9 @@ const searchForm = reactive({ time: [] });
 const merchantOptions = ref([]);
 const selectedMerchants = ref([]);
 
+// 收支筛选
+const paymentFilter = ref('payin');
+
 // 接口数据
 const tableData = ref([]);
 const groupChart = ref([]);
@@ -196,6 +208,8 @@ const formatNumber = (val) => {
 // 图表容器
 const lineChartRef = ref(null);
 let lineChart = null;
+const balanceChartRef = ref(null);
+let balanceChart = null;
 
 // 商户曲线颜色
 const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '#fd79a8', '#0984e3', '#e17055'];
@@ -204,26 +218,282 @@ const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '
 const lineChartOption = computed(() => {
   const points = groupChart.value;
   const months = points.map(p => p.x);
+  const series = [];
+  if (paymentFilter.value === 'payin') {
+    series.push({
+      name: "集团收款金额",
+      type: "line",
+      data: points.map(p => p.payinAmount),
+      smooth: true,
+      symbol: "circle",
+      symbolSize: 4,
+      lineStyle: { width: 2, color: "#48bb78" },
+      itemStyle: { color: "#48bb78" },
+      areaStyle: {
+        color: {
+          type: "linear",
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
+            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
+          ],
+        },
+      },
+    });
+  }
+  if (paymentFilter.value === 'payout') {
+    series.push({
+      name: "集团付款金额",
+      type: "line",
+      data: points.map(p => p.payoutAmount),
+      smooth: true,
+      symbol: "circle",
+      symbolSize: 4,
+      lineStyle: { width: 2, color: "#db0011" },
+      itemStyle: { color: "#db0011" },
+      areaStyle: {
+        color: {
+          type: "linear",
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: "rgba(219, 0, 17, 0.3)" },
+            { offset: 1, color: "rgba(219, 0, 17, 0.05)" },
+          ],
+        },
+      },
+    });
+  }
+  let colorIdx = 0;
+  merchantCharts.value.forEach(mc => {
+    if (selectedMerchants.value.includes(mc.code)) {
+      const color = merchantColors[colorIdx % merchantColors.length];
+      colorIdx++;
+      if (paymentFilter.value === 'payin') {
+        series.push({
+          name: mc.code + " 收款",
+          type: "line",
+          data: mc.points.map(p => p.payinAmount),
+          smooth: true,
+          symbol: "circle",
+          symbolSize: 4,
+          showSymbol: true,
+          lineStyle: { width: 2, color },
+          itemStyle: { color },
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: color + "4D" },
+                { offset: 1, color: color + "08" },
+              ],
+            },
+          },
+        });
+      }
+      if (paymentFilter.value === 'payout') {
+        series.push({
+          name: mc.code + " 付款",
+          type: "line",
+          data: mc.points.map(p => p.payoutAmount),
+          smooth: true,
+          symbol: "circle",
+          symbolSize: 4,
+          showSymbol: true,
+          lineStyle: { width: 2, color, type: "dashed" },
+          itemStyle: { color },
+          areaStyle: {
+            color: {
+              type: "linear",
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: color + "33" },
+                { offset: 1, color: color + "05" },
+              ],
+            },
+          },
+        });
+      }
+    }
+  });
+  return {
+    title: {
+      text: "收款金额与付款金额趋势",
+      left: '0%',
+      top: '0%',
+      textStyle: { fontSize: 14, color: '#666' },
+    },
+    tooltip: {
+      trigger: "axis",
+      formatter: function (params) {
+        if (!params || params.length === 0) return '';
+        let result = params[0].axisValue + "<br/>";
+        params.forEach(p => {
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
+        });
+        return result;
+      },
+    },
+    legend: {
+      data: series.map(s => s.name),
+      top: "5%",
+      textStyle: { color: "#666", fontSize: 13 },
+    },
+    grid: {
+      left: '3%',
+      right: '3%',
+      bottom: '5%',
+      top: '20%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: months,
+      boundaryGap: true,
+      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      splitLine: { show: false },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
+      axisLabel: { color: "#666", align: "center", fontSize: 12, margin: 15 },
+    },
+    yAxis: {
+      type: "value",
+      name: "金额",
+      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisTick: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisLabel: {
+        color: "#666",
+        fontSize: 12,
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        },
+      },
+      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
+      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+    },
+    series,
+  };
+});
+
+// 期初余额趋势图
+const balanceChartOption = computed(() => {
+  const points = groupChart.value;
+  const months = points.map(p => p.x);
   const series = [
-    { name: "集团收款金额", type: "line", data: points.map(p => p.payinAmount), smooth: true, lineStyle: { width: 3, color: "#48bb78" }, itemStyle: { color: "#48bb78" } },
-    { name: "集团付款金额", type: "line", data: points.map(p => p.payoutAmount), smooth: true, lineStyle: { width: 3, color: "#ee5a24" }, itemStyle: { color: "#ee5a24" } },
+    {
+      name: "集团期初余额",
+      type: "line",
+      data: points.map(p => p.prevBalance),
+      smooth: true,
+      symbol: "circle",
+      symbolSize: 4,
+      lineStyle: { width: 2, color: "#48bb78" },
+      itemStyle: { color: "#48bb78" },
+      areaStyle: {
+        color: {
+          type: "linear",
+          x: 0, y: 0, x2: 0, y2: 1,
+          colorStops: [
+            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
+            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
+          ],
+        },
+      },
+    },
   ];
   let colorIdx = 0;
   merchantCharts.value.forEach(mc => {
     if (selectedMerchants.value.includes(mc.code)) {
       const color = merchantColors[colorIdx % merchantColors.length];
       colorIdx++;
-      series.push({ name: mc.code + " 收款", type: "line", data: mc.points.map(p => p.payinAmount), smooth: true, showSymbol: false, lineStyle: { width: 2, color } });
-      series.push({ name: mc.code + " 付款", type: "line", data: mc.points.map(p => p.payoutAmount), smooth: true, showSymbol: false, lineStyle: { width: 2, color, type: "dashed" } });
+      series.push({
+        name: mc.code + " 期初余额",
+        type: "line",
+        data: mc.points.map(p => p.prevBalance),
+        smooth: true,
+        symbol: "circle",
+        symbolSize: 4,
+        showSymbol: true,
+        lineStyle: { width: 2, color },
+        itemStyle: { color },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: color + "4D" },
+              { offset: 1, color: color + "08" },
+            ],
+          },
+        },
+      });
     }
   });
   return {
-    title: { text: "收款金额与付款金额趋势", left: '0%', top: '0%', textStyle: { fontSize: 14, color: '#666' } },
-    tooltip: { trigger: "axis" },
-    legend: { data: series.map(s => s.name), top: "8%", textStyle: { color: "#666", fontSize: 12 } },
-    grid: { left: '3%', right: '3%', bottom: '5%', top: '20%', containLabel: true },
-    xAxis: { type: "category", data: months, boundaryGap: true, axisLine: { lineStyle: { color: "#d8d8d8" } } },
-    yAxis: { type: "value", axisLine: { lineStyle: { color: "#d8d8d8" } }, splitLine: { lineStyle: { color: "#f0f0f0", type: "dashed" } } },
+    title: {
+      text: "期初余额趋势",
+      left: '0%',
+      top: '0%',
+      textStyle: { fontSize: 14, color: '#666' },
+    },
+    tooltip: {
+      trigger: "axis",
+      formatter: function (params) {
+        if (!params || params.length === 0) return '';
+        let result = params[0].axisValue + "<br/>";
+        params.forEach(p => {
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
+        });
+        return result;
+      },
+    },
+    legend: {
+      data: series.map(s => s.name),
+      top: "5%",
+      textStyle: { color: "#666", fontSize: 13 },
+    },
+    grid: {
+      left: '3%',
+      right: '3%',
+      bottom: '5%',
+      top: '20%',
+      containLabel: true,
+    },
+    xAxis: {
+      type: "category",
+      data: months,
+      boundaryGap: true,
+      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      splitLine: { show: false },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
+      axisLabel: { color: "#666", align: "center", fontSize: 12, margin: 15 },
+    },
+    yAxis: {
+      type: "value",
+      name: "余额",
+      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisTick: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisLabel: {
+        color: "#666",
+        fontSize: 12,
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        },
+      },
+      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
+      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+    },
     series,
   };
 });
@@ -236,12 +506,22 @@ const initLineChart = () => {
   }
 };
 
+const initBalanceChart = () => {
+  if (balanceChartRef.value) {
+    if (balanceChart) balanceChart.dispose();
+    balanceChart = echarts.init(balanceChartRef.value);
+    balanceChart.setOption(balanceChartOption.value, true);
+  }
+};
+
 const updateCharts = () => {
   if (lineChart) lineChart.setOption(lineChartOption.value, true);
+  if (balanceChart) balanceChart.setOption(balanceChartOption.value, true);
 };
 
 const handleResize = () => {
   lineChart?.resize();
+  balanceChart?.resize();
 };
 
 // 格式化月份为 yyyy-MM
@@ -293,6 +573,7 @@ const loadData = async () => {
 
     await nextTick();
     initLineChart();
+    initBalanceChart();
   } catch (error) {
     ElMessage.error(error.msg || "获取数据失败");
     console.error(error);
@@ -445,14 +726,70 @@ const getCollectionPieChart = (row) => {
     value: Number(it.SuccessAmountPayin) || 0,
   })).filter(item => item.value > 0);
 
-  const colors = ['#667eea', '#f5576c', '#43e97b', '#fa709a', '#a1c4fd', '#d299c2', '#89f7fe', '#fddb92'];
+  const colors = [
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#f093fb' }, { offset: 1, color: '#f5576c' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#43e97b' }, { offset: 1, color: '#38f9d7' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#fa709a' }, { offset: 1, color: '#fee140' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#a18cd1' }, { offset: 1, color: '#fbc2eb' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#89f7fe' }, { offset: 1, color: '#66a6ff' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#fddb92' }, { offset: 1, color: '#d1fdff' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#c471f5' }, { offset: 1, color: '#fa71cd' }]
+    },
+  ];
+
   data.forEach((item, index) => {
-    item.itemStyle = { color: colors[index % colors.length], borderRadius: 8, borderColor: '#fff', borderWidth: 2 };
+    item.itemStyle = {
+      color: colors[index % colors.length],
+      borderRadius: 8,
+      borderColor: '#fff',
+      borderWidth: 2
+    };
   });
 
   return {
     title: { text: "各商户收款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
-    tooltip: { trigger: "item", formatter: (params) => `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`, backgroundColor: "rgba(0, 0, 0, 0.7)", borderColor: "transparent", borderWidth: 0, textStyle: { color: "#fff" } },
+    tooltip: {
+      trigger: "item",
+      formatter: function(params) {
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+      },
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      borderColor: "transparent",
+      borderWidth: 0,
+      textStyle: { color: "#fff" }
+    },
     legend: { orient: "horizontal", bottom: "5%", data: data.map(item => item.name), textStyle: { color: "#666", fontSize: 12 }, itemGap: 15 },
     series: [{
       name: "收款总额", type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
@@ -472,14 +809,70 @@ const getPaymentPieChart = (row) => {
     value: Number(it.SuccessAmountPayout) || 0,
   })).filter(item => item.value > 0);
 
-  const colors = ['#ff9a9e', '#a1c4fd', '#d299c2', '#89f7fe', '#fddb92', '#c471f5', '#667eea', '#f5576c'];
+  const colors = [
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#ff9a9e' }, { offset: 1, color: '#fecfef' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#a1c4fd' }, { offset: 1, color: '#c2e9fb' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#d299c2' }, { offset: 1, color: '#fef9d7' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#89f7fe' }, { offset: 1, color: '#66a6ff' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#fddb92' }, { offset: 1, color: '#d1fdff' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#c471f5' }, { offset: 1, color: '#fa71cd' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]
+    },
+    {
+      type: 'linear',
+      x: 0, y: 0, x2: 1, y2: 1,
+      colorStops: [{ offset: 0, color: '#f093fb' }, { offset: 1, color: '#f5576c' }]
+    },
+  ];
+
   data.forEach((item, index) => {
-    item.itemStyle = { color: colors[index % colors.length], borderRadius: 8, borderColor: '#fff', borderWidth: 2 };
+    item.itemStyle = {
+      color: colors[index % colors.length],
+      borderRadius: 8,
+      borderColor: '#fff',
+      borderWidth: 2
+    };
   });
 
   return {
     title: { text: "各商户付款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
-    tooltip: { trigger: "item", formatter: (params) => `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`, backgroundColor: "rgba(0, 0, 0, 0.7)", borderColor: "transparent", borderWidth: 0, textStyle: { color: "#fff" } },
+    tooltip: {
+      trigger: "item",
+      formatter: function(params) {
+        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+      },
+      backgroundColor: "rgba(0, 0, 0, 0.7)",
+      borderColor: "transparent",
+      borderWidth: 0,
+      textStyle: { color: "#fff" }
+    },
     legend: { orient: "horizontal", bottom: "5%", data: data.map(item => item.name), textStyle: { color: "#666", fontSize: 12 }, itemGap: 15 },
     series: [{
       name: "付款总额", type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
@@ -513,6 +906,7 @@ onMounted(async () => {
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize);
   if (lineChart) { lineChart.dispose(); lineChart = null; }
+  if (balanceChart) { balanceChart.dispose(); balanceChart = null; }
   // 销毁所有展开行图表
   chartInstances.value.forEach((inst) => {
     if (inst.resizeHandler) window.removeEventListener('resize', inst.resizeHandler);
@@ -524,7 +918,7 @@ onBeforeUnmount(() => {
 });
 
 // 监听图表配置变化
-watch(lineChartOption, () => {
+watch([lineChartOption, balanceChartOption], () => {
   updateCharts();
 }, { deep: true });
 </script>
@@ -535,29 +929,79 @@ watch(lineChartOption, () => {
   background-color: #fff;
   border-radius: 24px;
   margin: $spacing-lg;
+  min-height: 100%;
 }
 
 .page-header {
   padding: $spacing-lg;
   h1 { margin: 0; font-size: $font-size-xl; color: $text-color; }
+  hr {
+    margin: 0px;
+    height: 0px;
+    opacity: 0.2;
+    border-width: 0px 0px 1px;
+    border-color: inherit;
+    border-style: solid;
+    width: 100%;
+  }
+}
+
+.page-content {
+  padding: $spacing-lg;
 }
 
 .content-wrapper {
   background-color: white;
-  padding: $spacing-lg;
+  padding: 0 $spacing-xl;
   border-radius: $border-radius-md;
 }
 
 .search-container {
   margin-bottom: $spacing-lg;
+
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $spacing-sm;
+
+    ::deep(.el-form-item) {
+      margin-bottom: $spacing-sm;
+    }
+  }
 }
 
+/* 图表区域样式 */
 .chart-container {
-  margin-bottom: 20px;
-}
-
-.chart-item {
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-md;
+  
+  .chart-item {
+    background-color: #fff;
+    border-radius: $border-radius-md;
+    padding: $spacing-md;
+    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  }
+  
+  .charts-wrapper {
+    display: flex;
+    gap: $spacing-md;
+    height: 400px;
+    
+    .chart-item {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .chart-header {
+      display: flex;
+      justify-content: flex-end;
+      align-items: center;
+    }
+  }
 }
 
 .empty-chart-state {
@@ -566,7 +1010,7 @@ watch(lineChartOption, () => {
 }
 
 .table-container {
-  margin-top: 20px;
+  margin-top: $spacing-lg;
 }
 
 .expand-content {

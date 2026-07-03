@@ -12,6 +12,24 @@
         <div class="table-layout">
           <div class="table_time">
             <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
+                        <!-- 商户多选 + 表格 -->
+          <span style="font-size: 13px; color: #666;">商户筛选：</span>
+            <el-select
+              v-model="selectedMerchants"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="选择商户（默认全部）"
+              style="width: 160px;" 
+              size="small"
+            >
+              <el-option
+                v-for="m in merchantOptions"
+                :key="m.code"
+                :label="m.code"
+                :value="m.code"
+              />
+            </el-select>
               <!-- 日期时间选择器 -->
               <el-date-picker
                 v-model="selectedTime"
@@ -49,32 +67,17 @@
               </el-tooltip>
             </div>
           </div>
-          <!-- 商户多选 + 表格 -->
-          <div style="margin-bottom: 10px; display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 13px; color: #666;">商户筛选：</span>
-            <el-select
-              v-model="selectedMerchants"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="选择商户（默认全部）"
-              style="width: 360px;"
-              size="small"
-            >
-              <el-option
-                v-for="m in merchantOptions"
-                :key="m.code"
-                :label="m.code"
-                :value="m.code"
-              />
-            </el-select>
+          <div class="chart-container">
+            <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
+              <el-table :data="tableRows" border size="small" :height="tableHeight">
+                <el-table-column prop="code" label="商户代码" align="center" width="160" />
+                <el-table-column prop="orderCount" label="创建订单" align="center" />
+                <el-table-column prop="successCount" label="成功订单" align="center" />
+                <el-table-column prop="successRate" label="成功率" align="center" />
+              </el-table>
+            </div>
+            <div class="resize-handle" @mousedown="startResize"></div>
           </div>
-          <el-table :data="tableRows" border size="small" style="margin-bottom: 20px;" max-height="320">
-            <el-table-column prop="code" label="商户代码" align="center" width="160" />
-            <el-table-column prop="orderCount" label="创建订单" align="center" />
-            <el-table-column prop="successCount" label="成功订单" align="center" />
-            <el-table-column prop="successRate" label="成功率" align="center" />
-          </el-table>
           <!-- 图表 -->
           <div class="chart-wrapper">
             <div ref="chartContainer" style="width: 100%; height: 600px;"></div>
@@ -141,6 +144,38 @@ const formatCurrentTime = (currency) => {
 const chartContainer = ref(null);
 let chartInstance = null;
 
+const tableHeight = ref(150);
+let isResizing = false;
+let startY = 0;
+let startHeight = 0;
+
+const startResize = (e) => {
+  isResizing = true;
+  startY = e.clientY;
+  startHeight = tableHeight.value;
+  document.addEventListener('mousemove', doResize);
+  document.addEventListener('mouseup', stopResize);
+  document.body.style.cursor = 'row-resize';
+  document.body.style.userSelect = 'none';
+};
+
+const doResize = (e) => {
+  if (!isResizing) return;
+  const diff = e.clientY - startY;
+  const newHeight = startHeight + diff;
+  if (newHeight >= 100 && newHeight <= 600) {
+    tableHeight.value = newHeight;
+  }
+};
+
+const stopResize = () => {
+  isResizing = false;
+  document.removeEventListener('mousemove', doResize);
+  document.removeEventListener('mouseup', stopResize);
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+};
+
 // 解析成功率字符串为数值
 const parseRate = (rateStr) => {
   if (!rateStr) return 0;
@@ -172,7 +207,6 @@ const realTimeChart = computed(() => {
   const groupChart = apiData.value.groupChart || [];
   const times = groupChart.map(p => p.time);
 
-  // 集团成功率曲线
   const groupRates = groupChart.map(p => parseRate(p.successRate));
 
   const series = [
@@ -199,7 +233,6 @@ const realTimeChart = computed(() => {
     },
   ];
 
-  // 已选商户的曲线（控制表格的 selectedMerchants 同时控制曲线展示）
   const merchantCharts = apiData.value.merchantCharts || [];
   const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '#fd79a8', '#0984e3', '#e17055'];
   let colorIdx = 0;
@@ -212,11 +245,21 @@ const realTimeChart = computed(() => {
         type: "line",
         data: mc.points.map(p => parseRate(p.successRate)),
         symbol: "circle",
-        symbolSize: 5,
+        symbolSize: 6,
         smooth: true,
-        showSymbol: false,
-        lineStyle: { color, width: 2 },
-        itemStyle: { color },
+        showSymbol: true,
+        lineStyle: { color, width: 3 },
+        itemStyle: { color, borderColor: "#fff", borderWidth: 1 },
+        areaStyle: {
+          color: {
+            type: "linear",
+            x: 0, y: 0, x2: 0, y2: 1,
+            colorStops: [
+              { offset: 0, color: color + "4D" },
+              { offset: 1, color: color + "08" },
+            ],
+          },
+        },
       });
     }
   });
@@ -226,16 +269,17 @@ const realTimeChart = computed(() => {
       text: "集团收款成功率趋势",
       left: "center",
       top: 20,
-      textStyle: { color: "#666", fontSize: 16 },
+      textStyle: {
+        color: "#666",
+        fontSize: 16,
+      },
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: { color: "#fff" },
       formatter: function (params) {
         let result = params[0].axisValue + "<br/>";
         params.forEach(p => {
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
           result += p.seriesName + ": " + p.value.toFixed(2) + "%<br/>";
         });
         return result;
@@ -244,13 +288,16 @@ const realTimeChart = computed(() => {
     legend: {
       data: series.map(s => s.name),
       bottom: "5%",
-      textStyle: { color: "#666", fontSize: 13 },
+      textStyle: {
+        color: "#666",
+        fontSize: 13,
+      },
     },
     grid: {
-      top: "15%",
+      top: "25%",
       left: "5%",
       right: "5%",
-      bottom: "12%",
+      bottom: "10%",
       containLabel: true,
     },
     xAxis: {
@@ -265,6 +312,8 @@ const realTimeChart = computed(() => {
     yAxis: {
       type: "value",
       name: "成功率 (%)",
+      min: 70,
+      max: 100,
       axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
       axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
@@ -483,6 +532,32 @@ onBeforeUnmount(() => {
     justify-content: center;
     min-height: 0;
     overflow: hidden;
+  }
+
+  .chart-container {
+    margin-bottom: 20px;
+    
+    .resize-handle {
+      height: 6px;
+      background: #e0e0e0;
+      cursor: row-resize;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: -1px;
+      
+      &:hover {
+        background: #c0c0c0;
+      }
+      
+      &::after {
+        content: '';
+        width: 30px;
+        height: 4px;
+        background: #999;
+        border-radius: 2px;
+      }
+    }
   }
 }
 

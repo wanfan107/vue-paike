@@ -53,11 +53,13 @@
         <!-- 图表区域 -->
         <div class="fade" >
           <div v-if="show===true && tableData.length > 0" class="chart-container">
-            <div class="chart-item line-chart">
-              <div ref="lineChartRef" style="width: 100%; height: 450px"></div>
-            </div>
-            <div class="chart-item pie-chart">
-              <div ref="pieChartRef" style="width: 100%; height: 450px"></div>
+            <div class="charts-wrapper">
+              <div class="chart-item balance-chart">
+                <div ref="balanceChartRef" style="width: 100%; height: 100%;"></div>
+              </div>
+              <div class="chart-item line-chart">
+                <div ref="lineChartRef" style="width: 100%; height: 100%;"></div>
+              </div>
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
@@ -472,87 +474,121 @@ const realTimeChart = computed(() => {
   };
 });
 
-const pieChartOption = computed(() => {
-  // 计算收付款总金额
-  let totalCollection = 0;
-  let totalPayment = 0;
-
-  tableData.value.forEach((item) => {
-    totalCollection += item.SuccessAmountPayin || 0;
-    totalPayment += item.SuccessAmountPayout || 0;
-  });
+const balanceChartOption = computed(() => {
+  const months = balanceChartData.value.months;
+  const PreviousMonthBalance = balanceChartData.value.PreviousMonthBalance;
 
   return {
     title: {
-      text: "收付款金额占比",
-      left: "center",
-      top: 20,
+      text: '期初余额',
+      left: '0%',
+      top: '0%',
       textStyle: {
-        color: "#666",
-        fontSize: 16,
-      },
+        fontSize: 14,
+        color: '#666'
+      }
     },
     tooltip: {
-      trigger: "item",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
-      formatter: "{a} <br/>{b}: R${c} ({d}%)",
+      trigger: 'axis'
     },
-    legend: {
-      orient: "horizontal",
-      bottom: "5%",
-      textStyle: {
-        color: "#666",
-        fontSize: 13,
-      },
+    grid: {
+      left: '3%',
+      right: '3%',
+      bottom: '5%',
+      top: '20%',
+      containLabel: true
     },
-    series: [
-      {
-        name: "金额占比",
-        type: "pie",
-        radius: ["30%", "60%"],
-        center: ["50%", "50%"],
-        avoidLabelOverlap: false,
-        itemStyle: {
-          borderRadius: 5,
-          borderColor: "#fff",
-          borderWidth: 2,
-        },
-        label: {
-          show: true,
-          // formatter: "{b}: R${c} ({d}%)",
-          formatter: "{b}: {d}%",
-          fontSize: 12,
-        },
-        emphasis: {
-          label: {
-            show: true,
-            fontSize: "14",
-            fontWeight: "bold",
-          },
-        },
-        labelLine: {
-          show: true,
-          length: 15,
-          length2: 10,
-        },
-        data: [
-          {
-            value: totalCollection,
-            name: "收款金额",
-            itemStyle: { color: "#48bb78" },
-          },
-          {
-            value: totalPayment,
-            name: "付款金额",
-            itemStyle: { color: "#db0011" },
-          },
-        ],
+    xAxis: {
+      type: 'category',
+      data: months,
+      boundaryGap: true,
+      axisLine: {
+        lineStyle: {
+          color: '#d8d8d8'
+        }
       },
-    ],
+      axisTick: {
+        show: true,
+        alignWithLabel: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisLabel: {
+        fontSize: 12,
+        color: '#666',
+        margin: 15,
+      }
+    },
+    yAxis: {
+      show: true,
+      type: 'value',
+      name: '余额',
+      axisLine: {
+        show: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisTick: {
+        show: true,
+        lineStyle: {
+          color: '#d8d8d8'
+        }
+      },
+      axisLabel: {
+        fontSize: 12,
+        color: '#666',
+        formatter: (value) => {
+          if (value >= 100000000) {
+            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+          } else if (value >= 10000) {
+            return 'R$' + (value / 10000).toFixed(2) + '万';
+          }
+          return 'R$' + value.toString();
+        }
+      },
+      splitLine: {
+        show: true,
+        lineStyle: {
+          color: '#f0f0f0',
+          type: 'dashed'
+        }
+      }
+    },
+    series: [{
+      name: '余额',
+      type: 'line',
+      data: PreviousMonthBalance,
+      smooth: true,
+      itemStyle: {
+        color: '#48bb78'
+      },
+      lineStyle: {
+        width: 2
+      },
+      symbol: 'circle',
+      symbolSize: 4,
+      areaStyle: {
+        color: {
+          type: 'linear',
+          x: 0,
+          y: 0,
+          x2: 0,
+          y2: 1,
+          colorStops: [
+            {
+              offset: 0,
+              color: 'rgba(72, 187, 120, 0.3)'
+            },
+            {
+              offset: 1,
+              color: 'rgba(72, 187, 120, 0.05)'
+            }
+          ]
+        }
+      }
+    }]
   };
 });
 
@@ -570,8 +606,14 @@ const exportLoading = ref(false);
 
 // 图表引用
 const lineChartRef = ref(null);
-const pieChartRef = ref(null);
+const balanceChartRef = ref(null);
 const chartInstances = ref(new Map()); // 存储展开行的图表实例
+
+// 期初余额图表数据
+const balanceChartData = ref({
+  months: [],
+  PreviousMonthBalance: []
+});
 
 // 路由实例
 const router = useRouter();
@@ -1420,8 +1462,24 @@ const handleSearch = async () => {
           // 后端已返回 TotalAmountReceived，无需前端计算
         });
         tableData.value = res.data.list;
+        
+        // 填充期初余额图表数据
+        balanceChartData.value = {
+          months: res.data.list.map(item => {
+            const dateStr = item.OrderDate;
+            if (dateStr && dateStr.includes('T')) {
+              return dateStr.split('T')[0];
+            }
+            return dateStr || '';
+          }),
+          PreviousMonthBalance: res.data.list.map(item => item.PreviousMonthBalance || 0)
+        };
       } else {
         tableData.value = [];
+        balanceChartData.value = {
+          months: [],
+          PreviousMonthBalance: []
+        };
         ElMessage.info('暂无数据');
       }
     } else {
@@ -1470,9 +1528,9 @@ const handleCurrentChange = (val) => {
 
 // 图表实例
 let lineChart = null;
-let pieChart = null;
+let balanceChart = null;
 let lineChartResizeHandler = null;
-let pieChartResizeHandler = null;
+let balanceChartResizeHandler = null;
 
 // 初始化单个图表的辅助函数
 const initChart = (chartRef, chartInstance, resizeHandler, option) => {
@@ -1522,6 +1580,14 @@ const initMainCharts = () => {
     return;
   }
   
+  // 初始化期初余额图表
+  const balanceChartResult = initChart(balanceChartRef, balanceChart, balanceChartResizeHandler, balanceChartOption.value);
+  if (balanceChartResult) {
+    balanceChart = balanceChartResult.chart;
+    balanceChartResizeHandler = balanceChartResult.resizeHandler;
+    console.log('期初余额图表初始化成功');
+  }
+  
   // 初始化折线图
   const lineChartResult = initChart(lineChartRef, lineChart, lineChartResizeHandler, realTimeChart.value);
   if (lineChartResult) {
@@ -1529,30 +1595,22 @@ const initMainCharts = () => {
     lineChartResizeHandler = lineChartResult.resizeHandler;
     console.log('折线图初始化成功');
   }
-  
-  // 初始化饼图
-  const pieChartResult = initChart(pieChartRef, pieChart, pieChartResizeHandler, pieChartOption.value);
-  if (pieChartResult) {
-    pieChart = pieChartResult.chart;
-    pieChartResizeHandler = pieChartResult.resizeHandler;
-    console.log('饼图初始化成功');
-  }
 };
 
 // 更新主图表
 const updateMainCharts = () => {
+  if (balanceChart && !balanceChart.isDisposed()) {
+    try {
+      balanceChart.setOption(balanceChartOption.value);
+    } catch (error) {
+      console.error('更新期初余额图表失败:', error);
+    }
+  }
   if (lineChart && !lineChart.isDisposed()) {
     try {
       lineChart.setOption(realTimeChart.value);
     } catch (error) {
       console.error('更新折线图失败:', error);
-    }
-  }
-  if (pieChart && !pieChart.isDisposed()) {
-    try {
-      pieChart.setOption(pieChartOption.value);
-    } catch (error) {
-      console.error('更新饼图失败:', error);
     }
   }
 };
@@ -1606,16 +1664,16 @@ onUnmounted(() => {
     }
   }
   
-  if (pieChart && !pieChart.isDisposed()) {
+  if (balanceChart && !balanceChart.isDisposed()) {
     try {
-      if (pieChartResizeHandler) {
-        window.removeEventListener('resize', pieChartResizeHandler);
-        pieChartResizeHandler = null;
+      if (balanceChartResizeHandler) {
+        window.removeEventListener('resize', balanceChartResizeHandler);
+        balanceChartResizeHandler = null;
       }
-      pieChart.dispose();
-      pieChart = null;
+      balanceChart.dispose();
+      balanceChart = null;
     } catch (error) {
-      console.error('销毁饼图失败:', error);
+      console.error('销毁期初余额图表失败:', error);
     }
   }
   
@@ -1777,22 +1835,20 @@ const onExport = async () => {
 
 /* 图表区域样式 */
 .chart-container {
-  display: flex;
   margin-bottom: $spacing-lg;
-  gap: $spacing-md;
   
-  .chart-item {
-    background-color: #fff;
-    border-radius: $border-radius-md;
-    padding: $spacing-md;
-    box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  .charts-wrapper {
+    display: flex;
+    gap: $spacing-md;
+    height: 400px;
     
-    &.line-chart {
-      flex: 3;
-    }
-    
-    &.pie-chart {
-      flex: 2;
+    .chart-item {
+      flex: 1;
+      height: 100%;
+      background-color: #fff;
+      border-radius: $border-radius-md;
+      padding: $spacing-md;
+      box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
     }
   }
 }

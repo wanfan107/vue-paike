@@ -159,11 +159,6 @@ const realTimeChart = computed(() => {
     },
     tooltip: {
       trigger: "axis",
-      backgroundColor: "rgba(0,0,0,0.8)",
-      borderColor: "#2d8ef6",
-      textStyle: {
-        color: "#fff",
-      },
       formatter: function (params) {
         const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
