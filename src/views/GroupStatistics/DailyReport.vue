@@ -584,10 +584,11 @@ const loadData = async () => {
     groupChart.value = data.groupChart || [];
     merchantCharts.value = data.merchantCharts || [];
 
-    // 补充 TotalAmountReceived 字段（当日收款 - 当日付款）；merchantItems 由后端直接返回
+    // 补充 TotalAmountReceived 字段（当日收款 - 当日付款）；merchantItems 由后端直接返回，过滤G开头商户
     const list = (data.list || []).map(row => ({
       ...row,
       TotalAmountReceived: (row.SuccessAmountPayin || 0) - (row.SuccessAmountPayout || 0),
+      merchantItems: (row.merchantItems || []).filter(it => !it.code?.startsWith('G')),
     }));
     tableData.value = list;
     show.value = true;

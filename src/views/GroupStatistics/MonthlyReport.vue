@@ -566,7 +566,10 @@ const loadData = async () => {
       return;
     }
 
-    tableData.value = data.list || [];
+    tableData.value = (data.list || []).map(row => ({
+      ...row,
+      merchantItems: (row.merchantItems || []).filter(it => !it.code?.startsWith('G')),
+    }));
     groupChart.value = data.groupChart || [];
     merchantCharts.value = data.merchantCharts || [];
     show.value = true;
