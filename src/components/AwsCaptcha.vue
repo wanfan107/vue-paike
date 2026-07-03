@@ -84,7 +84,7 @@ export default {
           onError: (error) => {
             console.error('CAPTCHA验证失败:', error)
             this.isRendering = false
-            this.$message.error('验证加载失败，请重试')
+            // this.$message.error('验证加载失败，请重试')
             CaptchaController.onClose()
           }
         })
