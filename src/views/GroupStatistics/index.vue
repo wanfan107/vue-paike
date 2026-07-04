@@ -207,31 +207,7 @@ const realTimeChart = computed(() => {
   const groupChart = apiData.value.groupChart || [];
   const times = groupChart.map(p => p.time);
 
-  const groupRates = groupChart.map(p => parseRate(p.successRate));
-
-  const series = [
-    {
-      name: "集团成功率",
-      type: "line",
-      data: groupRates,
-      symbol: "circle",
-      symbolSize: 6,
-      smooth: true,
-      showSymbol: true,
-      lineStyle: { color: "#48bb78", width: 3 },
-      itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
-      areaStyle: {
-        color: {
-          type: "linear",
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
-            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
-          ],
-        },
-      },
-    },
-  ];
+  const series = [];
 
   const merchantCharts = apiData.value.merchantCharts || [];
   const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '#fd79a8', '#0984e3', '#e17055'];
