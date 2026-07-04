@@ -176,7 +176,7 @@ const statusMap = {
 const totalCount = computed(() => merchantList.value.length);
 const totalBalance = computed(() => {
   const total = merchantList.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0);
-  return `BRL ${Number(total).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return `R$ ${Number(total).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 });
 const activeCount = computed(() => merchantList.value.filter(m => m.status === 4).length);
 const frozenCount = computed(() => merchantList.value.filter(m => m.status === 2 || m.status === 3).length);
@@ -193,7 +193,7 @@ const statusTagType = (status) => {
 
 const formatMoney = (val) => {
   if (val == null) return "-";
-  return Number(val).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return "R$ " + Number(val).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 const formatDate = (dateStr) => {

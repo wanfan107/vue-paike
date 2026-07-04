@@ -9,7 +9,7 @@
       <div class="content-wrapper">
           <div class="account-balance">
             <span class="balance-label">账户余额</span>
-            <span class="balance-amount">¥{{ currentAccount.balance.toLocaleString() }}</span>
+            <span class="balance-amount">R$ {{ Number(currentAccount.balance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
           </div>
           <div class="form-container">
           <el-form :model="transferForm" :rules="rules" ref="transferFormRef" label-width="120px">
@@ -21,7 +21,7 @@
                 :min="0.01"
                 :step="0.01"
               >
-                <template #prefix>¥</template>
+                <template #prefix>R$</template>
               </el-input>
             </el-form-item>
             
@@ -94,7 +94,7 @@
               <el-table-column prop="toAccount" label="转入账户" />
               <el-table-column prop="amount" label="转账金额" width="120">
                 <template #default="scope">
-                  ¥{{ scope.row.amount.toLocaleString() }}
+                  R$ {{ Number(scope.row.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                 </template>
               </el-table-column>
               <el-table-column prop="status" label="状态" width="100">

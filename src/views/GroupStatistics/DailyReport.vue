@@ -85,6 +85,7 @@
                 element-loading-background="rgba(255, 255, 255, 0.8)"
                 row-key="OrderDate"
                 @expand-change="onExpandChange"
+                @row-click="onRowClick"
                 :expand-row-keys="expandRowKeys"
               >
                 <el-table-column type="expand">
@@ -519,19 +520,25 @@ const balanceChartOption = computed(() => {
 });
 
 const initLineChart = () => {
-  if (lineChartRef.value) {
-    if (lineChart) lineChart.dispose();
-    lineChart = echarts.init(lineChartRef.value);
-    lineChart.setOption(lineChartOption.value, true);
+  if (!lineChartRef.value) return;
+  if (lineChartRef.value.clientWidth === 0 || lineChartRef.value.clientHeight === 0) {
+    console.warn('折线图容器宽高为0，无法初始化');
+    return;
   }
+  if (lineChart) lineChart.dispose();
+  lineChart = echarts.init(lineChartRef.value);
+  lineChart.setOption(lineChartOption.value, true);
 };
 
 const initBalanceChart = () => {
-  if (balanceChartRef.value) {
-    if (balanceChart) balanceChart.dispose();
-    balanceChart = echarts.init(balanceChartRef.value);
-    balanceChart.setOption(balanceChartOption.value, true);
+  if (!balanceChartRef.value) return;
+  if (balanceChartRef.value.clientWidth === 0 || balanceChartRef.value.clientHeight === 0) {
+    console.warn('余额图表容器宽高为0，无法初始化');
+    return;
   }
+  if (balanceChart) balanceChart.dispose();
+  balanceChart = echarts.init(balanceChartRef.value);
+  balanceChart.setOption(balanceChartOption.value, true);
 };
 
 const updateCharts = () => {
@@ -622,15 +629,38 @@ const toPercent = (val) => {
   return num.toFixed(2) + '%';
 };
 
+// 点击行展开/收起
+const onRowClick = (row) => {
+  const key = row.OrderDate;
+  const index = expandRowKeys.value.indexOf(key);
+  if (index > -1) {
+    expandRowKeys.value.splice(index, 1);
+  } else {
+    expandRowKeys.value.push(key);
+  }
+  show.value = expandRowKeys.value.length === 0;
+  
+  if (show.value) {
+    nextTick(() => {
+      initLineChart();
+      initBalanceChart();
+    });
+  }
+};
+
 // 表格展开行事件
 const onExpandChange = (row, expandedRows) => {
+  show.value = expandedRows.length === 0;
   expandRowKeys.value = expandedRows.map(item => item.OrderDate);
 
-  if (row && expandedRows.includes(row)) {
+  if (show.value) {
     nextTick(() => {
-      nextTick(() => {
-        updateRowCharts(row);
-      });
+      initLineChart();
+      initBalanceChart();
+    });
+  } else if (row && expandedRows.includes(row)) {
+    nextTick(() => {
+      updateRowCharts(row);
     });
   } else if (row) {
     destroyRowCharts(row);
@@ -995,8 +1025,8 @@ onMounted(async () => {
     const mres = await http.getGroupMerchants();
     // 前端过滤掉 G 开头的商户 code
     merchantOptions.value = (mres.data || []).filter(m => !m.code || !m.code.startsWith('G'));
-    // 默认选中前3个商户
-    selectedMerchants.value = merchantOptions.value.slice(0, 3).map(m => m.code);
+    // 默认选中前2个商户
+    selectedMerchants.value = merchantOptions.value.slice(0, 2).map(m => m.code);
   } catch (e) {
     console.error("获取集团商户列表失败", e);
   }

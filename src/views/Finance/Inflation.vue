@@ -114,7 +114,7 @@
               <el-table-column prop="toAccount" label="转入账户" />
               <el-table-column prop="amount" label="转账金额" width="120">
                 <template #default="scope">
-                  ¥{{ scope.row.amount.toLocaleString() }}
+                  R$ {{ Number(scope.row.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
                 </template>
               </el-table-column>
               <el-table-column prop="status" label="状态" width="100">

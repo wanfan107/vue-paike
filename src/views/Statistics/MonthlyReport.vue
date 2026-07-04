@@ -117,7 +117,7 @@
                           align="right"
                         >
                           <template #default="scope">
-                            <span>{{ formatNumber(scope.row.SuccessAmountPayin) }}</span>
+                            <span>{{ scope.row.SuccessAmountPayin }}</span>
                           </template>
                         </el-table-column>
                         <el-table-column
@@ -138,7 +138,7 @@
                           align="right"
                         >
                           <template #default="scope">
-                            <span>{{ formatNumber(scope.row.SuccessAmountPayout) }}</span>
+                            <span>{{ scope.row.SuccessAmountPayout }}</span>
                           </template>
                         </el-table-column>
                             <el-table-column
@@ -180,7 +180,7 @@
                     <span v-else-if="item.percentage">{{
                       toPercent(scope.row[item.prop])
                     }}</span>
-                    <span v-else>{{ formatNumber(scope.row[item.prop]) }}</span>
+                    <span v-else>{{ scope.row[item.prop] }}</span>
                   </template>
                 </el-table-column>
               </el-table>
@@ -635,7 +635,7 @@ const router = useRouter();
 
 // 点击行展开/收起
 const onRowClick = (row) => {
-  const key = row.OrderDate;
+  const key = row.Month;
   const index = expandRowKeys.value.indexOf(key);
   if (index > -1) {
     expandRowKeys.value.splice(index, 1);
@@ -1523,7 +1523,7 @@ const formatNumber = (num) => {
   if (num === null || num === undefined || num === '' || isNaN(num)) {
     return '0.00';
   }
-  return parseFloat(num).toLocaleString('en-US', {
+  return 'R$ ' + parseFloat(num).toLocaleString('pt-BR', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2
   });
