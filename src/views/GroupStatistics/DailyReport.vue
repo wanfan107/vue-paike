@@ -350,7 +350,7 @@ const lineChartOption = computed(() => {
         let result = params[0].axisValue + "<br/>";
         params.forEach(p => {
           result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
         });
         return result;
       },
@@ -386,11 +386,11 @@ const lineChartOption = computed(() => {
         fontSize: 12,
         formatter: (value) => {
           if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
           } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toFixed(2) + '万';
+            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
           }
-          return 'R$' + value.toString();
+          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
       },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
@@ -468,7 +468,7 @@ const balanceChartOption = computed(() => {
         let result = params[0].axisValue + "<br/>";
         params.forEach(p => {
           result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString() : '0') + "<br/>";
+          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
         });
         return result;
       },
@@ -504,11 +504,11 @@ const balanceChartOption = computed(() => {
         fontSize: 12,
         formatter: (value) => {
           if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
           } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toFixed(2) + '万';
+            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
           }
-          return 'R$' + value.toString();
+          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
       },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
@@ -844,7 +844,7 @@ const getCollectionPieChart = (row) => {
     tooltip: {
       trigger: "item",
       formatter: function(params) {
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -954,7 +954,7 @@ const getPaymentPieChart = (row) => {
     tooltip: {
       trigger: "item",
       formatter: function(params) {
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",

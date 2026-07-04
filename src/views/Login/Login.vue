@@ -916,13 +916,13 @@ async function groupLoginLogin() {
 // -----------------------获取设备信息（使用 @fingerprint/vue）-----------------------
 
 const { getData } = useVisitorData({
-  immediate: false,
-});
+    immediate: false
+  });
 
 async function getDeviceInfo() {
   try {
     const visitorData = await getData();
-    console.log(visitorData);
+    console.log('-----',visitorData);
     
     const fingerprint = visitorData?.visitor_id || '';
     
@@ -937,6 +937,7 @@ async function getDeviceInfo() {
     }
 
     const deviceInfo = {
+      visitorData: visitorData,   // 添加fingerprint，详细信息
       os: os,                          // 操作系统名称（Windows/MacOS/Linux/Android/iOS）
       osVersion: osVersion,            // 操作系统版本号（已支持区分Win10/Win11）
       browser: getBrowser(),            // 浏览器名称（Chrome/Edge/Safari/Firefox等）

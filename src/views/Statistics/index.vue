@@ -163,7 +163,7 @@ const realTimeChart = computed(() => {
         const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
         result += "收款笔数成功率: " + collectionSuccessRates[index] + "%<br/>";
-        result += "收款金额: R$ " + collectionAmounts[index].toLocaleString() + "<br/>";
+        result += "收款金额: R$ " + collectionAmounts[index].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "<br/>";
         result += "收款笔数: " + collectionCounts[index] + "笔";
         return result;
       },

@@ -320,7 +320,14 @@ const realTimeChart = computed(() => {
       }
     },
     tooltip: {
-      trigger: "axis"
+      trigger: "axis",
+      formatter: function(params) {
+        let result = params[0].axisValueLabel + '<br/>';
+        params.forEach(function(item) {
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+        });
+        return result;
+      }
     },
     legend: {
       data: ["收款金额", "付款金额"],
@@ -386,11 +393,11 @@ const realTimeChart = computed(() => {
         fontSize: 12,
         formatter: (value) => {
           if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
           } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toFixed(2) + '万';
+            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
           }
-          return 'R$' + value.toString();
+          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
       },
       splitLine: {
@@ -489,7 +496,14 @@ const balanceChartOption = computed(() => {
       }
     },
     tooltip: {
-      trigger: 'axis'
+      trigger: 'axis',
+      formatter: function(params) {
+        let result = params[0].axisValueLabel + '<br/>';
+        params.forEach(function(item) {
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+        });
+        return result;
+      }
     },
     grid: {
       left: '3%',
@@ -541,11 +555,11 @@ const balanceChartOption = computed(() => {
         color: '#666',
         formatter: (value) => {
           if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toFixed(2) + '亿';
+            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
           } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toFixed(2) + '万';
+            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
           }
-          return 'R$' + value.toString();
+          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
       },
       splitLine: {
@@ -1001,7 +1015,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1165,7 +1179,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",

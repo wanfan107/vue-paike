@@ -21,7 +21,7 @@ export default defineConfig({
         //  target: 'https://usmc.univepay.com/',
         //  target: 'https://192.168.0.210:5432/',
         //  target: 'http://3.236.96.173:9501',
-        // target: 'http://192.168.0.210:5020',  // 郭哥布的本地线上
+        // target: 'http://192.168.0.180:5020',  // 郭哥布的本地线上
         target: 'http://3.237.1.60:9500',  // 正式环境
         //  target: 'http://192.168.0.54:5020',  // 刘强本地
         //  target: 'http://54.158.60.150:9500',  // 测试服
