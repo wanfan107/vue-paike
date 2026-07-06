@@ -47,6 +47,9 @@ service.interceptors.response.use(response => {
   }else if(response.data.code === 403){
     ElMessage.error(response.data.msg);
     return response.data
+  } else if(response.data.code === 500){
+    ElMessage.error(response.data.msg);
+    // return response.data
   }
   return response.data
 }, error => {

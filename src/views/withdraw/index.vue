@@ -166,7 +166,7 @@
           <el-empty description="暂无数据" />
         </div>
         <el-descriptions v-else :column="1" border>
-          <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item>
+          <!-- <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="平台订单号">{{ currentRow.platformOrderNo || '-' }}</el-descriptions-item>
           <el-descriptions-item label="订单金额">{{ currentRow.orderAmount || '-' }}</el-descriptions-item>
           <el-descriptions-item label="预期金额">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>

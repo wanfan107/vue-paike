@@ -377,6 +377,11 @@ function confirmBind(account) {
   if (account) {
     const merchantCode = account.code || account.id;
     
+    if (merchantCode === userStore.currentMerchantCode) {
+      ElMessage.info('当前已是该账户');
+      return;
+    }
+    
     ElMessageBox.confirm(
       `确定切换到商户 ${merchantCode} 吗?`,
       '切换商户',

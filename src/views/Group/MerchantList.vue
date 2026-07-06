@@ -113,18 +113,18 @@
             </el-table-column> -->
             <el-table-column prop="telegram" label="网站" min-width="280">
               <template #default="{ row }">
-                <span v-if="row.telegram">
-                  {{ row.telegram }}
+                <span v-if="row.siteUrl">
+                  {{ row.siteUrl }}
                 </span>
                 <span v-else>-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="creditUsed" label="授信已用" width="110" align="right">
+            <el-table-column prop="creditUsed" label="授信已用" width="120" align="right">
               <template #default="{ row }">
                 {{ formatMoney(row.creditUsed) }}
               </template>
             </el-table-column>
-            <el-table-column prop="creditMax" label="授信上限" width="110" align="right">
+            <el-table-column prop="creditMax" label="授信上限" width="120" align="right">
               <template #default="{ row }">
                 {{ formatMoney(row.creditMax) }}
               </template>
