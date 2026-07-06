@@ -498,9 +498,11 @@ const balanceChartOption = computed(() => {
     tooltip: {
       trigger: 'axis',
       formatter: function(params) {
+        if (!params || params.length === 0) return '';
         let result = params[0].axisValueLabel + '<br/>';
         params.forEach(function(item) {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+          const val = item.value != null ? Number(item.value) : 0;
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
         });
         return result;
       }
@@ -1479,13 +1481,7 @@ const handleSearch = async () => {
         
         // 填充期初余额图表数据
         balanceChartData.value = {
-          months: res.data.list.map(item => {
-            const dateStr = item.OrderDate;
-            if (dateStr && dateStr.includes('T')) {
-              return dateStr.split('T')[0];
-            }
-            return dateStr || '';
-          }),
+          months: res.data.list.map(item => item.Month || ''),
           PreviousMonthBalance: res.data.list.map(item => item.PreviousMonthBalance || 0)
         };
       } else {

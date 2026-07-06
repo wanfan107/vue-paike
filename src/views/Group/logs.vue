@@ -78,7 +78,7 @@
         <!-- 登录记录列表 -->
         <div class="table-section">
           <el-table :data="loginLogs" border stripe style="width: 100%" :loading="loading" @row-click="handleRowClick">
-            <el-table-column prop="GroupCode" label="集团代码" width="120" />
+            <!-- <el-table-column prop="GroupCode" label="集团代码" width="120" /> -->
             <el-table-column prop="Email" label="用户邮箱" width="200" />
             <el-table-column prop="LoginTime" label="登录时间" width="180">
               <template #default="{ row }">
@@ -275,9 +275,9 @@ const fetchLoginLogs = async () => {
     }
     const res = await http.groupLoginLogs(params);
     if (res.code === 200) {
-      loginLogs.value = (res.data.list || []).filter(item => item.LoginResult === 'success');
-      // pagination.total = res.data.total || 0; 
-      pagination.total = res.data.total || 0; 
+      const filteredList = (res.data.list || []).filter(item => item.LoginResult === 'success');
+      loginLogs.value = filteredList;
+      pagination.total = filteredList.length; 
     }
     else {
       ElMessage.error(res.msg || '获取登录记录失败');

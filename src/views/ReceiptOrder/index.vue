@@ -296,7 +296,7 @@ const searchForm = reactive({
         merchantOrderNo: "",
         platformOrderNo: "",
         status: 2,
-        notifyStatus: 0,
+        notifyStatus: 1,
 });
 const timeRangeOptions = [
   { label: "今天", value: "today" },
@@ -507,7 +507,7 @@ const clearSearch = () => {
   searchForm.merchantOrderNo = "";
   searchForm.platformOrderNo = "";
   searchForm.status = 2;
-  searchForm.notifyStatus = 0;
+  searchForm.notifyStatus = 1;
   pagination.currentPage = 1;
   pagination.pageSize = 10;
   handleSearch();

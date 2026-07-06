@@ -49,7 +49,7 @@
           <div v-if="show === true && tableData.length > 0" class="chart-container">
             <div class="charts-wrapper">
               <div class="chart-item balance-chart">
-                <div ref="balanceChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
+                <div ref="balanceChartRef" style="width: 100%; height: calc(100% );"></div>
               </div>
               <div class="chart-item line-chart">
                 <div class="chart-header">
