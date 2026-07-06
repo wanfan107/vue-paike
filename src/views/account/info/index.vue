@@ -2,7 +2,7 @@
   <div class="account-info-container">
     <el-card class="account-card" shadow="hover">
       <div class="card-header">
-        <div class="header-title">个人信息</div>
+        <div class="header-title">商户信息</div>
       </div>
       <div class="form-container">
         <SubmitForm

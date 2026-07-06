@@ -7,47 +7,52 @@
 
     <main class="page-content">
       <div class="content-wrapper">
-        <!-- 左侧卡片：收款费率 -->
-        <div class="rate-card rate-card-receive">
-          <div class="card-header">
-            <span>PIX - 收款费率</span>
-            <button class="btn-add">+</button>
-          </div>
-          <div class="card-body">
-            <div class="rate-item">
-              <span class="label">百分比:</span>
-              <span class="value">{{ receiveRate.percent }} %</span>
+        <el-skeleton v-if="loading" :rows="10" animated />
+        <div v-else-if="!projectList.products || projectList.products.length === 0">暂无费率信息</div>
+        <template v-else>
+          <div v-for="(item, index) in projectList.products" :key="index" class="product-row">
+            <div class="rate-card rate-card-receive">
+              <div class="card-header">
+                <span>{{ item.productName }} - 收款费率</span>
+                <button class="btn-add">+</button>
+              </div>
+              <div class="card-body">
+                <div class="rate-item">
+                  <span class="label">百分比:</span>
+                  <span class="value">{{ item.productRate }}</span>
+                </div>
+                <div class="rate-item">
+                  <span class="label">固定费率:</span>
+                  <span class="value">{{ getCurrencySymbol(projectList.currency) }} {{ item.minFee || '0' }}</span>
+                </div>
+              </div>
             </div>
-            <div class="rate-item">
-              <span class="label">固定费率:</span>
-              <span class="value">R$ {{ receiveRate.fixed }}</span>
-            </div>
-          </div>
-        </div>
 
-        <!-- 右侧卡片：付款费率 -->
-        <div class="rate-card rate-card-pay">
-          <div class="card-header">
-            <span>PIX - 付款费率</span>
-            <button class="btn-minus">-</button>
-          </div>
-          <div class="card-body">
-            <div class="rate-item">
-              <span class="label">百分比:</span>
-              <span class="value">{{ payRate.percent }} %</span>
+            <div class="rate-card rate-card-pay">
+              <div class="card-header">
+                <span>{{ item.productName }} - 付款费率</span>
+                <button class="btn-minus">-</button>
+              </div>
+              <div class="card-body">
+                <div class="rate-item">
+                  <span class="label">百分比:</span>
+                  <span class="value">{{ item.settlementFee1 }}</span>
+                </div>
+                <div class="rate-item">
+                  <span class="label">固定费率:</span>
+                  <span class="value">{{ getCurrencySymbol(projectList.currency) }} {{ item.settlementFee2 || '0' }}</span>
+                </div>
+              </div>
             </div>
-            <div class="rate-item">
-              <span class="label">固定费率:</span>
-              <span class="value">R$ {{ payRate.fixed }}</span>
-            </div>
           </div>
-        </div>
+        </template>
       </div>
     </main>
   </div>
 </template>
+
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
 
@@ -58,15 +63,73 @@ const props = defineProps({
   },
 });
 
-// 模拟费率数据（可从接口获取）
-const receiveRate = ref({
-  percent: "0.50",
-  fixed: "0"
-});
+const userStore = useUserStore();
 
-const payRate = ref({
-  percent: "0.00",
-  fixed: "0"
+const projectList = ref({});
+const loading = ref(true);
+
+const formatRate = (rate) => {
+  if (!rate || isNaN(parseFloat(rate))) {
+    return "0.00%";
+  }
+  return `${(parseFloat(rate) * 100).toFixed(2)} %`;
+};
+
+const formatPercentageString = (percentageStr) => {
+  if (!percentageStr || typeof percentageStr !== "string") {
+    return "0.00";
+  }
+  const numStr = percentageStr.replace("%", "");
+  const num = parseFloat(numStr);
+  if (isNaN(num)) {
+    return "0.00";
+  }
+  return num.toFixed(2) + " %";
+};
+
+const getCurrencySymbol = (currency) => {
+  try {
+    const formatter = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: currency,
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    });
+    return formatter.format(0).replace(/[\d\s.,]/g, "");
+  } catch (e) {
+    return currency;
+  }
+};
+
+const fetchMerchantInfo = async () => {
+  try {
+    const res = await http.merchant({
+      id: userStore.merchantInfo.id,
+    });
+    if (res.code === 200) {
+      projectList.value = res.data;
+      if (projectList.value.products) {
+        projectList.value.products.forEach((item) => {
+          item.productRate = formatRate(item.productRate);
+          if (projectList.value.settlementFee) {
+            const parts = projectList.value.settlementFee.split(" + ");
+            item.settlementFee1 = formatPercentageString(parts[0]);
+            item.settlementFee2 = parts[1];
+          }
+        });
+      }
+      loading.value = false;
+    } else {
+      loading.value = false;
+    }
+  } catch (error) {
+    loading.value = false;
+    console.error("获取费率信息失败:", error);
+  }
+};
+
+onMounted(() => {
+  fetchMerchantInfo();
 });
 </script>
 
@@ -106,14 +169,19 @@ const payRate = ref({
   background-color: white;
   padding: 0 $spacing-xl;
   border-radius: $border-radius-md;
+}
+
+.product-row {
   display: flex;
   gap: 16px;
   align-items: flex-start;
+  margin-bottom: 16px;
 
   @media (max-width: 768px) {
     flex-direction: column;
   }
 }
+
 .rate-card {
   background-color: white;
   border-radius: 12px;
