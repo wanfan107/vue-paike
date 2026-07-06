@@ -166,7 +166,24 @@ const useUserStore = defineStore('user', {
         setToken(result.token);
         saveUserInfo(result.userInfo);
         setCurrentMerchantCode(res.data.id);
-        //    // 登录成功后立即获取商户信息
+
+        // 确保集团数据不丢失
+        if (this.groupToken) {
+          setGroupToken(this.groupToken);
+        }
+        if (this.merchants && this.merchants.length > 0) {
+          setMerchants(this.merchants);
+        }
+        if (this.roleCode) {
+          setRoleCode(this.roleCode);
+        }
+        if (this.roleName) {
+          setRoleName(this.roleName);
+        }
+        if (this.groupUserInfo) {
+          setGroupUserInfo(this.groupUserInfo);
+        }
+
         await this.getMerchantInfo();
         return Promise.resolve(res);
       } else {
