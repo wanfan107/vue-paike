@@ -22,7 +22,7 @@
                 @change="onDateRangeChange"
               />
             </el-form-item>
-            <el-form-item label="处理时间">
+            <!-- <el-form-item label="处理时间">
               <el-date-picker
                 v-model="searchForm.handleTime"
                 type="datetimerange"
@@ -32,7 +32,7 @@
                 end-placeholder="结束日期"
                 value-format="YYYY-MM-DD HH:mm:ss"
               />
-            </el-form-item>
+            </el-form-item> -->
                         <el-form-item label="商户订单号">
               <el-input
                 v-model="searchForm.merchantOrderNo"
@@ -54,7 +54,6 @@
               <el-select
                 v-model="searchForm.status"
                 placeholder="请选择交易类型"
-                clearable
                 style="width: 140px"
               >
                 <el-option
@@ -69,7 +68,6 @@
               <el-select
                 v-model="searchForm.notifyStatus"
                 placeholder="请选择交易类型"
-                clearable
                 style="width: 140px"
               >
                 <el-option
@@ -273,10 +271,10 @@ const mapping = {
 };
 
 const options = [
-  // {
-  //   label: "未通知",
-  //   value: 0,
-  // },
+  {
+    label: "ALL",
+    value: -1,
+  },
   {
     label: "通知成功",
     value: 1,
@@ -296,7 +294,7 @@ const searchForm = reactive({
         merchantOrderNo: "",
         platformOrderNo: "",
         status: 2,
-        notifyStatus: 1,
+        notifyStatus: -1,
 });
 const timeRangeOptions = [
   { label: "今天", value: "today" },
@@ -497,7 +495,7 @@ const setDefaultTime = () => {
   };
   
   searchForm.orderTime = [formatDate(startOfDay), formatDate(endOfDay)];
-  searchForm.handleTime = [formatDate(startOfDay), formatDate(endOfDay)];
+  // searchForm.handleTime = [formatDate(startOfDay), formatDate(endOfDay)];
   currentTimeRange.value = 'today';
 };
 
@@ -507,7 +505,7 @@ const clearSearch = () => {
   searchForm.merchantOrderNo = "";
   searchForm.platformOrderNo = "";
   searchForm.status = 2;
-  searchForm.notifyStatus = 1;
+  searchForm.notifyStatus = -1;
   pagination.currentPage = 1;
   pagination.pageSize = 10;
   handleSearch();
@@ -516,6 +514,8 @@ const clearSearch = () => {
 const handleSearch = async () => {
   loading.value = true;
   try {
+    const orderStartTime = searchForm.orderTime?.[0] || '';
+    const orderEndTime = searchForm.orderTime?.[1] || '';
     // 模拟API调用 - 实际项目中替换为真实API调用
     const res = await http.collectOrderPage({
     "pageNo": pagination.currentPage,
@@ -525,10 +525,10 @@ const handleSearch = async () => {
     "platformOrderNo": searchForm.platformOrderNo,
     "status": searchForm.status,
     "notifyStatus": searchForm.notifyStatus,
-    "orderStartTime": searchForm.orderTime[0],
-    "orderEndTime": searchForm.orderTime[1],
-    "handleStartTime": searchForm.handleTime[0],
-    "handleEndTime": searchForm.handleTime[1]
+    "orderStartTime": orderStartTime,
+    "orderEndTime": orderEndTime,
+    "handleStartTime": searchForm.handleTime?.[0] || '',  // 处理开始时间 假的
+    "handleEndTime": searchForm.handleTime?.[1] || ''  // 处理结束时间 假的
 
     });
 
@@ -618,7 +618,7 @@ const handleCallback = (row) => {
 // 初始化数据
 onMounted(() => {
   // 初始化时设置默认时间范围
-  if (searchForm.orderTime.length === 0 || searchForm.handleTime.length === 0) {
+  if (searchForm.orderTime.length === 0 ) {
     setDefaultTime();
   }
   
@@ -635,10 +635,10 @@ const getQueryParams = () => {
     "platformOrderNo": searchForm.platformOrderNo,
     "status": searchForm.status,
     "notifyStatus": searchForm.notifyStatus,
-    "orderStartTime": searchForm.orderTime[0],
-    "orderEndTime": searchForm.orderTime[1],
-    "handleStartTime": searchForm.handleTime[0],
-    "handleEndTime": searchForm.handleTime[1]
+    "orderStartTime": searchForm.orderTime?.[0] || '',
+    "orderEndTime": searchForm.orderTime?.[1] || '',
+    "handleStartTime": searchForm.handleTime?.[0] || '',
+    "handleEndTime": searchForm.handleTime?.[1] || ''
   };
 };
 

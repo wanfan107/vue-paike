@@ -32,7 +32,7 @@
               />
             </el-form-item>
 
-            <el-form-item label="账户">
+            <el-form-item label="出款账户">
               <el-input
                 v-model="searchForm.account"
                 placeholder="请输入"
@@ -44,7 +44,6 @@
               <el-select
                 v-model="searchForm.status"
                 placeholder="请选择交易类型"
-                clearable
                 style="width: 140px">
                 <el-option
                   v-for="key in Object.keys(mapping)"
@@ -116,6 +115,7 @@
                 <el-table-column prop="orderAmount" label="订单金额" align="center" />
                 <el-table-column prop="expectAmount" label="预期金额" align="center" />
                 <el-table-column prop="actualPay" label="实际支付" align="center"/>
+                <!-- <el-table-column prop="customerAccount" label="出款账户" align="center" /> -->
                 <!-- <el-table-column prop="fee" label="手续费" align="center" /> -->
                 <el-table-column prop="status" label="状态" align="center">
                   <template #default="{ row }">
@@ -174,6 +174,7 @@
           <!-- <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="银行（类型）">{{ currentRow.bank || '-' }}</el-descriptions-item>
           <el-descriptions-item label="客户姓名">{{ currentRow.customerName || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="钱包地址">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
           <!-- <el-descriptions-item label="客户电话">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
           <el-descriptions-item label="客户邮箱">{{ currentRow.customerEmail || '-' }}</el-descriptions-item> -->
           <el-descriptions-item label="申请时间">{{ currentRow.applyTime || '-' }}</el-descriptions-item>
@@ -259,7 +260,7 @@ const router = useRouter();
 const onTimeRangeChange = (data) => {
   console.log(data);
   currentTimeRange.value = data.range;
-  searchForm.orderTime = [data.timeRange[0], data.timeRange[1]];
+  searchForm.orderTime = [data.timeRange?.[0] || '', data.timeRange?.[1] || ''];
   handleSearch();
 };
 
@@ -447,8 +448,8 @@ const handleSearch = async () => {
     "platformOrderNo": searchForm.platformOrderNo,
     "account": searchForm.account,
     "status": searchForm.status,
-    "orderStartTime": searchForm.orderTime[0],
-    "orderEndTime": searchForm.orderTime[1]
+    "orderStartTime": searchForm.orderTime?.[0] || '',
+    "orderEndTime": searchForm.orderTime?.[1] || ''
     });
 
     tableData.value = res.data.list;

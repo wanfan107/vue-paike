@@ -39,7 +39,7 @@
               />
             </el-form-item>
 
-            <el-form-item label="账户">
+            <el-form-item label="出款账户">
               <el-input
                 v-model="searchForm.account"
                 placeholder="请输入"
@@ -51,7 +51,6 @@
               <el-select
                 v-model="searchForm.status"
                 placeholder="请选择交易类型"
-                clearable
                 style="width: 140px"
               >
                 <el-option
@@ -66,7 +65,6 @@
               <el-select
                 v-model="searchForm.notifyStatus"
                 placeholder="请选择交易类型"
-                clearable
                 style="width: 140px"
               >
                 <el-option
@@ -633,11 +631,11 @@ const handleSearch = async () => {
     "id": userStore.userInfo.id,
     "status": searchForm.status,
     "notifyStatus": searchForm.notifyStatus,
-    "account": "",
+    "account": searchForm.account,
     "merchantOrderNo": searchForm.merchantOrderNo,
     "platformOrderNo": searchForm.platformOrderNo,
-    "orderStartTime": searchForm.orderTime[0],
-    "orderEndTime": searchForm.orderTime[1],
+    "orderStartTime": searchForm.orderTime?.[0] || '',
+    "orderEndTime": searchForm.orderTime?.[1] || '',
     "handleStartTime": '',
     "handleEndTime": '',
 
@@ -760,7 +758,7 @@ const handleBatchExport = () => {
     .then((res) => {
       if (res.code === 200) {
         ElMessage.success(res.msg);
-        handleSearch();
+        vb;
       }else{
         ElMessage.error(res.msg);
       }
@@ -801,7 +799,7 @@ const getQueryParams = () => {
     "id": userStore.userInfo.id,
     "status": searchForm.status,
     "notifyStatus": searchForm.notifyStatus,
-    "account": "",
+    "account": searchForm.account,
     "merchantOrderNo": searchForm.merchantOrderNo,
     "platformOrderNo": searchForm.platformOrderNo,
     "orderStartTime": searchForm.orderTime[0],

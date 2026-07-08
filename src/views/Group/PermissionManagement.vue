@@ -550,7 +550,8 @@ const editFormData = reactive({
 const formRules = {
   email: [
     { required: true, message: '请输入邮箱名', trigger: 'blur' },
-    { min: 2, max: 20, message: '长度在 2 到 20 个字符', trigger: 'blur' }
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
+    { max: 80, message: '邮箱长度不能超过80个字符', trigger: 'blur' },
   ],
   name: [
     { required: true, message: '请输入别名', trigger: 'blur' },

@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard,Folder } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard,Folder,Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // // 布局组件
@@ -147,8 +147,11 @@ const router = createRouter({
         // 交易查询
         // { path: 'TransactionInquiry', name: 'TransactionInquiry', title: '交易查询', icon: Search, component: TransactionInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // { path: 'TransactionInquiry2', name: 'TransactionInquiry2', title: '交易查询2', icon: Search, component: TransactionInquiry2, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        // 集团订单查询
+        { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', icon: Search, component: groupOrderFuzzyQuery, title: '订单查询', meta: { roles: ['admin', 'finance', 'operator'] } },
         // 资金流水
         { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+         
         // 统计报表
         {
           path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] },
@@ -170,13 +173,12 @@ const router = createRouter({
         {
           path: 'group',
           redirect: 'info',
-          title: '集团管理',
+          title: '集团账户管理',
           icon: Operation,
           meta: { roles: ['admin', 'operator', 'finance'] },
           children: [
             { path: 'logs', name: 'groupLogs', component: logs, title: '集团登录记录', meta: { roles: ['admin', 'finance', 'operator'] } },
             { path: 'MerchantList', name: 'groupMerchantList', component: MerchantList, title: '集团商户列表', meta: { roles: ['admin', 'finance', 'operator'] } },
-            { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', component: groupOrderFuzzyQuery, title: '集团订单查询', meta: { roles: ['admin', 'finance', 'operator'] } },
             { path: 'PermissionManagement', name: 'groupPermission', component: PermissionManagement, title: '集团操作员列表', meta: { roles: ['admin'] } },
             // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },

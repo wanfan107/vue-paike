@@ -417,8 +417,8 @@ const handleSearch = async () => {
     console.log(userStore.userInfo.id);
     
     const res = await http.financePage({
-      billEndTime: searchForm.time[1],
-      billStartTime: searchForm.time[0],
+      billEndTime: searchForm.time?.[1] || '',
+      billStartTime: searchForm.time?.[0] || '',
       id: userStore.userInfo.id,
       merchantOrderNo: searchForm.merchantOrderNo,
       orderNo: searchForm.orderNo,
@@ -486,8 +486,8 @@ onMounted(async () => {
 // 获取查询参数
 const getQueryParams = () => {
   return {
-    billEndTime: searchForm.time[1],
-    billStartTime: searchForm.time[0],
+    billEndTime: searchForm.time?.[1] || '',
+    billStartTime: searchForm.time?.[0] || '',
     id: userStore.userInfo.id,
     merchantOrderNo: searchForm.merchantOrderNo,
     orderNo: searchForm.orderNo,
