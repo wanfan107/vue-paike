@@ -32,7 +32,7 @@
               />
             </el-form-item>
 
-            <el-form-item label="出款账户">
+            <el-form-item label="钱包地址">
               <el-input
                 v-model="searchForm.account"
                 placeholder="请输入"
