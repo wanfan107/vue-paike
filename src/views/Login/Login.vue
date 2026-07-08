@@ -809,7 +809,23 @@ if (loginForm.value.username.includes('@')) {
   } else if(EmailVerifyshow.value==true&&loginForm.value.EmailCode.length !== 6){
     ElMessage.error("邮箱验证码长度不正确");
     return;
-  } else {
+  } else if(EmailVerifyshow.value==true&&loginForm.value.EmailCode) {
+        // if (loginForm.value.EmailCode) {
+          // 这里用来验证邮箱验证码是否正确
+          // 如果邮箱验证码正确，isVerifyPass.value 为 true
+          // 如果邮箱验证码错误，isVerifyPass.value 为 false
+          const verifyRes = await http.verifyEmailCode({
+            email: loginForm.value.username,
+            // groupCode: 'G10001',  // 不需要了
+            code: loginForm.value.EmailCode,
+          });
+          if (verifyRes.code == 200) {
+            isVerifyPass.value = true;
+          } else {
+            isVerifyPass.value = false;
+          }
+        // }
+  } else{
 groupLoginLogin();
   }
 } else {
@@ -873,21 +889,6 @@ async function groupLoginLogin() {
           ElMessage.error(res.msg);
           return;
         }
-        if (loginForm.value.EmailCode) {
-          // 这里用来验证邮箱验证码是否正确
-          // 如果邮箱验证码正确，isVerifyPass.value 为 true
-          // 如果邮箱验证码错误，isVerifyPass.value 为 false
-          const verifyRes = await http.verifyEmailCode({
-            email: loginForm.value.username,
-            groupCode: res.data.id,
-            code: loginForm.value.EmailCode,
-          });
-          if (verifyRes.code == 200) {
-            isVerifyPass.value = true;
-          } else {
-            isVerifyPass.value = false;
-          }
-        }
       }else{
       isVerifyPass.value = true;
       }
@@ -927,7 +928,7 @@ async function getDeviceInfo() {
     const fingerprint = visitorData?.visitor_id || '';
     
     const os = getOS();
-    let osVersion = 'Unknown';
+    let osVersion = '   ';
     if (os === 'MacOS') {
       osVersion = await getAccurateMacVersion();
     } else if (os === 'Windows') {
@@ -955,16 +956,16 @@ async function getDeviceInfo() {
   } catch (err) {
     console.error('❌ 获取设备信息失败', err);
     return {
-      fingerprint: '',
+      fingerprint: '获取失败',
       deviceInfo: {
-        os: 'Unknown',
-        osVersion: 'Unknown',
-        browser: 'Unknown',
-        browserVersion: 'Unknown',
-        device: 'Unknown',
-        deviceModel: 'Unknown',
-        language: 'Unknown',
-        userAgent: navigator.userAgent || 'Unknown'
+        os: '获取失败',
+        osVersion: '获取失败',
+        browser: '获取失败',
+        browserVersion: '获取失败',
+        device: '获取失败',
+        deviceModel: '获取失败',
+        language: '获取失败',
+        userAgent: navigator.userAgent || '获取失败'
       }
     };
   }

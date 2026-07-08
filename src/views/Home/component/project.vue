@@ -132,9 +132,10 @@ const getdata = async () => {
     });
     
     if (financeRes.code === 200 && financeRes.data?.list?.length > 0) {
-      projectList[0].amount = financeRes.data.list[0].PreviousDayEndBalance ? Number(financeRes.data.list[0].PreviousDayEndBalance) : 0;
+      const prevBalance = financeRes.data.list[0].PreviousDayEndBalance ? Number(financeRes.data.list[0].PreviousDayEndBalance) : 0;
+      projectList[0].amount = prevBalance || (userStore.merchantInfo?.balance ? Number(userStore.merchantInfo.balance) : 0);
     } else {
-      projectList[0].amount = 0;
+      projectList[0].amount = userStore.merchantInfo?.balance ? Number(userStore.merchantInfo.balance) : 0;
     }
     
     // 获取收款成功率数据

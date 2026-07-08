@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard,Folder } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // // 布局组件
@@ -143,30 +143,30 @@ const router = createRouter({
       component: MainLayout, // 使用主布局组件
       children: [
         // 首页 - 所有用户都能访问
-        { path: 'home', name: 'home', title: '首页', icon: HomeFilled, component: HomeView, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        { path: 'home', name: 'home', title: '首页', icon: HomeFilled, component: HomeView, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 交易查询
         // { path: 'TransactionInquiry', name: 'TransactionInquiry', title: '交易查询', icon: Search, component: TransactionInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // { path: 'TransactionInquiry2', name: 'TransactionInquiry2', title: '交易查询2', icon: Search, component: TransactionInquiry2, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
         // 资金流水
-        { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 统计报表
         {
-          path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin','merchant', 'finance', 'operator'] },
+          path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] },
           children: [
-            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
-            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
-            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
           ]
         },
 
 
         // 收款订单
-        { path: 'ReceiptOrder', name: 'ReceiptOrder', title: '收款订单', icon: WalletFilled, component: ReceiptOrder, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        { path: 'ReceiptOrder', name: 'ReceiptOrder', title: '收款订单', icon: WalletFilled, component: ReceiptOrder, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 付款订单
-        { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 下发订单
-        { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
-             // 集团管理
+        { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+        // 集团管理
         {
           path: 'group',
           redirect: 'info',
@@ -192,9 +192,9 @@ const router = createRouter({
         {
           path: 'Finance', name: 'Finance', title: '财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['merchant'] },
           children: [
-            { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
+            { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: ['merchant'] } },
             // { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
-             // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
+            // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
             // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
             // 集团的财务管理
             //  { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
@@ -202,20 +202,20 @@ const router = createRouter({
           ]
         },
         {
-          path: 'groupFinance', name: 'groupFinance', title: '集团财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance', ] },
+          path: 'groupFinance', name: 'groupFinance', title: '集团财务管理', icon: Files, redirect: 'ApplyU', meta: { roles: ['admin', 'finance',] },
           children: [
             // { path: 'ApplyU', name: 'ApplyU', component: ApplyU, title: '申请下发', meta: { roles: [ 'merchant'] } },
             // { path: 'Rotation', name: 'Rotation', component: Rotation, title: '账户互转', meta: { roles: ['admin','finance', 'merchant'] } },
-             // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
+            // { path: 'Transfer', name: 'Transfer', component: Transfer, title: '转账/提现', meta: { roles: ['admin', 'finance', 'merchant'] } },
             // { path: 'Inflation', name: 'Inflation', component: Inflation, title: '内充申请', meta: { roles: ['admin','finance', 'merchant'] } },
             // 集团的财务管理
-             { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
+            { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
             { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
           ]
         },
         // 集团统计报表
         {
-          path: 'groupStatistics', name: 'groupStatistics', title: '集团统计报表', icon: DataAnalysis, redirect: 'groupRealtime', meta: { roles: ['admin','finance'] },
+          path: 'groupStatistics', name: 'groupStatistics', title: '集团统计报表', icon: DataAnalysis, redirect: 'groupRealtime', meta: { roles: ['admin', 'finance'] },
           children: [
             { path: 'groupRealtime', name: 'groupRealtime', component: GroupStatistics, title: '即时统计', meta: { roles: ['admin', 'finance'] } },
             { path: 'groupDailyReport', name: 'groupDailyReport', component: GroupDailyReport, title: '每日报表', meta: { roles: ['admin', 'finance'] } },
@@ -225,9 +225,9 @@ const router = createRouter({
         // 导出记录
         { path: 'ExportRecord', name: 'exportRecord', title: '导出记录', icon: Download, component: ExportRecord, meta: { roles: ['admin', 'merchant', 'finance'] } },
         // 接口文档
-        { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc, meta: { roles: ['admin','merchant'] } },
+        { path: 'ApiDoc', name: 'ApiDoc', title: '接口文档', icon: DataLine, component: ApiDoc, meta: { roles: ['admin', 'merchant'] } },
         // 商户费率
-        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: DataLine, component: RateInquiry, meta: { roles: ['admin','merchant', 'finance', 'operator'] } },
+        { path: 'RateInquiry', name: 'RateInquiry', title: '商户费率', icon: Folder, component: RateInquiry, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 账户管理
         {
           path: 'account',
@@ -242,7 +242,7 @@ const router = createRouter({
             { path: 'payPassword', name: 'payPassword', component: payPassword, title: '支付密码', meta: { roles: ['merchant'] } },
           ]
         },
-   
+
       ]
     },
   ],
@@ -253,7 +253,7 @@ import useUserStore from '../stores/user';
 
 router.beforeEach((to, from, next) => {
   // 定义不需要登录的页面
-  const whiteList = ['/Login', '/set-password' ];
+  const whiteList = ['/Login', '/set-password'];
 
   // 直接从URL判断是否为白名单页面，避免创建不必要的store实例
   if (whiteList.includes(to.path)) {
