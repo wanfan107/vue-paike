@@ -71,11 +71,6 @@ const exportRecordItem = {
 }
 
 const fastItems = computed(() => {
-  // const isGroup = !!userStore.groupToken
-  const isOperator = userStore.roleCode === 'operator'
-  if (isOperator) {
-    return baseItems.value
-  }
   return [...baseItems.value, exportRecordItem]
 })
 
