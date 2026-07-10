@@ -438,6 +438,10 @@ const clearSearch = () => {
 };
 // 搜索方法
 const handleSearch = async () => {
+  if (searchForm.account && (!searchForm.orderTime || !Array.isArray(searchForm.orderTime) || searchForm.orderTime.length < 2)) {
+    ElMessage.warning('单独查询钱包地址时必须选择时间范围');
+    return;
+  }
   loading.value = true;
   try {
     // 模拟API调用 - 实际项目中替换为真实API调用
@@ -505,8 +509,8 @@ const getQueryParams = () => {
     "platformOrderNo": searchForm.platformOrderNo,
     "account": searchForm.account,
     "status": searchForm.status,
-    "orderStartTime": searchForm.orderTime[0],
-    "orderEndTime": searchForm.orderTime[1]
+    "orderStartTime": searchForm.orderTime?.[0] || '',
+    "orderEndTime": searchForm.orderTime?.[1] || ''
   };
 };
 
