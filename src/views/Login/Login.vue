@@ -727,7 +727,7 @@ async function _groupLogin() {
                   id: m.code,
                   code: m.code,
                   // siteUrl: m.siteUrl || '',
-                  type: m.siteUrl || '未配置网站',
+                  type: m.qq || '未配置网站',
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));

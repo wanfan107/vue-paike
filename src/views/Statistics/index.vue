@@ -96,16 +96,22 @@ const timeRange = ref('5');
 // 格式化当前时间
 const formatCurrentTime = (currency) => {
   const pad = (n) => String(n).padStart(2, '0');
+  const now = new Date();
   let targetDate;
 
+  // 巴西本地时区偏移：UTC-3 → getTimezoneOffset() 返回 180 分钟
+  const isUserInBrazil = now.getTimezoneOffset() === 180;
+
   if (currency === 'BRL') {
-    // 巴西时区 UTC-3 计算逻辑
-    const now = new Date();
-    // 当前时间距离UTC的毫秒偏移
-    const utcOffsetMs = now.getTimezoneOffset() * 60 * 1000;
-    // UTC-3 = UTC时间 - 3小时
-    const brazilTs = now.getTime() + utcOffsetMs - 3 * 3600 * 1000;
-    targetDate = new Date(brazilTs);
+    if (isUserInBrazil) {
+      // 用户就在巴西本地，直接用本地时间，不用偏移计算
+      targetDate = new Date();
+    } else {
+      // 海外用户使用BRL币种，手动换算UTC-3巴西时间
+      const utcOffsetMs = now.getTimezoneOffset() * 60 * 1000;
+      const brazilTs = now.getTime() + utcOffsetMs - 3 * 3600 * 1000;
+      targetDate = new Date(brazilTs);
+    }
   } else {
     // 非巴西币种，使用本地浏览器时间
     targetDate = new Date();

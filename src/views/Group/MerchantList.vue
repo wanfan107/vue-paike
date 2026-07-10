@@ -113,8 +113,8 @@
             </el-table-column> -->
             <el-table-column prop="telegram" label="网站" min-width="280">
               <template #default="{ row }">
-                <span v-if="row.siteUrl">
-                  {{ row.siteUrl }}
+                <span v-if="row.qq">
+                  {{ row.qq }}
                 </span>
                 <span v-else>-</span>
               </template>
