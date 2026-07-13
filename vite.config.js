@@ -18,7 +18,7 @@ export default defineConfig({
     // open: false,
     proxy: {
       '/api': {
-        //  target: 'https://usmc.univepay.com/',
+        //  target: 'https://usss.univepay.com/',
         //  target: 'https://192.168.0.210:5432/',
         //  target: 'http://3.236.96.173:9501',
         // target: 'http://192.168.0.180:5020',  // 郭哥布的本地线上

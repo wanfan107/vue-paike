@@ -110,15 +110,18 @@
                           prop="SuccessCountPayin"
                           label="收款笔数"
                           align="center"
-                        > </el-table-column>
+                        ></el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="净收款总额"
-                          align="right"
+                          label="收款总额"
+                          align="center"
                         >
-                          <template #default="scope">
-                            <span>{{ scope.row.SuccessAmountPayin }}</span>
-                          </template>
+                        </el-table-column>
+                        <el-table-column
+                          prop="SuccessOrderFee"
+                          label="收款手续费"
+                          align="center"
+                        >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
@@ -134,14 +137,11 @@
                         </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayout"
-                          label="付款总金额"
-                          align="right"
+                          label="付款总额"
+                          align="center"
                         >
-                          <template #default="scope">
-                            <span>{{ scope.row.SuccessAmountPayout }}</span>
-                          </template>
                         </el-table-column>
-                            <el-table-column
+                        <el-table-column
                           prop="SuccessRatePayout"
                           label="付款笔数成功率"
                           align="center"
@@ -642,12 +642,59 @@ const onRowClick = (row) => {
   if (index > -1) {
     expandRowKeys.value.splice(index, 1);
   } else {
+    const hasExtraData = row.items && row.items.some(item =>
+      item.typeName === '违规订单'
+    );
+
+    if (!hasExtraData) {
+      let updatedItems = [];
+
+      if (row.items && row.items.length > 0) {
+        updatedItems = row.items.map(item => ({
+          ...item,
+          SuccessRatePayin: item.SuccessRatePayin || '-',
+          SuccessRatePayout: item.SuccessRatePayout || '-',
+          SuccessOrderFee: item.SuccessOrderFee || 0,
+        }));
+      } else {
+        updatedItems = [{
+          typeName: '汇总',
+          SuccessCountPayin: row.SuccessCountPayin || 0,
+          SuccessAmountPayin: row.SuccessAmountPayin || 0,
+          SuccessOrderFee: row.SuccessFeePayin || 0,
+          SuccessRatePayin: row.SuccessRateCountPayin || '-',
+          SuccessCountPayout: row.SuccessCountPayout || 0,
+          SuccessAmountPayout: row.SuccessAmountPayout || 0,
+          SuccessRatePayout: row.SuccessRateCountPayout || '-',
+        }];
+      }
+
+      const extraItems = [
+        {
+          typeName: '违规订单',
+          SuccessCountPayin: 0,
+          SuccessAmountPayin: 0,
+          SuccessOrderFee: 0,
+          SuccessRatePayin: '-',
+          SuccessCountPayout: 0,
+          SuccessAmountPayout: 0,
+          SuccessRatePayout: '-',
+        }
+      ];
+
+      updatedItems.push(...extraItems);
+
+      Object.assign(row, { items: updatedItems });
+    }
+
+    if (!row.chartData) {
+      row.chartData = [...row.items];
+    }
+
     expandRowKeys.value.push(key);
   }
-  // 更新show状态：有行展开时隐藏图表，没有行展开时显示图表
   show.value = expandRowKeys.value.length === 0;
   
-  // 如果图表需要显示，重新初始化图表
   if (show.value) {
     nextTick(() => {
       initMainCharts();
@@ -659,62 +706,19 @@ const onRowClick = (row) => {
 
 // 表格展开行事件
 const onExpandChange = (row, expandedRows) => {
-  // 当有行展开时隐藏图表，没有行展开时显示图表
   show.value = expandedRows.length === 0;
-  console.log('展开行数量:', expandedRows.length, 'show值:', show.value);
 
-  // 更新expandRowKeys数组
   expandRowKeys.value = expandedRows.map(item => item.Month);
 
-  // 只在展开时添加数据（expandedRows包含当前展开的行）
-  if (row && expandedRows.includes(row)) {
-    // 检查是否已经添加过额外数据（避免重复添加）
-    const hasExtraData = row.items && row.items.some(item =>
-      item.typeName === '汇总' || item.typeName === '手续费'
-    );
+  const isExpanded = expandedRows.some(item => item.Month === row.Month);
 
-    if (!hasExtraData) {
-      // 月报表展开行：参考每日报表逻辑，只显示"汇总"和"手续费"2行
-      // 注意：SuccessFeePayin 是代收手续费，应展示在"净收款总额"列（SuccessAmountPayin）
-      const itemsData = [
-        {
-          typeName: '汇总',
-          SuccessCountPayin: row.SuccessCountPayin || 0,
-          SuccessAmountPayin: row.SuccessAmountPayin || 0,
-          SuccessRatePayin: toPercent(row.SuccessRateCountPayin),
-          SuccessCountPayout: row.SuccessCountPayout || 0,
-          SuccessAmountPayout: row.SuccessAmountPayout || 0,
-          SuccessRatePayout: toPercent(row.SuccessRateCountPayout),
-        },
-        {
-          typeName: '手续费',
-          SuccessCountPayin: '-',
-          SuccessAmountPayin: row.SuccessFeePayin || 0,
-          SuccessRatePayin: '-',
-          SuccessCountPayout: '-',
-          SuccessAmountPayout: '-',
-          SuccessRatePayout: '-',
-        }
-      ];
-
-      // 使用Vue的响应式方式更新items
-      Object.assign(row, { items: itemsData });
-    }
-
-    // 为每个行维护独立的图表数据，使用行的唯一标识作为key
-    if (!row.chartData) {
-      row.chartData = [...row.items];
-    }
-    
-    // 在下一个tick更新展开行的图表，确保DOM已经更新
+  if (row && isExpanded) {
     nextTick(() => {
-      // 再次检查DOM是否已经完全渲染
       nextTick(() => {
         updateRowCharts(row);
       });
     });
   } else if (row) {
-    // 折叠时销毁图表实例，避免内存泄漏
     destroyRowCharts(row);
   }
 };
@@ -893,8 +897,7 @@ const getSummaries = (param) => {
       sums[index] = '总计';
       return;
     }
-    // 检查列名是否为收款成功率
-    if (column.property === 'SuccessRatePayin') {
+    if (column.property === 'SuccessRatePayin' || column.property === 'SuccessRatePayout') {
       sums[index] = 'N/A';
       return;
     }
@@ -908,9 +911,8 @@ const getSummaries = (param) => {
           return prev;
         }
       }, 0).toFixed(2);
-      // 金额列使用千分位格式化
-      if (column.property === 'SuccessAmountPayin' || column.property === 'SuccessAmountPayout') {
-        sums[index] = formatNumber(total);
+      if (column.property === 'SuccessAmountPayin' || column.property === 'SuccessAmountPayout' || column.property === 'SuccessOrderFee') {
+        sums[index] = total;
       } else {
         sums[index] = total;
       }
