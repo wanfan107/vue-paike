@@ -713,6 +713,37 @@ const onExpandChange = (row, expandedRows) => {
   const isExpanded = expandedRows.some(item => item.Month === row.Month);
 
   if (row && isExpanded) {
+    if (!row.items) {
+      const itemsData = [
+        {
+          typeName: '汇总',
+          SuccessCountPayin: row.SuccessCountPayin || 0,
+          SuccessAmountPayin: row.SuccessAmountPayin || 0,
+          SuccessOrderFee: row.SuccessFeePayin || 0,
+          SuccessRatePayin: toPercent(row.SuccessRateCountPayin),
+          SuccessCountPayout: row.SuccessCountPayout || 0,
+          SuccessAmountPayout: row.SuccessAmountPayout || 0,
+          SuccessRatePayout: toPercent(row.SuccessRateCountPayout),
+        },
+        {
+          typeName: '违规订单',
+          SuccessCountPayin: 0,
+          SuccessAmountPayin: 0,
+          SuccessOrderFee: 0,
+          SuccessRatePayin: '-',
+          SuccessCountPayout: 0,
+          SuccessAmountPayout: 0,
+          SuccessRatePayout: '-',
+        }
+      ];
+
+      Object.assign(row, { items: itemsData });
+    }
+
+    if (!row.chartData) {
+      row.chartData = [...row.items];
+    }
+
     nextTick(() => {
       nextTick(() => {
         updateRowCharts(row);
