@@ -10,21 +10,6 @@
         <!-- 搜索和筛选区域 -->
         <div class="search-container">
           <el-form :inline="false" :model="searchForm" class="search-form">
-                    <!-- 商户多选（控制曲线图，默认空=只显示集团） -->
-              <el-form-item label="曲线商户筛选">
-                          <el-select
-            v-model="selectedMerchants"
-            multiple
-            collapse-tags
-            collapse-tags-tooltip
-            placeholder="选择商户（默认仅展示集团）"
-            style="width: 200px;"
-            size="small"
-            @change="updateCharts"
-          >
-            <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
-          </el-select>
-              </el-form-item>
             <el-form-item label="订单时间">
               <el-date-picker
                 v-model="searchForm.time"
@@ -45,6 +30,29 @@
               <el-button :icon="Refresh" @click="clearSearch" :loading="loading">刷新</el-button>
             </el-form-item>
           </el-form>
+        </div>
+
+        <!-- 曲线商户筛选（独立区域） -->
+        <div class="merchant-filter-bar">
+          <span class="filter-label">曲线商户筛选</span>
+          <div class="merchant-select-wrapper">
+            <el-select
+              v-model="selectedMerchants"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="选择商户（默认仅展示集团）"
+              style="width: 250px;"
+              size="small"
+              @change="updateCharts"
+            >
+              <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
+            </el-select>
+            <div class="select-buttons">
+              <el-button size="small" @click="selectAll">全选</el-button>
+              <el-button size="small" @click="selectInverse">反选</el-button>
+            </div>
+          </div>
         </div>
 
 
@@ -87,6 +95,7 @@
                 @expand-change="onExpandChange"
                 @row-click="onRowClick"
                 :expand-row-keys="expandRowKeys"
+                style="cursor: pointer;"
               >
                 <el-table-column type="expand">
                   <template #default="scope">
@@ -97,13 +106,14 @@
                         show-summary
                         :sum-text="'集团汇总'"
                         border
+                        max-height="300"
                         style="width: 100%; margin-top: 10px"
                         size="small"
                         class="expand-table"
                       >
                         <el-table-column prop="code" label="商户号" align="center" />
                         <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
-                        <el-table-column prop="TotalAmountReceived" label="净收款总额" align="center" />
+                        <el-table-column prop="TotalAmountReceived" label="收款总额" align="center" />
                         <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
                         <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
                           <template #default="scope">
@@ -111,7 +121,7 @@
                           </template>
                         </el-table-column>
                         <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
-                        <el-table-column prop="SuccessAmountPayout" label="付款总金额" align="center" />
+                        <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
                         <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
                           <template #default="scope">
                             {{ toPercent(scope.row.SuccessRateCountPayout) }}
@@ -346,21 +356,38 @@ const lineChartOption = computed(() => {
     },
     tooltip: {
       trigger: "axis",
+      confine: false,
+      appendToBody: true,
+      maxWidth: 500,
+      maxHeight: 500,
       formatter: function (params) {
         if (!params || params.length === 0) return '';
-        let result = params[0].axisValue + "<br/>";
-        params.forEach(p => {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
-        });
+        let result = params[0].axisValue + "<br/><br/>";
+        const sortedParams = [...params].sort((a, b) => (b.value || 0) - (a.value || 0));
+        const itemsPerColumn = 10;
+        const columnCount = Math.ceil(sortedParams.length / itemsPerColumn);
+        result += '<table style="width:100%;border-collapse:collapse;">';
+        result += '<tr>';
+        for (let col = 0; col < columnCount; col++) {
+          result += '<td style="padding:2px 8px;text-align:left;vertical-align:top;">';
+          for (let row = 0; row < itemsPerColumn; row++) {
+            const idx = col * itemsPerColumn + row;
+            if (idx >= sortedParams.length) break;
+            const p = sortedParams[idx];
+            result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
+            result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
+          }
+          result += '</td>';
+        }
+        result += '</tr></table>';
         return result;
       },
     },
-    legend: {
-      data: series.map(s => s.name),
-      top: "5%",
-      textStyle: { color: "#666", fontSize: 13 },
-    },
+    // legend: {
+    //   data: series.map(s => s.name),
+    //   top: "5%",
+    //   textStyle: { color: "#666", fontSize: 13 },
+    // },
     grid: {
       left: '3%',
       right: '3%',
@@ -464,21 +491,38 @@ const balanceChartOption = computed(() => {
     },
     tooltip: {
       trigger: "axis",
+      confine: false,
+      appendToBody: true,
+      maxWidth: 500,
+      maxHeight: 500,
       formatter: function (params) {
         if (!params || params.length === 0) return '';
-        let result = params[0].axisValue + "<br/>";
-        params.forEach(p => {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
-        });
+        let result = params[0].axisValue + "<br/><br/>";
+        const sortedParams = [...params].sort((a, b) => (b.value || 0) - (a.value || 0));
+        const itemsPerColumn = 10;
+        const columnCount = Math.ceil(sortedParams.length / itemsPerColumn);
+        result += '<table style="width:100%;border-collapse:collapse;">';
+        result += '<tr>';
+        for (let col = 0; col < columnCount; col++) {
+          result += '<td style="padding:2px 8px;text-align:left;vertical-align:top;">';
+          for (let row = 0; row < itemsPerColumn; row++) {
+            const idx = col * itemsPerColumn + row;
+            if (idx >= sortedParams.length) break;
+            const p = sortedParams[idx];
+            result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
+            result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
+          }
+          result += '</td>';
+        }
+        result += '</tr></table>';
         return result;
       },
     },
-    legend: {
-      data: series.map(s => s.name),
-      top: "5%",
-      textStyle: { color: "#666", fontSize: 13 },
-    },
+    // legend: {
+    //   data: series.map(s => s.name),
+    //   top: "5%",
+    //   textStyle: { color: "#666", fontSize: 13 },
+    // },
     grid: {
       left: '3%',
       right: '3%',
@@ -812,7 +856,7 @@ const getMerchantSummaries = (param) => {
 // 收款饼图：各商户收款总额占比
 const getCollectionPieChart = (row) => {
   const items = row.merchantItems || [];
-  const data = items.map(it => ({
+  let data = items.map(it => ({
     name: it.code || '未知',
     value: Number(it.SuccessAmountPayin) || 0,
   })).filter(item => item.value > 0);
@@ -836,50 +880,65 @@ const getCollectionPieChart = (row) => {
     {
       type: 'linear',
       x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#fa709a' }, { offset: 1, color: '#fee140' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#a18cd1' }, { offset: 1, color: '#fbc2eb' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#89f7fe' }, { offset: 1, color: '#66a6ff' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#fddb92' }, { offset: 1, color: '#d1fdff' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#c471f5' }, { offset: 1, color: '#fa71cd' }]
+      colorStops: [{ offset: 0, color: '#999999' }, { offset: 1, color: '#cccccc' }]
     },
   ];
 
-  data.forEach((item, index) => {
-    item.itemStyle = {
-      color: colors[index % colors.length],
-      borderRadius: 8,
-      borderColor: '#fff',
-      borderWidth: 2
-    };
+  data.sort((a, b) => b.value - a.value);
+
+  const top3 = data.slice(0, 3);
+  const others = data.slice(3);
+
+  if (others.length > 0) {
+    const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
+    top3.push({
+      name: '其他',
+      value: othersTotal,
+      others: others,
+      itemStyle: {
+        color: colors[3],
+        borderRadius: 8,
+        borderColor: '#fff',
+        borderWidth: 2
+      }
+    });
+  }
+
+  top3.forEach((item, index) => {
+    if (!item.itemStyle) {
+      item.itemStyle = {
+        color: colors[index % colors.length],
+        borderRadius: 8,
+        borderColor: '#fff',
+        borderWidth: 2
+      };
+    }
   });
+
+  data = top3;
 
   return {
     title: { text: "各商户收款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
+      confine: false,
+      appendToBody: true,
+      maxWidth: 400,
+      maxHeight: 500,
       formatter: function(params) {
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        if (params.data.others && params.data.others.length > 0) {
+          result += '<br/><br/>包含：';
+          params.data.others.forEach((otherItem, idx) => {
+            result += `<br/>${otherItem.name}: R$${otherItem.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          });
+        }
+        return result;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
       borderWidth: 0,
-      textStyle: { color: "#fff" }
+      textStyle: { color: "#fff", fontSize: 12 }
     },
     legend: {
       orient: "horizontal",
@@ -906,7 +965,7 @@ const getCollectionPieChart = (row) => {
 // 付款饼图：各商户付款总额占比
 const getPaymentPieChart = (row) => {
   const items = row.merchantItems || [];
-  const data = items.map(it => ({
+  let data = items.map(it => ({
     name: it.code || '未知',
     value: Number(it.SuccessAmountPayout) || 0,
   })).filter(item => item.value > 0);
@@ -930,66 +989,65 @@ const getPaymentPieChart = (row) => {
     {
       type: 'linear',
       x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#89f7fe' }, { offset: 1, color: '#66a6ff' }]
+      colorStops: [{ offset: 0, color: '#999999' }, { offset: 1, color: '#cccccc' }]
     },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#fddb92' }, { offset: 1, color: '#d1fdff' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#c471f5' }, { offset: 1, color: '#fa71cd' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#667eea' }, { offset: 1, color: '#764ba2' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [{ offset: 0, color: '#f093fb' }, { offset: 1, color: '#f5576c' }]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [
-        { offset: 0, color: '#fddb92' },
-        { offset: 1, color: '#d1fdff' }
-      ]
-    },
-    {
-      type: 'linear',
-      x: 0, y: 0, x2: 1, y2: 1,
-      colorStops: [
-        { offset: 0, color: '#c471f5' },
-        { offset: 1, color: '#fa71cd' }
-      ]
-    }
   ];
 
-  data.forEach((item, index) => {
-    item.itemStyle = {
-      color: colors[index % colors.length],
-      borderRadius: 8,
-      borderColor: '#fff',
-      borderWidth: 2
-    };
+  data.sort((a, b) => b.value - a.value);
+
+  const top3 = data.slice(0, 3);
+  const others = data.slice(3);
+
+  if (others.length > 0) {
+    const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
+    top3.push({
+      name: '其他',
+      value: othersTotal,
+      others: others,
+      itemStyle: {
+        color: colors[3],
+        borderRadius: 8,
+        borderColor: '#fff',
+        borderWidth: 2
+      }
+    });
+  }
+
+  top3.forEach((item, index) => {
+    if (!item.itemStyle) {
+      item.itemStyle = {
+        color: colors[index % colors.length],
+        borderRadius: 8,
+        borderColor: '#fff',
+        borderWidth: 2
+      };
+    }
   });
+
+  data = top3;
 
   return {
     title: { text: "各商户付款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
+      confine: false,
+      appendToBody: true,
+      maxWidth: 400,
+      maxHeight: 500,
       formatter: function(params) {
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        if (params.data.others && params.data.others.length > 0) {
+          result += '<br/><br/>包含：';
+          params.data.others.forEach((otherItem, idx) => {
+            result += `<br/>${otherItem.name}: R$${otherItem.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          });
+        }
+        return result;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
       borderWidth: 0,
-      textStyle: { color: "#fff" }
+      textStyle: { color: "#fff", fontSize: 12 }
     },
     legend: {
       orient: "horizontal",
@@ -1013,6 +1071,18 @@ const getPaymentPieChart = (row) => {
   };
 };
 
+const selectAll = () => {
+  selectedMerchants.value = merchantOptions.value.map(m => m.code);
+  updateCharts();
+};
+
+const selectInverse = () => {
+  const allCodes = merchantOptions.value.map(m => m.code);
+  const selectedSet = new Set(selectedMerchants.value);
+  selectedMerchants.value = allCodes.filter(code => !selectedSet.has(code));
+  updateCharts();
+};
+
 onMounted(async () => {
   // 默认近7天
   const end = new Date();
@@ -1026,7 +1096,7 @@ onMounted(async () => {
     // 前端过滤掉 G 开头的商户 code
     merchantOptions.value = (mres.data || []).filter(m => !m.code || !m.code.startsWith('G'));
     // 默认选中前2个商户
-    selectedMerchants.value = merchantOptions.value.slice(0, 2).map(m => m.code);
+    // selectedMerchants.value = merchantOptions.value.slice(0, 2).map(m => m.code);
   } catch (e) {
     console.error("获取集团商户列表失败", e);
   }
@@ -1098,6 +1168,40 @@ watch([lineChartOption, balanceChartOption], () => {
 
     ::deep(.el-form-item) {
       margin-bottom: $spacing-sm;
+    }
+  }
+}
+
+.merchant-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: $spacing-md;
+  padding: $spacing-md $spacing-lg;
+  background-color: #f5f7fa;
+  border-radius: $border-radius-md;
+  margin-bottom: $spacing-lg;
+
+  .filter-label {
+    font-size: $font-size-base;
+    color: $text-color-secondary;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .merchant-select-wrapper {
+    display: flex;
+    align-items: center;
+    gap: $spacing-sm;
+
+    .select-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: $spacing-xs;
+
+      ::deep(.el-button) {
+        padding: 4px 12px;
+        font-size: $font-size-small;
+      }
     }
   }
 }

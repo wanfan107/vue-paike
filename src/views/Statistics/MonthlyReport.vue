@@ -87,6 +87,7 @@
                 :preserve-expanded-content="preserveExpanded"
                 :expand-row-keys="expandRowKeys"
                 row-key="Month"
+                style="cursor: pointer;"
               >
                 <el-table-column type="expand" >
                   <template #default="scope">
@@ -652,8 +653,8 @@ const onRowClick = (row) => {
       if (row.items && row.items.length > 0) {
         updatedItems = row.items.map(item => ({
           ...item,
-          SuccessRatePayin: item.SuccessRatePayin || '-',
-          SuccessRatePayout: item.SuccessRatePayout || '-',
+          SuccessRatePayin: toPercent(item.SuccessRateCountPayin) || '-',
+          SuccessRatePayout: toPercent(item.SuccessRateCountPayout) || '-',
           SuccessOrderFee: item.SuccessOrderFee || 0,
         }));
       } else {
@@ -662,10 +663,10 @@ const onRowClick = (row) => {
           SuccessCountPayin: row.SuccessCountPayin || 0,
           SuccessAmountPayin: row.SuccessAmountPayin || 0,
           SuccessOrderFee: row.SuccessFeePayin || 0,
-          SuccessRatePayin: row.SuccessRateCountPayin || '-',
+          SuccessRatePayin: toPercent(row.SuccessRateCountPayin) || '-',
           SuccessCountPayout: row.SuccessCountPayout || 0,
           SuccessAmountPayout: row.SuccessAmountPayout || 0,
-          SuccessRatePayout: row.SuccessRateCountPayout || '-',
+          SuccessRatePayout: toPercent(row.SuccessRateCountPayout) || '-',
         }];
       }
 
@@ -2046,4 +2047,5 @@ const onExport = async () => {
     background-color: #f5f7fa;
   }
 }
+
 </style>

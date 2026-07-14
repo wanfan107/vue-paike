@@ -10,7 +10,7 @@
         <div class="search-container">
           <el-input
             v-model="input"
-            placeholder="请输入系统单、客户订单号查询、E单号查询"
+            placeholder="请输入系统单、客户订单号查询、银行单号查询"
             clearable
             @keyup.enter="handleSearch"
           />

@@ -12,25 +12,6 @@
         <div class="table-layout">
           <div class="table_time">
             <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-                        <!-- 商户多选 + 表格 -->
-          <span style="font-size: 13px; color: #666;">商户筛选：</span>
-            <el-select
-              v-model="selectedMerchants"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="选择商户（默认全部）"
-              style="width: 160px;" 
-              size="small"
-            >
-              <el-option
-                v-for="m in merchantOptions"
-                :key="m.code"
-                :label="m.code"
-                :value="m.code"
-              />
-            </el-select>
-              <!-- 日期时间选择器 -->
               <el-date-picker
                 v-model="selectedTime"
                 type="datetime"
@@ -42,7 +23,6 @@
                 size="small"
                 @change="getdata"
               />
-              <!-- 时间范围下拉 -->
               <el-select
                 v-model="timeRange"
                 placeholder="选择时间范围"
@@ -67,6 +47,32 @@
               </el-tooltip>
             </div>
           </div>
+
+          <div class="merchant-filter-bar">
+            <span class="filter-label">商户筛选</span>
+            <div class="merchant-select-wrapper">
+              <el-select
+                v-model="selectedMerchants"
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+                placeholder="选择商户"
+                style="width: 250px;"
+                size="small"
+              >
+                <el-option
+                  v-for="m in merchantOptions"
+                  :key="m.code"
+                  :label="m.code"
+                  :value="m.code"
+                />
+              </el-select>
+              <div class="select-buttons">
+                <el-button size="small" @click="selectAll">全选</el-button>
+                <el-button size="small" @click="selectInverse">反选</el-button>
+              </div>
+            </div>
+          </div>
           <div class="chart-container">
             <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
               <el-table :data="tableRows" border size="small" :height="tableHeight">
@@ -80,7 +86,7 @@
           </div>
           <!-- 图表 -->
           <div class="chart-wrapper">
-            <div ref="chartContainer" style="width: 100%; height: 600px;"></div>
+            <div ref="chartContainer" style="width: 100%; height: 700px;"></div>
           </div>
         </div>
       </div>
@@ -110,6 +116,7 @@ const timeRange = ref('5');
 // 商户列表
 const merchantOptions = ref([]);
 const selectedMerchants = ref([]);
+const isFirstLoad = ref(true);
 
 // 接口返回数据
 const apiData = ref({
@@ -195,8 +202,11 @@ const parseRate = (rateStr) => {
 
 // 表格行（按多选过滤，末行集团汇总）
 const tableRows = computed(() => {
+  if (selectedMerchants.value.length === 0) {
+    return [];
+  }
   const rows = apiData.value.merchants.filter(m =>
-    selectedMerchants.value.length === 0 || selectedMerchants.value.includes(m.code)
+    selectedMerchants.value.includes(m.code)
   ).map(m => ({
     code: m.code,
     orderCount: m.orderCount,
@@ -263,28 +273,57 @@ const realTimeChart = computed(() => {
     },
     tooltip: {
       trigger: "axis",
+      confine: false,
+      appendToBody: true,
+      maxWidth: 500,
+      maxHeight: 500,
       formatter: function (params) {
-        let result = params[0].axisValue + "<br/>";
-        params.forEach(p => {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-          result += p.seriesName + ": " + p.value.toFixed(2) + "%<br/>";
-        });
+        let result = params[0].axisValue + "<br/><br/>";
+        const sortedParams = [...params].sort((a, b) => (b.value || 0) - (a.value || 0));
+        const itemsPerColumn = 10;
+        const columnCount = Math.ceil(sortedParams.length / itemsPerColumn);
+        result += '<table style="width:100%;border-collapse:collapse;">';
+        result += '<tr>';
+        for (let col = 0; col < columnCount; col++) {
+          result += '<td style="padding:2px 8px;text-align:left;vertical-align:top;">';
+          for (let row = 0; row < itemsPerColumn; row++) {
+            const idx = col * itemsPerColumn + row;
+            if (idx >= sortedParams.length) break;
+            const p = sortedParams[idx];
+            result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
+            result += p.seriesName + ": " + p.value.toFixed(2) + "%<br/>";
+          }
+          result += '</td>';
+        }
+        result += '</tr></table>';
         return result;
       },
     },
     legend: {
       data: series.map(s => s.name),
-      bottom: "5%",
+      bottom: 10,
+      left: "center",
+      orient: "horizontal",
+      itemGap: 10,
+      itemWidth: 14,
+      itemHeight: 14,
       textStyle: {
         color: "#666",
-        fontSize: 13,
+        fontSize: 12,
       },
+      pageTextStyle: {
+        color: "#666",
+      },
+      pageIconColor: "#666",
+      pageIconInactiveColor: "#ccc",
+      pageFormatter: "{current}/{total}",
+      pageButtonPosition: "end",
     },
     grid: {
       top: "25%",
       left: "5%",
       right: "5%",
-      bottom: "10%",
+      bottom: "15%",
       containLabel: true,
     },
     xAxis: {
@@ -380,6 +419,12 @@ const getdata = async () => {
       merchantCharts: data.merchantCharts || [],
     };
 
+    if (isFirstLoad.value) {
+      const sortedMerchants = [...(data.merchants || [])].sort((a, b) => (b.successCount || 0) - (a.successCount || 0));
+      selectedMerchants.value = sortedMerchants.slice(0, 3).map(m => m.code);
+      isFirstLoad.value = false;
+    }
+
     if (chartInstance) {
       chartInstance.setOption(realTimeChart.value, true);
     }
@@ -396,13 +441,24 @@ watch(realTimeChart, (newOption) => {
   }
 }, { deep: true });
 
+const selectAll = () => {
+  selectedMerchants.value = merchantOptions.value.map(m => m.code);
+};
+
+const selectInverse = () => {
+  const allCodes = merchantOptions.value.map(m => m.code);
+  const selectedSet = new Set(selectedMerchants.value);
+  selectedMerchants.value = allCodes.filter(code => !selectedSet.has(code));
+};
+
 onMounted(async () => {
   // 拉取集团商户列表（前端过滤掉 G 开头的 code，不展示给用户）
   try {
     const mres = await http.getGroupMerchants();
     const list = (mres.data || []).filter(m => !m.code.startsWith('G'));
     merchantOptions.value = list;
-    selectedMerchants.value = list.map(m => m.code);
+    const sortedList = [...list].sort((a, b) => (b.successCount || 0) - (a.successCount || 0));
+    selectedMerchants.value = sortedList.slice(0, 3).map(m => m.code);
   } catch (e) {
     console.error("获取集团商户列表失败", e);
   }
@@ -508,8 +564,42 @@ onBeforeUnmount(() => {
   }
 
   .table_time {
-    margin-bottom: 20px;
+    margin-bottom: $spacing-sm;
     flex-shrink: 0;
+  }
+
+  .merchant-filter-bar {
+    display: flex;
+    align-items: center;
+    gap: $spacing-md;
+    padding: $spacing-md $spacing-lg;
+    background-color: #f5f7fa;
+    border-radius: $border-radius-md;
+    margin-bottom: $spacing-lg;
+
+    .filter-label {
+      font-size: $font-size-base;
+      color: $text-color-secondary;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    .merchant-select-wrapper {
+      display: flex;
+      align-items: center;
+      gap: $spacing-sm;
+
+      .select-buttons {
+        display: flex;
+        flex-direction: row;
+        gap: $spacing-xs;
+
+        ::deep(.el-button) {
+          padding: 4px 12px;
+          font-size: $font-size-small;
+        }
+      }
+    }
   }
 
   .chart-wrapper {

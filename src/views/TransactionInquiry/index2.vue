@@ -15,7 +15,7 @@
                 type="textarea"
                 v-model="orderInput"
                 :rows="6"
-                placeholder="输入订单号，支持中英文逗号、换行符分隔（最多50个）&#10;支持：商户订单号、平台订单号、银行订单号、E单号"
+                placeholder="输入订单号，支持中英文逗号、换行符分隔（最多50个）&#10;支持：商户订单号、平台订单号、银行订单号"
               ></el-input>
             </div>
             <div class="form-item" style="margin-top: 16px;">
@@ -61,7 +61,7 @@
                   {{ row.supplierOrder || '-' }}
                 </template>
               </el-table-column>
-              <el-table-column align="center" label="E单号" width="180">
+              <el-table-column align="center" label="银行单号" width="180">
                 <template #default="{ row }">
                   {{ row.billingCity || row.bankArea || '-' }}
                 </template>

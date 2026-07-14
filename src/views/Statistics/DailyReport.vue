@@ -107,6 +107,7 @@
                 :preserve-expanded-content="preserveExpanded"
                 :expand-row-keys="expandRowKeys"
                 row-key="OrderDate"
+                style="cursor: pointer;"
               >
                 <el-table-column type="expand" >
                   <template #default="scope">
@@ -675,12 +676,71 @@ const onRowClick = (row) => {
   if (index > -1) {
     expandRowKeys.value.splice(index, 1);
   } else {
+    if (!row.items) {
+      const itemsData = [
+        {
+          typeName: '汇总',
+          SuccessCountPayin: row.SuccessCountPayin || 0,
+          SuccessAmountPayin: row.SuccessAmountPayin || 0,
+          SuccessOrderFee: row.SuccessOrderFee || 0,
+          SuccessRatePayin: toPercent(row.SuccessRatePayin),
+          SuccessCountPayout: row.SuccessCountPayout || 0,
+          SuccessAmountPayout: row.SuccessAmountPayout || 0,
+          SuccessRatePayout: toPercent(row.SuccessRatePayout),
+        },
+        {
+          typeName: '违规订单',
+          SuccessCountPayin: 0,
+          SuccessAmountPayin: 0,
+          SuccessOrderFee: 0,
+          SuccessRatePayin: '-',
+          SuccessCountPayout: 0,
+          SuccessAmountPayout: 0,
+          SuccessRatePayout: '-',
+        }
+      ];
+
+      Object.assign(row, { items: itemsData });
+    } else {
+      const hasExtraData = row.items.some(item =>
+        item.typeName === '违规订单'
+      );
+
+      if (!hasExtraData) {
+        const updatedItems = row.items.map(item => ({
+          ...item,
+          SuccessRatePayin: toPercent(item.SuccessRatePayin),
+          SuccessRatePayout: toPercent(item.SuccessRatePayout),
+          SuccessOrderFee: item.SuccessOrderFee || 0,
+        }));
+
+        const extraItems = [
+          {
+            typeName: '违规订单',
+            SuccessCountPayin: 0,
+            SuccessAmountPayin: 0,
+            SuccessOrderFee: 0,
+            SuccessRatePayin: '-',
+            SuccessCountPayout: 0,
+            SuccessAmountPayout: 0,
+            SuccessRatePayout: '-',
+          }
+        ];
+
+        updatedItems.push(...extraItems);
+
+        Object.assign(row, { items: updatedItems });
+      }
+    }
+
+    if (!row.chartData) {
+      row.chartData = [...row.items];
+    }
+
     expandRowKeys.value.push(key);
   }
-  // 更新show状态：有行展开时隐藏图表，没有行展开时显示图表
   show.value = expandRowKeys.value.length === 0;
   
-  // 如果图表需要显示，重新初始化图表
   if (show.value) {
     nextTick(() => {
       initMainCharts();

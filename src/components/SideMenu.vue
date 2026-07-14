@@ -347,27 +347,36 @@ const handleUserCommand = async (command) => {
       getUserList();
     console.log('Dados da Conta clicked');
   } else if (command === 'logout') {
-    try {
-      await userStore.logout();
-      ElMessage.success('退出登录成功');
-      
-      // 兜底：1.5秒后如果还没跳走，强制刷新跳转
-      const fallbackTimer = setTimeout(() => {
-        window.location.href = '/Login?t=' + Date.now();
-      }, 1500);
-      
-      await router.replace({
-        path: '/Login',
-        query: { t: Date.now() }
-      });
-      
-      // 跳转成功，清除兜底定时器
-      clearTimeout(fallbackTimer);
-    } catch (error) {
-      console.error('退出登录失败:', error);
-      // 出错直接强制跳转
-      window.location.href = '/Login';
-    }
+    ElMessageBox.confirm(
+      '确定要退出登录吗?',
+      '退出确认',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }
+    ).then(async () => {
+      try {
+        await userStore.logout();
+        ElMessage.success('退出登录成功');
+        
+        const fallbackTimer = setTimeout(() => {
+          window.location.href = '/Login?t=' + Date.now();
+        }, 1500);
+        
+        await router.replace({
+          path: '/Login',
+          query: { t: Date.now() }
+        });
+        
+        clearTimeout(fallbackTimer);
+      } catch (error) {
+        console.error('退出登录失败:', error);
+        window.location.href = '/Login';
+      }
+    }).catch(() => {
+      // 用户取消退出
+    });
   }
 };
 

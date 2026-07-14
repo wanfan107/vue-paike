@@ -163,6 +163,14 @@
           <div class="transfer-history">
             <div class="history-header">
               <h3>钱包地址管理</h3>
+              <el-button 
+                type="primary" 
+                size="small" 
+                :icon="Refresh" 
+                @click="getWalletAddresses"
+              >
+                刷新
+              </el-button>
             </div>
             
             <el-table
@@ -280,7 +288,7 @@ import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
-import { Warning } from "@element-plus/icons-vue";
+import { Warning, Refresh } from "@element-plus/icons-vue";
 import EditableSelect from '@/components/EditableSelect.vue';
 // 页面标题
 const title = '集团下发申请';
@@ -645,11 +653,11 @@ const walletAddresses = ref([]);
 //   }
 // };
 const getWalletAddresses = () => {
+  historyLoading.value = true;
   http
     .groupWalletQuery()
     .then((res) => {
       if (res.Success && res.Data && res.Data.merchants) {
-        // 转换数据格式，展示所有商户的钱包地址
         const allAddresses = [];
         res.Data.merchants.forEach((merchant, merchantIndex) => {
           if (merchant.walletAddresses && merchant.walletAddresses.length > 0) {
@@ -668,6 +676,9 @@ const getWalletAddresses = () => {
         walletAddresses.value = [];
         ElMessage.error(res.ErrorMessage || '获取钱包地址失败');
       }
+    })
+    .finally(() => {
+      historyLoading.value = false;
     })
     .catch(() => {
       ElMessage.error('获取钱包地址失败');

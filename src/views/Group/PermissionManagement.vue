@@ -27,6 +27,7 @@
               @row-click="handleRowClick"
               highlight-current-row
             >
+             
               <el-table-column prop="email" label="邮箱名" width="180" />
               <el-table-column prop="name" label="别名" width="100" />
               <el-table-column prop="roleName" label="角色" width="120">
@@ -36,20 +37,24 @@
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="merchantCodes" label="可操作商户" width="240">
+              <el-table-column prop="merchantCodes" label="可操作商户" width="260">
                 <template #default="{ row }">
                   <div class="merchant-codes-wrapper">
-                    <el-tag v-if="row && row.merchantCodes" size="small" type="info">{{ row.merchantCodes.length }}</el-tag>
-                    <span v-else><el-tag size="small" type="info">0</el-tag></span>
-                    <div class="merchant-codes-tags">
-                      <template v-if="row && row.merchantCodes">
-                        <div v-for="(group, groupIdx) in getMerchantGroups(row.merchantCodes)" :key="groupIdx" class="merchant-tag-row">
-                          <span v-for="code in group" :key="code" class="merchant-tag-item">
-                            <el-tag type="info" size="small">{{ code }}</el-tag>
-                          </span>
-                        </div>
-                      </template>
+                    <div v-if="row && row.merchantCodes && row.merchantCodes.length > 0">
+                      <div class="merchant-count-label">共 {{ row.merchantCodes.length }} 个</div>
+                      <div class="merchant-codes-tags">
+                        <el-tag
+                          v-for="code in row.merchantCodes"
+                          :key="code"
+                          type="info"
+                          size="small"
+                          class="merchant-tag-item"
+                        >
+                          {{ code }}
+                        </el-tag>
+                      </div>
                     </div>
+                    <span v-else class="merchant-empty">-</span>
                   </div>
                 </template>
               </el-table-column>
@@ -249,7 +254,7 @@
             </el-form-item>
 
             <el-form-item label="账户状态" prop="status">
-              <el-radio-group v-model="editFormData.status">
+              <el-radio-group v-model="editFormData.status" :disabled="editFormData.roleCode === 'admin'">
                 <el-radio :value="0">
                   启用
                 </el-radio>
@@ -304,13 +309,13 @@
               </div>
             </el-form-item>
 
-            <!-- <el-form-item label="MFA2验证码" prop="code">
+            <el-form-item label="MFA2验证码" prop="code">
               <el-input 
                 v-model="editFormData.code" 
                 placeholder="请输入MFA2验证码"
                 clearable
               />
-            </el-form-item> -->
+            </el-form-item>
           </el-form>
 
           <template #footer>
@@ -536,10 +541,9 @@ const changeEmailRules = {
 // 编辑表单数据
 const editFormData = reactive({
   userId: null,
-  // id: null,
   email: '',
   name: '',
-  // code: '',
+  code: '',
   roleCode: '',
   status: 0,
   merchantCodes: [],
@@ -723,6 +727,7 @@ const updateOperator = async () => {
       roleCode: editFormData.roleCode,
       status: editFormData.status,
       merchantCodes: editFormData.merchantCodes,
+      gcode: editFormData.code,
     });
     console.log(res);
     
@@ -975,15 +980,36 @@ const saveOperator = async () => {
 }
 
 .merchant-codes-wrapper {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
+  height: 100%;
+  min-height: 48px;
+}
+
+.merchant-count-label {
+  font-size: 12px;
+  color: #909399;
+  margin-bottom: 4px;
+  font-weight: 500;
 }
 
 .merchant-codes-tags {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
   gap: 4px;
+  max-height: 130px;
+  overflow-y: auto;
+}
+
+.merchant-tag-item {
+  flex-shrink: 0;
+}
+
+.merchant-empty {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  height: 48px;
+  color: #c0c4cc;
+  font-size: 12px;
 }
 
 .action-cell {
@@ -993,17 +1019,6 @@ const saveOperator = async () => {
   width: 100%;
   height: 100%;
   min-height: 48px;
-}
-
-.merchant-tag-row {
-  display: flex;
-  gap: 4px;
-  flex-wrap: nowrap;
-}
-
-.merchant-tag-item {
-  margin-left: 4px;
-  display: inline-block;
 }
 
 .merchant-option {

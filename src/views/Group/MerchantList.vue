@@ -119,16 +119,16 @@
                 <span v-else>-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="creditUsed" label="授信已用" width="120" align="right">
+            <el-table-column v-if="hasCreditUsed" prop="creditUsed" label="授信已用" width="120" align="right" >
               <template #default="{ row }">
                 {{ formatMoney(row.creditUsed) }}
               </template>
             </el-table-column>
-            <el-table-column prop="creditMax" label="授信上限" width="120" align="right">
+            <!-- <el-table-column prop="creditMax" label="授信上限" width="120" align="right">
               <template #default="{ row }">
                 {{ formatMoney(row.creditMax) }}
               </template>
-            </el-table-column>
+            </el-table-column> -->
             <el-table-column prop="createdOn" label="商户创建时间（北京）" width="170">
               <template #default="{ row }">
                 {{ formatDate(row.createdOn) }}
@@ -181,6 +181,7 @@ const totalBalance = computed(() => {
 const activeCount = computed(() => merchantList.value.filter(m => m.status === 4).length);
 const frozenCount = computed(() => merchantList.value.filter(m => m.status === 2 || m.status === 3).length);
 const suspendedCount = computed(() => merchantList.value.filter(m => m.isSuspended).length);
+const hasCreditUsed = computed(() => merchantList.value.some(m => Number(m.creditUsed) > 0));
 
 const statusText = (status) => {
   return statusMap[status] || "未知";
