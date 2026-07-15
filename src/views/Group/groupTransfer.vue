@@ -253,7 +253,7 @@
               <el-table-column prop="toAccount" label="转入商户号" width="150" align="center" />
               <el-table-column prop="amount" label="转账金额" width="140" align="center">
                 <template #default="scope">
-                  {{ formatCurrency(scope.row.amount, scope.row.currency) }}
+                  {{ formatCurrency(scope.row.amount, scope.row.currency || currency.value) }}
                 </template>
               </el-table-column>
               <el-table-column prop="status" label="状态" width="100" align="center">
@@ -294,8 +294,10 @@ import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import CopyText from '@/components/CopyText.vue';
+import { formatCurrency } from '@/utils/currency';
 
 const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 页面标题
 const title = '集团商户互转';
@@ -308,7 +310,8 @@ const formRef = ref(null);
 const merchantOptions = ref([]);
 
 const groupBalance = computed(() => {
-  return merchantOptions.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0).toFixed(4);
+  const total = merchantOptions.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0);
+  return formatCurrency(total, currency.value);
 });
 
 const ruleForm = reactive({
@@ -467,18 +470,6 @@ const initTimeRange = () => {
 };
 
 // 获取转账记录
-const formatCurrency = (amount, currency) => {
-  const currencyConfig = {
-    BRL: { symbol: 'R$', decimals: 2 },
-    CNY: { symbol: '¥', decimals: 2 },
-    USD: { symbol: '$', decimals: 2 },
-    EUR: { symbol: '€', decimals: 2 },
-    JPY: { symbol: '¥', decimals: 0 }
-  };
-  const config = currencyConfig[currency] || currencyConfig.BRL;
-  return `${config.symbol} ${Number(amount).toLocaleString('pt-BR', { minimumFractionDigits: config.decimals, maximumFractionDigits: config.decimals })}`;
-};
-
 const getTransferHistory = async () => {
   historyLoading.value = true;
   try {

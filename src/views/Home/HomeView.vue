@@ -86,9 +86,21 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="orderamount" label="订单金额" align="center" />
-            <el-table-column prop="realamount" label="入账金额" align="center" />
-            <el-table-column prop="balance" label="变后余额" align="center" />
+            <el-table-column prop="orderamount" label="订单金额" align="center">
+              <template #default="{ row }">
+                {{ formatCurrency(row.orderamount, currency.value) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="realamount" label="入账金额" align="center">
+              <template #default="{ row }">
+                {{ formatCurrency(row.realamount, currency.value) }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="balance" label="变后余额" align="center">
+              <template #default="{ row }">
+                {{ formatCurrency(row.balance, currency.value) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
             <el-table-column prop="type" label="类型" align="center">
               <template #default="{ row }">
@@ -105,13 +117,14 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import ProjectBox from "./component/project.vue";
 import FastBox from "./component/fast.vue";
 import { View, Hide, Refresh } from "@element-plus/icons-vue";
 import CopyText from '@/components/CopyText.vue';
 import useUserStore from '../../stores/user';
-import { http } from '@/api'; // 假设http是从api/index.js导入的
+import { http } from '@/api';
+import { formatCurrency } from '../../utils/currency';
 
 // 定义响应式变量
 const loading = ref(false);
@@ -121,6 +134,7 @@ const projectBoxRef = ref(null); // 用于访问ProjectBox组件的方法
 const availableBalance = ref(0); // 可用余额
 // 初始化store
 const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 const orderTypes = ref([]);
 
@@ -182,10 +196,8 @@ const toggleShowData = () => {
   showData.value = !showData.value;
 };
 
-// 格式化余额显示
 const formatBalance = (balance) => {
-  if (!balance && balance !== 0) return '0.00';
-  return 'R$ ' + Number(balance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrency(balance, currency.value);
 };
 
 // 刷新ProjectBox数据

@@ -146,6 +146,11 @@ import { ref, reactive, computed, onMounted } from 'vue';
 import { Search, Refresh } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import { http } from '@/api';
+import useUserStore from '@/stores/user';
+import { formatCurrency } from '@/utils/currency';
+
+const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 defineProps({
   title: {
@@ -176,7 +181,7 @@ const statusMap = {
 const totalCount = computed(() => merchantList.value.length);
 const totalBalance = computed(() => {
   const total = merchantList.value.reduce((sum, m) => sum + (Number(m.balance) || 0), 0);
-  return `R$ ${Number(total).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  return formatCurrency(total, currency.value);
 });
 const activeCount = computed(() => merchantList.value.filter(m => m.status === 4).length);
 const frozenCount = computed(() => merchantList.value.filter(m => m.status === 2 || m.status === 3).length);
@@ -194,7 +199,7 @@ const statusTagType = (status) => {
 
 const formatMoney = (val) => {
   if (val == null) return "-";
-  return "R$ " + Number(val).toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrency(val, currency.value);
 };
 
 const formatDate = (dateStr) => {

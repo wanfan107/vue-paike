@@ -58,19 +58,19 @@
             <div class="merchant-summary">
               <div class="summary-card today-collect">
                 <div class="summary-title">今日代收总额</div>
-                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.todayCollect) }}</div>
+                <div class="summary-value">{{ formatCurrency(merchantSummaryData.todayCollect, currency.value) }}</div>
               </div>
               <div class="summary-card yesterday-collect">
                 <div class="summary-title">昨日代收总额</div>
-                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.yesterdayCollect) }}</div>
+                <div class="summary-value">{{ formatCurrency(merchantSummaryData.yesterdayCollect, currency.value) }}</div>
               </div>
               <div class="summary-card today-pay">
                 <div class="summary-title">今日代付总额</div>
-                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.todayPay) }}</div>
+                <div class="summary-value">{{ formatCurrency(merchantSummaryData.todayPay, currency.value) }}</div>
               </div>
               <div class="summary-card yesterday-pay">
                 <div class="summary-title">昨日代付总额</div>
-                <div class="summary-value">R$ {{ formatCurrency(merchantSummaryData.yesterdayPay) }}</div>
+                <div class="summary-value">{{ formatCurrency(merchantSummaryData.yesterdayPay, currency.value) }}</div>
               </div>
             </div>
             <div class="charts-wrapper">
@@ -229,9 +229,10 @@ import {
   getDateRange, 
   disabledFutureDate 
 } from "@/utils/brazilTime";
+import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
-const currency = userStore.merchantInfo?.currency;
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 每日报表
 const props = defineProps({
@@ -303,7 +304,7 @@ const realTimeChart = computed(() => {
       formatter: function(params) {
         let result = params[0].axisValueLabel + '<br/>';
         params.forEach(function(item) {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': ' + formatCurrency(item.value, currency.value) + '<br/>';
         });
         return result;
       }
@@ -370,14 +371,7 @@ const realTimeChart = computed(() => {
       axisLabel: {
         color: "#666",
         fontSize: 12,
-        formatter: (value) => {
-          if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
-          } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
-          }
-          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        },
+        formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: {
         show: true,
@@ -479,7 +473,7 @@ const balanceChartOption = computed(() => {
       formatter: function(params) {
         let result = params[0].axisValueLabel + '<br/>';
         params.forEach(function(item) {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': ' + formatCurrency(item.value, currency.value) + '<br/>';
         });
         return result;
       }
@@ -648,12 +642,6 @@ const fetchMerchantSummary = async () => {
   } catch (error) {
     console.error('获取商户汇总数据失败:', error);
   }
-};
-
-// 格式化金额
-const formatCurrency = (value) => {
-  if (!value || isNaN(value)) return '0.00';
-  return parseFloat(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
 // 图表引用
@@ -1113,7 +1101,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1277,7 +1265,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",

@@ -71,8 +71,10 @@ import { http } from "@/api";
 import ProjectBox from "./component/project.vue";
 import * as echarts from 'echarts';
 import useUserStore from "@/stores/user";
+import { formatCurrency } from '@/utils/currency';
 
 const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 银行页面
 const props = defineProps({
@@ -169,7 +171,7 @@ const realTimeChart = computed(() => {
         const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
         result += "收款笔数成功率: " + collectionSuccessRates[index] + "%<br/>";
-        result += "收款金额: R$ " + collectionAmounts[index].toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + "<br/>";
+        result += "收款金额: " + formatCurrency(collectionAmounts[index], currency.value) + "<br/>";
         result += "收款笔数: " + collectionCounts[index] + "笔";
         return result;
       },

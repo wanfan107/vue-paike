@@ -222,9 +222,10 @@ import {
   getThisYearToLastMonth,
   disabledCurrentMonth 
 } from "@/utils/brazilTime";
+import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
-const currency = userStore.merchantInfo?.currency;
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 月报表
 const props = defineProps({
@@ -336,7 +337,7 @@ const realTimeChart = computed(() => {
       formatter: function(params) {
         let result = params[0].axisValueLabel + '<br/>';
         params.forEach(function(item) {
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + item.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:10px;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': ' + formatCurrency(item.value, currency.value) + '<br/>';
         });
         return result;
       }
@@ -403,14 +404,7 @@ const realTimeChart = computed(() => {
       axisLabel: {
         color: "#666",
         fontSize: 12,
-        formatter: (value) => {
-          if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
-          } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
-          }
-          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        },
+        formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: {
         show: true,
@@ -514,7 +508,7 @@ const balanceChartOption = computed(() => {
         let result = params[0].axisValueLabel + '<br/>';
         params.forEach(function(item) {
           const val = item.value != null ? Number(item.value) : 0;
-          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': R$' + val.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '<br/>';
+          result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + item.color + ';"></span>' + item.seriesName + ': ' + formatCurrency(val, currency.value) + '<br/>';
         });
         return result;
       }
@@ -1062,7 +1056,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1226,7 +1220,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1517,10 +1511,7 @@ const formatNumber = (num) => {
   if (num === null || num === undefined || num === '' || isNaN(num)) {
     return '0.00';
   }
-  return 'R$ ' + parseFloat(num).toLocaleString('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  });
+  return formatCurrency(num, currency.value);
 };
 
 // 分页相关方法

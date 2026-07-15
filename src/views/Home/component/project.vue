@@ -25,11 +25,11 @@
             <span class="amount-value">
               <template v-if="props.showData">
                 <el-statistic 
-                :prefix="item.currency + ' '"
+                  :prefix="currencySymbol + ' '"
                   :value="animatedValues[index].value" 
-                  :precision="2"
-                  decimal-separator=","
-                  group-separator="."
+                  :precision="currencyConfig.decimals"
+                  :decimal-separator="currencyConfig.decimalSeparator"
+                  :group-separator="currencyConfig.thousandsSeparator"
                 />
               </template>
               <template v-else>
@@ -62,6 +62,7 @@ import { TransitionPresets, useTransition } from '@vueuse/core';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import { Plus, Coin, Minus, CreditCard } from "@element-plus/icons-vue";
+import { getCurrencySymbol, getCurrencyConfig } from "@/utils/currency";
 
 // 接收父组件传递的showData属性
 const props = defineProps({
@@ -74,31 +75,28 @@ const props = defineProps({
 // 初始化store
 const userStore = useUserStore();
 
+const currencySymbol = computed(() => getCurrencySymbol(userStore.merchantInfo?.currency));
+const currencyConfig = computed(() => getCurrencyConfig(userStore.merchantInfo?.currency));
+
 // 响应式项目列表
 const projectList = reactive([
   {
     name: "期初金额",
     amount: 0,
     desc: "当日初始余额",
-    count: '',
-    currency: "R$"
+    count: ''
   },
- 
-  // 收款、成功收款数
   {
     name: "收款",
     amount: 0,
     desc: "成功收款数",
-    count: 0,
-    currency: "R$"
+    count: 0
   },
-   // 打款、成功打款数
   {
     name: "付款",
     amount: 0,
     desc: "成功付款数",
-    count: 0,
-    currency: "R$"
+    count: 0
   },
 ]);
 

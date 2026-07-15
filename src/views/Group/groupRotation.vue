@@ -9,7 +9,7 @@
       <div class="content-wrapper">
           <div class="account-balance">
             <span class="balance-label">账户余额</span>
-            <span class="balance-amount">R$ {{ Number(currentAccount.balance).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
+            <span class="balance-amount">{{ formatCurrency(currentAccount.balance, currency.value) }}</span>
           </div>
           <div class="form-container">
           <el-form :model="transferForm" :rules="rules" ref="transferFormRef" label-width="120px">
@@ -39,10 +39,10 @@
                 :step="0.01"
                 @input="convertAmountToU"
               >
-                <template #prefix>R$</template>
+                <template #prefix>{{ getCurrencySymbol(currency.value) }}</template>
               </el-input>
               <div class="amount-tips">
-                最小转账金额: R$ 0.01
+                最小转账金额: {{ getCurrencySymbol(currency.value) }} 0.01
               </div>
             </el-form-item>
             
@@ -113,7 +113,7 @@
               <el-table-column prop="toAccount" label="转入账户" />
               <el-table-column prop="amount" label="转账金额" width="120">
                 <template #default="scope">
-                  R$ {{ Number(scope.row.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                  {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
               <el-table-column prop="status" label="状态" width="100">
@@ -163,9 +163,11 @@
 </template>
 <script setup>
 import {  Warning } from "@element-plus/icons-vue";
-import { ref, reactive } from 'vue';
+import { ref, reactive, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import useUserStore from '@/stores/user';
+import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
 
 // 账户互转
 const props = defineProps({
@@ -177,6 +179,8 @@ const props = defineProps({
 
 // 初始化router
 const router = useRouter();
+const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 表单引用
 const transferFormRef = ref(null);

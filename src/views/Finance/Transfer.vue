@@ -182,7 +182,7 @@
               <el-table-column prop="toAccount" label="转入账户" />
               <el-table-column prop="amount" label="转账金额" width="120">
                 <template #default="scope">
-                  R$ {{ Number(scope.row.amount).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}
+                  {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
               <el-table-column prop="status" label="状态" width="100">
@@ -209,18 +209,20 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import { Warning } from "@element-plus/icons-vue";
+import { formatCurrency } from '@/utils/currency';
 // 页面标题
 const title = '转账/提现';
 
 // 初始化store和router
 const userStore = useUserStore();
 const router = useRouter();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 响应式数据
 const loading = ref(false);

@@ -211,9 +211,10 @@ import useUserStore from "@/stores/user";
 import * as echarts from 'echarts';
 import { http } from "@/api";
 import { getYesterday, getDateRange } from "@/utils/brazilTime";
+import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
-const currency = userStore.merchantInfo?.currency;
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 每日报表
 const props = defineProps({
@@ -352,14 +353,7 @@ const realTimeChart = computed(() => {
       axisLabel: {
         color: "#666",
         fontSize: 12,
-        formatter: (value) => {
-          if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toFixed(2) + '亿';
-          } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toFixed(2) + '万';
-          }
-          return 'R$' + value.toString();
-        },
+        formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: {
         show: true,
@@ -1006,7 +1000,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1170,7 +1164,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: R$${params.value} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",

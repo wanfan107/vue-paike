@@ -175,6 +175,7 @@ import {
   getThisYearToLastMonth,
   disabledCurrentMonth 
 } from "@/utils/brazilTime";
+import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
@@ -240,7 +241,7 @@ const formatNumber = (val) => {
   if (val === null || val === undefined || val === '') return '0.00';
   const num = Number(val);
   if (isNaN(num)) return val;
-  return num.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return formatCurrency(num, currency.value, false);
 };
 
 // 图表容器
@@ -382,7 +383,7 @@ const lineChartOption = computed(() => {
             if (idx >= sortedParams.length) break;
             const p = sortedParams[idx];
             result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-            result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
+            result += p.seriesName + ": " + (p.value !== undefined && p.value !== null ? formatCurrency(p.value, currency.value) : formatCurrency(0, currency.value)) + "<br/>";
           }
           result += '</td>';
         }
@@ -419,14 +420,7 @@ const lineChartOption = computed(() => {
       axisLabel: {
         color: "#666",
         fontSize: 12,
-        formatter: (value) => {
-          if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
-          } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
-          }
-          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        },
+        formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
       nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
@@ -517,7 +511,7 @@ const balanceChartOption = computed(() => {
             if (idx >= sortedParams.length) break;
             const p = sortedParams[idx];
             result += '<span style="display:inline-block;margin-right:5px;border-radius:50%;width:10px;height:10px;background-color:' + p.color + ';"></span>';
-            result += p.seriesName + ": R$ " + (p.value !== undefined && p.value !== null ? p.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0') + "<br/>";
+            result += p.seriesName + ": " + (p.value !== undefined && p.value !== null ? formatCurrency(p.value, currency.value) : formatCurrency(0, currency.value)) + "<br/>";
           }
           result += '</td>';
         }
@@ -554,14 +548,7 @@ const balanceChartOption = computed(() => {
       axisLabel: {
         color: "#666",
         fontSize: 12,
-        formatter: (value) => {
-          if (value >= 100000000) {
-            return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
-          } else if (value >= 10000) {
-            return 'R$' + (value / 10000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '万';
-          }
-          return 'R$' + value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        },
+        formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
       nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
@@ -896,11 +883,11 @@ const getCollectionPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
         if (params.data.others && params.data.others.length > 0) {
           result += '<br/><br/>包含：';
           params.data.others.forEach((otherItem, idx) => {
-            result += `<br/>${otherItem.name}: R$${otherItem.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
         }
         return result;
@@ -994,11 +981,11 @@ const getPaymentPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: R$${params.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
         if (params.data.others && params.data.others.length > 0) {
           result += '<br/><br/>包含：';
           params.data.others.forEach((otherItem, idx) => {
-            result += `<br/>${otherItem.name}: R$${otherItem.value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
         }
         return result;

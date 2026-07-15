@@ -16,7 +16,8 @@ const CURRENCY_TIMEZONE_MAP = {
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
 const getTimezone = (currency) => {
-  return CURRENCY_TIMEZONE_MAP[currency?.toUpperCase()] || DEFAULT_TIMEZONE;
+  const currencyValue = typeof currency === 'object' && currency !== null && 'value' in currency ? currency.value : currency;
+  return CURRENCY_TIMEZONE_MAP[currencyValue?.toUpperCase()] || DEFAULT_TIMEZONE;
 };
 
 export const getNow = (currency) => {
