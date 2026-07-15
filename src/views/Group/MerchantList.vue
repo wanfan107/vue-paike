@@ -83,7 +83,7 @@
                 {{ formatMoney(row.balance) }}
               </template>
             </el-table-column>
-            <el-table-column prop="checkedBalanceTime" label="余额更新时间（北京）" width="170">
+            <el-table-column prop="checkedBalanceTime" label="余额更新时间" width="170">
               <template #default="{ row }">
                 {{ formatDate(row.checkedBalanceTime) }}
               </template>
@@ -129,7 +129,7 @@
                 {{ formatMoney(row.creditMax) }}
               </template>
             </el-table-column> -->
-            <el-table-column prop="createdOn" label="商户创建时间（北京）" width="170">
+            <el-table-column prop="createdOn" label="商户创建时间" width="170">
               <template #default="{ row }">
                 {{ formatDate(row.createdOn) }}
               </template>
