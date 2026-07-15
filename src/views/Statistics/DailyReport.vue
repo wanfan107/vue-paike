@@ -224,6 +224,15 @@ import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
 import useUserStore from "@/stores/user";
 import * as echarts from 'echarts';
 import { http } from "@/api";
+import { 
+  getYesterday, 
+  getDateRange, 
+  disabledFutureDate 
+} from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = userStore.merchantInfo?.currency;
+
 // 每日报表
 const props = defineProps({
   title: {
@@ -1328,171 +1337,52 @@ const getPaymentPieChart = (row) => {
 };
 
 // 使用 Pinia Store
-const userStore = useUserStore();
-const standardtime = computed(() => {
-  return userStore.merchantInfo?.standardtime
-    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-    : 0;
-});
-
-// 禁用日期函数，只能选择到昨天
+// 禁用日期函数，只能选择到昨天（根据币种选择时区）
 const disabledDate = (time) => {
-  // 获取当前时间戳
-  const timestamp = Date.now();
-  const localDate = new Date(timestamp);
-  const timezoneOffset = localDate.getTimezoneOffset();
-  
-  // 获取昨天的日期（考虑时区）
-  const yesterday = new Date(timestamp - 3600 * 1000 * 24 + timezoneOffset * 60 * 1000 + standardtime.value);
-  yesterday.setHours(0, 0, 0, 0);
-  
-  // 创建一个新的日期对象，只保留年月日，忽略时分秒
-  const selectedDate = new Date(time.getFullYear(), time.getMonth(), time.getDate());
-  // 创建昨天的日期对象，只保留年月日
-  const yesterdayDate = new Date(yesterday.getFullYear(), yesterday.getMonth(), yesterday.getDate());
-  // 比较日期，禁用昨天之后的日期
-  return selectedDate.getTime() > yesterdayDate.getTime();
+  return disabledFutureDate(time, currency);
 };
 
-// 将 shortcuts 也定义为 computed，确保响应式
+// 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
 const shortcuts = computed(() => [
   {
     text: "昨天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 创建昨天的日期
-      const yesterday = new Date(
-        timestamp - 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-
-      // 设置开始时间（00:00:00.000）
-      const start = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      const yesterday = getYesterday(currency);
+      const start = new Date(yesterday.format('YYYY-MM-DD'));
       start.setHours(0, 0, 0, 0);
-
-      // 设置结束时间（00:00:00.000，左闭右闭）
-      const end = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      const end = new Date(yesterday.format('YYYY-MM-DD'));
       end.setHours(0, 0, 0, 0);
-
       return [start, end];
     },
   },
   {
     text: "3天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 2天前的开始时间（左闭右闭，3天 = 今天-2天 到 今天）
-      const startDate = new Date(
-        timestamp - 2 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      const range = getDateRange(3, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
+      const end = new Date(range.end);
       end.setHours(0, 0, 0, 0);
-
       return [start, end];
     },
   },
   {
     text: "7天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 6天前的开始时间（左闭右闭，7天 = 今天-6天 到 今天）
-      const startDate = new Date(
-        timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      const range = getDateRange(7, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
+      const end = new Date(range.end);
       end.setHours(0, 0, 0, 0);
-
       return [start, end];
     },
   },
 ]);
 
-// 设置默认时间范围（最近7天，基于商户时区）
+// 设置默认时间范围（最近7天，根据币种选择时区，不包含当天）
 const setDefaultTime = () => {
-  const timestamp = Date.now();
-  const localDate = new Date(timestamp);
-  const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-  const standardTimeOffset = userStore.merchantInfo?.standardtime
-    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-    : 0;
-
-  const startDate = new Date(
-    timestamp - 6 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-  );
-  const start = new Date(
-    startDate.getFullYear(),
-    startDate.getMonth(),
-    startDate.getDate(),
-  );
-  start.setHours(0, 0, 0, 0);
-
-  const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-  const end = new Date(
-    endDate.getFullYear(),
-    endDate.getMonth(),
-    endDate.getDate(),
-  );
-  end.setHours(23, 59, 59, 999);
-
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  searchForm.time = [formatDate(start), formatDate(end)];
+  const range = getDateRange(7, currency);
+  searchForm.time = [range.start, range.end];
 };
 
 // 刷新方法

@@ -189,6 +189,11 @@ import { ElMessage, ElMessageBox } from "element-plus";
 import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
+import { getYesterday, getDateRange } from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = userStore.merchantInfo?.currency;
+
 // 其他查询
 const props = defineProps({
   title: {
@@ -287,112 +292,38 @@ const onDateRangeChange = (val) => {
 };
 
 // 使用 Pinia Store
-const userStore = useUserStore();
-const standardtime = computed(() => {
-  return userStore.merchantInfo?.standardtime
-    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-    : 0;
-});
-
-// 将 shortcuts 也定义为 computed，确保响应式
+// 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
 const shortcuts = computed(() => [
   {
     text: "昨天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 创建昨天的日期
-      const yesterday = new Date(
-        timestamp - 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-
-      // 设置开始时间（00:00:00.000）
-      const start = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      const yesterday = getYesterday(currency);
+      const start = new Date(yesterday.format('YYYY-MM-DD'));
       start.setHours(0, 0, 0, 0);
-
-      // 设置结束时间（23:59:59.999）
-      const end = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
+      const end = new Date(yesterday.format('YYYY-MM-DD'));
       end.setHours(23, 59, 59, 999);
-
       return [start, end];
     },
   },
   {
     text: "3天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 3天前的开始时间
-      const startDate = new Date(
-        timestamp - 3 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      const range = getDateRange(3, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
+      const end = new Date(range.end);
       end.setHours(0, 0, 0, 0);
-
       return [start, end];
     },
   },
   {
     text: "7天",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 7天前的开始时间
-      const startDate = new Date(
-        timestamp - 7 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
+      const range = getDateRange(7, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
+      const end = new Date(range.end);
       end.setHours(0, 0, 0, 0);
-
       return [start, end];
     },
   },

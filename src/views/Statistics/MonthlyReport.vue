@@ -16,6 +16,7 @@
                 type="monthrange"
                 unlink-panels
                 :shortcuts="shortcuts"
+                :disabled-date="disabledDate"
                 range-separator="至"
                 start-placeholder="开始日期"
                 end-placeholder="结束日期"
@@ -215,6 +216,16 @@ import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
 import useUserStore from "@/stores/user";
 import * as echarts from 'echarts';
 import { http } from "@/api";
+import { 
+  getMonthRange, 
+  getLastMonth, 
+  getThisYearToLastMonth,
+  disabledCurrentMonth 
+} from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = userStore.merchantInfo?.currency;
+
 // 月报表
 const props = defineProps({
   title: {
@@ -1274,99 +1285,52 @@ const getPaymentPieChart = (row) => {
   };
 };
 
-// 使用 Pinia Store
-const userStore = useUserStore();
-const standardtime = computed(() => {
-  return userStore.merchantInfo?.standardtime
-    ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-    : 0;
-});
+// 禁用日期函数，只能选择到上个月（根据币种选择时区）
+const disabledDate = (time) => {
+  return disabledCurrentMonth(time, currency);
+};
 
-// 将 shortcuts 也定义为 computed，确保响应式
+// 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
 const shortcuts = computed(() => [
   {
-    text: "本月",
+    text: "上月",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 当前月份的开始时间
-      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth(), 1);
+      const range = getLastMonth(currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前月份的结束时间
-      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
+      const end = new Date(range.end);
       end.setHours(23, 59, 59, 999);
-
       return [start, end];
     },
   },
   {
     text: "3个月",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 三个月前的开始时间
-      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() - 2, 1);
+      const range = getMonthRange(3, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前月份的结束时间
-      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
+      const end = new Date(range.end);
       end.setHours(23, 59, 59, 999);
-
       return [start, end];
     },
   },
   {
     text: "7个月",
     value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 七个月前的开始时间
-      const adjustedDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const start = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() - 6, 1);
+      const range = getMonthRange(7, currency);
+      const start = new Date(range.start);
       start.setHours(0, 0, 0, 0);
-
-      // 当前月份的结束时间
-      const end = new Date(adjustedDate.getFullYear(), adjustedDate.getMonth() + 1, 0);
+      const end = new Date(range.end);
       end.setHours(23, 59, 59, 999);
-
       return [start, end];
     },
   },
 ]);
 
-// 设置默认时间范围（最近2个月）
+// 设置默认时间范围（最近3个月到上月，根据币种选择时区）
 const setDefaultTime = () => {
-  const now = new Date();
-  const twoMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 2, now.getDate());
-  const start = new Date(twoMonthsAgo.getFullYear(), twoMonthsAgo.getMonth(), twoMonthsAgo.getDate(), 0, 0, 0, 0);
-  const end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
-  
-  const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-  };
-  
-  searchForm.time = [formatDate(start), formatDate(end)];
+  const range = getMonthRange(3, currency);
+  searchForm.time = [range.start, range.end];
 };
 
 // 刷新方法

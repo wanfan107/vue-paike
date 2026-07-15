@@ -176,6 +176,19 @@ import { ref, reactive, onMounted, onBeforeUnmount, computed, watch, nextTick } 
 import { ElMessage } from "element-plus";
 import * as echarts from 'echarts';
 import { http } from "@/api";
+import useUserStore from "@/stores/user";
+import { 
+  getNow, 
+  getToday, 
+  getYesterday, 
+  formatDate as formatBrazilDate, 
+  getDateRange, 
+  getLastMonth,
+  disabledFutureDate 
+} from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 const props = defineProps({
   title: { type: String, default: "集团每日报表" },
@@ -208,16 +221,30 @@ const columns = reactive([
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 
-// 快捷日期
+// 快捷日期（不包含当天，使用巴西时间）
 const shortcuts = [
-  { text: '今天', value: () => { const d = new Date(); return [formatDateOnly(d), formatDateOnly(d)]; } },
-  { text: '昨天', value: () => { const d = new Date(); d.setTime(d.getTime() - 3600 * 1000 * 24); return [formatDateOnly(d), formatDateOnly(d)]; } },
-  { text: '近7天', value: () => { const end = new Date(); const start = new Date(); start.setTime(start.getTime() - 3600 * 1000 * 24 * 6); return [formatDateOnly(start), formatDateOnly(end)]; } },
-  { text: '近30天', value: () => { const end = new Date(); const start = new Date(); start.setTime(start.getTime() - 3600 * 1000 * 24 * 29); return [formatDateOnly(start), formatDateOnly(end)]; } },
-  { text: '本月', value: () => { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); return [formatDateOnly(start), formatDateOnly(end)]; } },
+  { text: '昨天', value: () => { 
+    const yesterday = getYesterday(currency.value);
+    return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]; 
+  }},
+  { text: '近7天', value: () => { 
+    const range = getDateRange(7, currency.value);
+    return [range.start, range.end]; 
+  }},
+  { text: '近30天', value: () => { 
+    const range = getDateRange(30, currency.value);
+    return [range.start, range.end]; 
+  }},
+  { text: '上月', value: () => { 
+    const range = getLastMonth(currency.value);
+    return [range.start, range.end]; 
+  }},
 ];
 
-const disabledDate = (time) => time.getTime() > Date.now();
+// 禁用日期函数，只能选择到昨天（根据币种选择时区）
+const disabledDate = (time) => {
+  return disabledFutureDate(time, currency.value);
+};
 
 // 格式化数字
 const formatNumber = (val) => {
@@ -1084,11 +1111,9 @@ const selectInverse = () => {
 };
 
 onMounted(async () => {
-  // 默认近7天
-  const end = new Date();
-  const start = new Date();
-  start.setTime(start.getTime() - 3600 * 1000 * 24 * 6);
-  searchForm.time = [formatDateOnly(start), formatDateOnly(end)];
+  // 默认近7天（不包含当天，根据币种选择时区）
+  const range = getDateRange(7, currency.value);
+  searchForm.time = [range.start, range.end];
 
   // 拉取商户列表
   try {

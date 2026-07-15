@@ -13,7 +13,11 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
-import useUserStore from '@/stores/user';
+import useUserStore from "@/stores/user";
+import { getNow, getYesterday, getDateRange } from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 定义组件属性
 const props = defineProps({
@@ -37,65 +41,41 @@ const emit = defineEmits(['change']);
 // 响应式数据
 const activeRange = ref(props.defaultValue);
 
-// 使用 Pinia Store
-const userStore = useUserStore();
-  // console.log("------------------------",userStore.userInfo);
-  // console.log("------------------------",userStore.merchantInfo);
-const standardtime = computed(() => {
-  return +userStore.merchantInfo.standardtime * 60 * 60 * 1000 || 0;
-});
-
-// 选择时间范围
+// 选择时间范围（使用巴西时间）
 const selectRange = (range) => {
   activeRange.value = range;
 
-  // 根据选择的时间范围设置时间参数
-  const timestamp = Date.now(); // 当前时间
-  const localDate = new Date(timestamp);
-  const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000; // 本地时区偏移
-  const adjustedDate = new Date(
-    timestamp + timezoneOffset + standardtime.value
-  );
-
-  let startDate = new Date(adjustedDate);
-  let endDate = new Date(adjustedDate);
+  let startDate, endDate;
 
   switch (range) {
     case "today":
-      // 今天：从当天0点到当天23:59:59
-      startDate = new Date(adjustedDate.setHours(0, 0, 0, 0));
-      endDate = new Date(adjustedDate.setHours(23, 59, 59, 999));
+      const now = getNow(currency.value);
+      startDate = now.startOf('day');
+      endDate = now.endOf('day');
       break;
     case "yesterday":
-      // 昨天：从昨天0点到昨天23:59:59
-      endDate = new Date(adjustedDate);
-      endDate.setDate(adjustedDate.getDate() - 1);
-      endDate = new Date(endDate.setHours(23, 59, 59, 999));
-      startDate = new Date(endDate);
-      startDate.setDate(endDate.getDate());
-      startDate = new Date(startDate.setHours(0, 0, 0, 0));
+      const yesterday = getYesterday(currency.value);
+      startDate = yesterday.startOf('day');
+      endDate = yesterday.endOf('day');
       break;
     case "3days":
-      startDate = new Date(adjustedDate);
-      startDate.setDate(adjustedDate.getDate() - 3);
-      startDate = new Date(startDate.setHours(0, 0, 0, 0));
-      endDate = new Date(adjustedDate.setHours(0, 0, 0, 0));
+      startDate = getNow(currency.value).subtract(3, 'day').startOf('day');
+      endDate = getNow(currency.value).endOf('day');
       break;
     case "7days":
-      startDate = new Date(adjustedDate);
-      startDate.setDate(adjustedDate.getDate() - 7);
-      startDate = new Date(startDate.setHours(0, 0, 0, 0));
-      endDate = new Date(adjustedDate.setHours(0, 0, 0, 0));
+      startDate = getNow(currency.value).subtract(7, 'day').startOf('day');
+      endDate = getNow(currency.value).endOf('day');
       break;
     default:
-      startDate = new Date(adjustedDate.setHours(0, 0, 0, 0));
-      endDate = new Date(adjustedDate.setHours(23, 59, 59, 999));
+      const defaultNow = getNow(currency.value);
+      startDate = defaultNow.startOf('day');
+      endDate = defaultNow.endOf('day');
   }
 
   // 触发事件，传递时间范围
   const timeRange = [
-    formatDate(startDate, "yyyy-MM-dd HH:mm:ss"),
-    formatDate(endDate, "yyyy-MM-dd HH:mm:ss"),
+    startDate.format("YYYY-MM-DD HH:mm:ss"),
+    endDate.format("YYYY-MM-DD HH:mm:ss"),
   ];
 
   emit("change", {
@@ -105,34 +85,12 @@ const selectRange = (range) => {
   });
 };
 
-// 格式化日期
-const formatDate = (date, format) => {
-  const pad = (num) => String(num).padStart(2, "0");
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  return format
-    .replace("yyyy", year)
-    .replace("MM", month)
-    .replace("dd", day)
-    .replace("HH", hours)
-    .replace("mm", minutes)
-    .replace("ss", seconds);
-};
-
 // 监听defaultValue变化
 watch(() => props.defaultValue, (newValue) => {
   activeRange.value = newValue || '';
 });
 
-// 如果需要在组件挂载时执行某些逻辑，可以使用
 onMounted(() => {
-  // 组件挂载后执行的逻辑
-  // 不再自动触发初始事件，避免无限循环
-  // selectRange(activeRange.value);
 });
 </script>
 

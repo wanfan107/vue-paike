@@ -130,10 +130,11 @@ const getdata = async () => {
       startDate,
       endDate,
     });
+    console.log('financeRes:', financeRes);
     
     if (financeRes.code === 200 && financeRes.data?.list?.length > 0) {
       const prevBalance = financeRes.data.list[0].PreviousDayEndBalance ? Number(financeRes.data.list[0].PreviousDayEndBalance) : 0;
-      projectList[0].amount = prevBalance || (userStore.merchantInfo?.balance ? Number(userStore.merchantInfo.balance) : 0);
+      projectList[0].amount = prevBalance !== 0 ? prevBalance : (userStore.merchantInfo?.balance ? Number(userStore.merchantInfo.balance) : 0);
     } else {
       projectList[0].amount = userStore.merchantInfo?.balance ? Number(userStore.merchantInfo.balance) : 0;
     }

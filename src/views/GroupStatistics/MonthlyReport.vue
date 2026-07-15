@@ -16,6 +16,7 @@
                 type="monthrange"
                 unlink-panels
                 :shortcuts="shortcuts"
+                :disabled-date="disabledDate"
                 range-separator="至"
                 start-placeholder="开始月份"
                 end-placeholder="结束月份"
@@ -101,6 +102,7 @@
                         show-summary
                         :sum-text="'集团汇总'"
                         border
+                        max-height="300"
                         style="width: 100%; margin-top: 10px"
                         size="small"
                         class="expand-table"
@@ -166,6 +168,16 @@ import { ref, reactive, onMounted, onBeforeUnmount, computed, watch, nextTick } 
 import { ElMessage } from "element-plus";
 import * as echarts from 'echarts';
 import { http } from "@/api";
+import useUserStore from "@/stores/user";
+import { 
+  getMonthRange, 
+  getLastMonth, 
+  getThisYearToLastMonth,
+  disabledCurrentMonth 
+} from "@/utils/brazilTime";
+
+const userStore = useUserStore();
+const currency = computed(() => userStore.merchantInfo?.currency);
 
 const props = defineProps({
   title: { type: String, default: "集团每月报表" },
@@ -198,13 +210,29 @@ const columns = reactive([
   { prop: "CurrentMonthBalance", label: "期末余额" },
 ]);
 
-// 快捷月份
+// 禁用日期函数，只能选择到上个月（根据币种选择时区）
+const disabledDate = (time) => {
+  return disabledCurrentMonth(time, currency.value);
+};
+
+// 快捷月份（不包含当月，根据币种选择时区）
 const shortcuts = [
-  { text: '本月', value: () => { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth(), 1); return [start, end]; } },
-  { text: '上月', value: () => { const d = new Date(); const start = new Date(d.getFullYear(), d.getMonth() - 1, 1); const end = new Date(d.getFullYear(), d.getMonth(), 0); return [start, end]; } },
-  { text: '近3个月', value: () => { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth() - 2, 1); return [start, end]; } },
-  { text: '近6个月', value: () => { const end = new Date(); const start = new Date(end.getFullYear(), end.getMonth() - 5, 1); return [start, end]; } },
-  { text: '今年', value: () => { const end = new Date(); const start = new Date(end.getFullYear(), 0, 1); return [start, end]; } },
+  { text: '上月', value: () => { 
+    const range = getLastMonth(currency.value);
+    return [new Date(range.start), new Date(range.end)]; 
+  }},
+  { text: '近3个月', value: () => { 
+    const range = getMonthRange(3, currency.value);
+    return [new Date(range.start), new Date(range.end)]; 
+  }},
+  { text: '近6个月', value: () => { 
+    const range = getMonthRange(6, currency.value);
+    return [new Date(range.start), new Date(range.end)]; 
+  }},
+  { text: '今年至上月', value: () => { 
+    const range = getThisYearToLastMonth(currency.value);
+    return [new Date(range.start), new Date(range.end)]; 
+  }},
 ];
 
 // 格式化数字
@@ -1004,10 +1032,9 @@ const selectInverse = () => {
 };
 
 onMounted(async () => {
-  // 默认近6个月
-  const end = new Date();
-  const start = new Date(end.getFullYear(), end.getMonth() - 5, 1);
-  searchForm.time = [start, end];
+  // 默认近6个月（不包含当月，根据币种选择时区）
+  const range = getMonthRange(6, currency.value);
+  searchForm.time = [new Date(range.start), new Date(range.end)];
 
   // 拉取商户列表
   try {
