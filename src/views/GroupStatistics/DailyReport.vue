@@ -113,7 +113,7 @@
                       >
                         <el-table-column prop="code" label="商户号" align="center" />
                         <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
-                        <el-table-column prop="TotalAmountReceived" label="收款总额" align="center" />
+                        <el-table-column prop="SuccessAmountPayin" label="收款总额" align="center" />
                         <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
                         <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
                           <template #default="scope">
