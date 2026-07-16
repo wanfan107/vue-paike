@@ -291,7 +291,7 @@ onMounted(() => {
             (item) => item.prop === "merchantCode"
           ).options = res.data .filter(m => !m.code?.startsWith('G')).map((m) => ({
             value: m.code,
-            name: m.code + (m.qq ? ` (${m.qq})` : ""),
+            name: m.code + (m.qq ? ` - ${m.qq}` : ""),
           }));
         }
       });

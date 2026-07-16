@@ -71,7 +71,7 @@
                             :value="merchant.code"
                           >
                             <div class="option-content">
-                              <span class="option-code">{{ merchant.code }}</span>
+                              <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
                               <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
                             </div>
                           </el-option>
@@ -254,7 +254,7 @@
                   :value="merchant.code"
                 >
                   <div class="option-content">
-                    <span class="option-code">{{ merchant.code }}</span>
+                    <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
                     <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
                   </div>
                 </el-option>
@@ -455,7 +455,8 @@ const loadMerchants = async () => {
         .filter(m => !m.code?.startsWith('G'))
         .map(m => ({
           code: m.code,
-          balance: m.balance || 0
+          balance: m.balance || 0,
+          qq: m.qq,
         }));
     }
   } catch (error) {

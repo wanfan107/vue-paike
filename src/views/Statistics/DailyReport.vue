@@ -227,7 +227,8 @@ import { http } from "@/api";
 import { 
   getYesterday, 
   getDateRange, 
-  disabledFutureDate 
+  disabledFutureDate,
+  getTimezone 
 } from "@/utils/brazilTime";
 import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
@@ -1333,6 +1334,17 @@ const disabledDate = (time) => {
 // 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
 const shortcuts = computed(() => [
   {
+    text: "今天",
+    value: () => {
+      const today = dayjs().tz(getTimezone(currency));
+      const start = new Date(today.format('YYYY-MM-DD'));
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(today.format('YYYY-MM-DD'));
+      end.setHours(0, 0, 0, 0);
+      return [start, end];
+    },
+  },
+  {
     text: "昨天",
     value: () => {
       const yesterday = getYesterday(currency);
@@ -1367,7 +1379,7 @@ const shortcuts = computed(() => [
   },
 ]);
 
-// 设置默认时间范围（最近7天，根据币种选择时区，不包含当天）
+// 设置默认时间范围（最近7天，根据币种选择时区）
 const setDefaultTime = () => {
   const range = getDateRange(7, currency);
   searchForm.time = [range.start, range.end];

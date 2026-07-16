@@ -32,9 +32,11 @@
               <el-table-column prop="name" label="别名" width="100" />
               <el-table-column prop="roleName" label="角色" width="120">
                 <template  #default="{ row }">
-                  <el-tag :type="getRoleTagType(row.roleCode)" size="small">
-                    {{ row.roleName }}
-                  </el-tag>
+                  <el-tooltip :content="getRoleDescription(row.roleCode)" placement="top">
+                    <el-tag :type="getRoleTagType(row.roleCode)" size="small">
+                      {{ row.roleName }}
+                    </el-tag>
+                  </el-tooltip>
                 </template>
               </el-table-column>
               <el-table-column prop="merchantCodes" label="可操作商户" width="260">
@@ -144,7 +146,9 @@
                   运营账户
                 </el-radio>
               </el-radio-group>
-              <!-- <span class="account-type-tip">运营账户只能查看订单和下载流水，其他不可以查看，财务暂时禁用</span> -->
+              <el-tooltip content="财务账户：可进行下发、互转、查询、导出报表对账等操作。运营账户：仅能查询订单和导出报表对账，无法进行下发和互转" placement="top">
+                <span class="account-type-tip">?</span>
+              </el-tooltip>
             </el-form-item>
 
             <el-form-item label="账户状态" prop="status">
@@ -184,6 +188,7 @@
                     >
                       {{ merchant.isGroup ? '集团' : '商户'}}
                     </el-tag>
+                    <span v-if="merchant.qq" class="merchant-qq">{{ merchant.qq }}</span>
                   </div>
                 </el-option>   
               </el-select>
@@ -250,7 +255,9 @@
                   </el-radio>
                 </template>
               </el-radio-group>
-              <!-- <span class="account-type-tip">运营账户只能查看订单和下载流水，其他不可以查看，财务暂时禁用</span> -->
+              <el-tooltip content="财务账户：可进行下发、互转、查询、导出报表对账等操作。运营账户：仅能查询订单和导出报表对账，无法进行下发和互转" placement="top">
+                <span class="account-type-tip">?</span>
+              </el-tooltip>
             </el-form-item>
 
             <el-form-item label="账户状态" prop="status">
@@ -297,6 +304,7 @@
                     >
                       {{ merchant.isGroup ? '集团' : '商户'}}
                     </el-tag>
+                                        <span v-if="merchant.qq" class="merchant-qq">{{ merchant.qq }}</span>
                   </div>
                 </el-option>
               </el-select>
@@ -627,6 +635,15 @@ const getRoleTagType = (roleCode) => {
   // if (roleCode === 'financial' || roleCode === 'finance') return 'warning';
   // return 'success';
   return 'danger';
+};
+
+const getRoleDescription = (roleCode) => {
+  const descriptions = {
+    admin: '超级管理员：拥有系统最高权限，可管理所有商户和操作员',
+    finance: '财务账户：可进行下发、互转、查询、导出报表对账等操作',
+    operator: '运营账户：仅能查询订单和导出报表对账，无法进行下发和互转'
+  };
+  return descriptions[roleCode] || '';
 };
 
 // 将商户代码数组分成每组3个
@@ -1036,14 +1053,33 @@ const saveOperator = async () => {
     color: #909399;
     font-family: monospace;
   }
+
+  .merchant-qq {
+    font-size: 12px;
+    color: #000000;
+    font-family: monospace;
+  }
 }
 
 .account-type-tip {
-  display: block;
-  margin-top: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 8px;
+  border-radius: 50%;
+  background-color: #333;
+  color: #fff;
   font-size: 12px;
-  color: #909399;
-  line-height: 1.4;
+  font-weight: bold;
+  cursor: help;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #666;
+    transform: scale(1.1);
+  }
 }
 
 .create-time-display {

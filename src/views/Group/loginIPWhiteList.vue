@@ -24,7 +24,7 @@
               <el-option
                 v-for="merchant in merchants"
                 :key="merchant.code"
-                :label="merchant.code"
+                :label="`${merchant.code}${merchant.qq ? ' - ' + merchant.qq : ''}`"
                 :value="merchant.code"
               />
             </el-select>
@@ -80,13 +80,13 @@
               <el-select
                 v-model="queryForm.merchantCode"
                 placeholder="请选择商户号"
-                style="width: 200px;"
+                style="width: 280px;"
                 clearable
               >
                 <el-option
                   v-for="merchant in merchants"
                   :key="merchant.code"
-                  :label="merchant.code"
+                  :label="`${merchant.code}${merchant.qq ? ' - ' + merchant.qq : ''}`"
                   :value="merchant.code"
                 />
               </el-select>
@@ -304,6 +304,7 @@ const loadMerchants = async () => {
       merchants.value = res.data.filter(m => !m.code?.startsWith('G')).map(item => ({
         code: item.code,
         name: item.name,
+        qq: item.qq,
       }));
     }
   } catch (error) {

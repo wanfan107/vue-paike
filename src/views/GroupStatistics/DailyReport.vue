@@ -46,7 +46,7 @@
               size="small"
               @change="updateCharts"
             >
-              <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
+              <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
             </el-select>
             <div class="select-buttons">
               <el-button size="small" @click="selectAll">全选</el-button>
@@ -184,7 +184,8 @@ import {
   formatDate as formatBrazilDate, 
   getDateRange, 
   getLastMonth,
-  disabledFutureDate 
+  disabledFutureDate,
+  getTimezone 
 } from "@/utils/brazilTime";
 import { formatCurrency, getCurrencySymbol, formatCurrencyWithUnit } from '@/utils/currency';
 
@@ -222,8 +223,12 @@ const columns = reactive([
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
 
-// 快捷日期（不包含当天，使用巴西时间）
+// 快捷日期（根据币种选择时区）
 const shortcuts = [
+  { text: '今天', value: () => { 
+    const today = dayjs().tz(getTimezone(currency.value));
+    return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]; 
+  }},
   { text: '昨天', value: () => { 
     const yesterday = getYesterday(currency.value);
     return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]; 
@@ -1098,7 +1103,7 @@ const selectInverse = () => {
 };
 
 onMounted(async () => {
-  // 默认近7天（不包含当天，根据币种选择时区）
+  // 默认近7天（根据币种选择时区）
   const range = getDateRange(7, currency.value);
   searchForm.time = [range.start, range.end];
 

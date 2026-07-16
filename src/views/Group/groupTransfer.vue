@@ -65,7 +65,7 @@
                         :value="merchant.code"
                       >
                         <div class="option-content">
-                          <span class="option-code">{{ merchant.code }}</span>
+                          <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
                           <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
                         </div>
                       </el-option>
@@ -90,7 +90,7 @@
                         :value="merchant.code"
                       >
                         <div class="option-content">
-                          <span class="option-code">{{ merchant.code }}</span>
+                          <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
                           <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
                         </div>
                       </el-option>
@@ -189,7 +189,7 @@
                 <el-select
                   v-model="searchForm.counterparty"
                   placeholder="请选择转入商户"
-                  style="width: 150px"
+                  style="width: 200px"
                   clearable
                   size="small"
                 >
@@ -198,7 +198,7 @@
                     :key="merchant.code"
                     :value="merchant.code"
                   >
-                    {{ merchant.code }}
+                    {{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}
                   </el-option>
                 </el-select>
               </el-form-item>
@@ -351,7 +351,7 @@ const getMerchantList = () => {
     .getGroupMerchants()
     .then((res) => {
       if (res.code === 200 && res.data) {
-        merchantOptions.value = res.data.filter(m => !m.code?.startsWith('G')).map(m => ({ code: m.code, balance: m.balance }));
+        merchantOptions.value = res.data.filter(m => !m.code?.startsWith('G')).map(m => ({ code: m.code, balance: m.balance , qq: m.qq }));
       }
     })
     .catch(() => {

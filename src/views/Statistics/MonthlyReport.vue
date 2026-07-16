@@ -220,7 +220,8 @@ import {
   getMonthRange, 
   getLastMonth, 
   getThisYearToLastMonth,
-  disabledCurrentMonth 
+  disabledCurrentMonth,
+  getTimezone 
 } from "@/utils/brazilTime";
 import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
@@ -1279,13 +1280,24 @@ const getPaymentPieChart = (row) => {
   };
 };
 
-// 禁用日期函数，只能选择到上个月（根据币种选择时区）
+// 禁用日期函数，只能选择到当月（根据币种选择时区）
 const disabledDate = (time) => {
   return disabledCurrentMonth(time, currency);
 };
 
 // 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
 const shortcuts = computed(() => [
+  {
+    text: "当月",
+    value: () => {
+      const now = dayjs().tz(getTimezone(currency));
+      const start = new Date(now.startOf('month').format('YYYY-MM-DD'));
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(now.endOf('month').format('YYYY-MM-DD'));
+      end.setHours(23, 59, 59, 999);
+      return [start, end];
+    },
+  },
   {
     text: "上月",
     value: () => {
@@ -1321,7 +1333,7 @@ const shortcuts = computed(() => [
   },
 ]);
 
-// 设置默认时间范围（最近3个月到上月，根据币种选择时区）
+// 设置默认时间范围（最近3个月到当月，根据币种选择时区）
 const setDefaultTime = () => {
   const range = getMonthRange(3, currency);
   searchForm.time = [range.start, range.end];

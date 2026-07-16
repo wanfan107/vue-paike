@@ -63,7 +63,7 @@
                 <el-option
                   v-for="m in merchantOptions"
                   :key="m.code"
-                  :label="m.code"
+                  :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`"
                   :value="m.code"
                 />
               </el-select>

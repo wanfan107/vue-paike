@@ -44,7 +44,7 @@
               size="small"
               @change="updateCharts"
             >
-              <el-option v-for="m in merchantOptions" :key="m.code" :label="m.code" :value="m.code" />
+              <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
             </el-select>
             <div class="select-buttons">
               <el-button size="small" @click="selectAll">全选</el-button>
@@ -173,7 +173,8 @@ import {
   getMonthRange, 
   getLastMonth, 
   getThisYearToLastMonth,
-  disabledCurrentMonth 
+  disabledCurrentMonth,
+  getTimezone 
 } from "@/utils/brazilTime";
 import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
@@ -211,13 +212,17 @@ const columns = reactive([
   { prop: "CurrentMonthBalance", label: "期末余额" },
 ]);
 
-// 禁用日期函数，只能选择到上个月（根据币种选择时区）
+// 禁用日期函数，只能选择到当月（根据币种选择时区）
 const disabledDate = (time) => {
   return disabledCurrentMonth(time, currency.value);
 };
 
-// 快捷月份（不包含当月，根据币种选择时区）
+// 快捷月份（根据币种选择时区）
 const shortcuts = [
+  { text: '当月', value: () => { 
+    const now = dayjs().tz(getTimezone(currency.value));
+    return [new Date(now.startOf('month').format('YYYY-MM-DD')), new Date(now.endOf('month').format('YYYY-MM-DD'))]; 
+  }},
   { text: '上月', value: () => { 
     const range = getLastMonth(currency.value);
     return [new Date(range.start), new Date(range.end)]; 
@@ -1019,7 +1024,7 @@ const selectInverse = () => {
 };
 
 onMounted(async () => {
-  // 默认近6个月（不包含当月，根据币种选择时区）
+  // 默认近6个月（根据币种选择时区）
   const range = getMonthRange(6, currency.value);
   searchForm.time = [new Date(range.start), new Date(range.end)];
 

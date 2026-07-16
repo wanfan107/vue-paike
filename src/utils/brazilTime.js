@@ -15,7 +15,7 @@ const CURRENCY_TIMEZONE_MAP = {
 
 const DEFAULT_TIMEZONE = 'America/Sao_Paulo';
 
-const getTimezone = (currency) => {
+export const getTimezone = (currency) => {
   const currencyValue = typeof currency === 'object' && currency !== null && 'value' in currency ? currency.value : currency;
   return CURRENCY_TIMEZONE_MAP[currencyValue?.toUpperCase()] || DEFAULT_TIMEZONE;
 };
@@ -42,7 +42,7 @@ export const formatDateTime = (date, currency) => {
 
 export const getDateRange = (days, currency) => {
   const now = dayjs().tz(getTimezone(currency));
-  const end = now.subtract(1, 'day').endOf('day');
+  const end = now.endOf('day');
   const start = now.subtract(days, 'day').startOf('day');
   return {
     start: start.format('YYYY-MM-DD'),
@@ -52,7 +52,7 @@ export const getDateRange = (days, currency) => {
 
 export const getMonthRange = (months, currency) => {
   const now = dayjs().tz(getTimezone(currency));
-  const end = now.subtract(1, 'month').endOf('month');
+  const end = now.endOf('month');
   const start = now.subtract(months, 'month').startOf('month');
   return {
     start: start.format('YYYY-MM-DD'),
@@ -96,14 +96,14 @@ export const disabledFutureDate = (time, currency) => {
   const timezone = getTimezone(currency);
   const today = dayjs().tz(timezone).format('YYYY-MM-DD');
   const selected = dayjs(time).format('YYYY-MM-DD');
-  return selected >= today;
+  return selected > today;
 };
 
 export const disabledCurrentMonth = (time, currency) => {
   const timezone = getTimezone(currency);
   const currentMonth = dayjs().tz(timezone).format('YYYY-MM');
   const selectedMonth = dayjs(time).format('YYYY-MM');
-  return selectedMonth >= currentMonth;
+  return selectedMonth > currentMonth;
 };
 
 export const getTimezoneOffset = (currency) => {
