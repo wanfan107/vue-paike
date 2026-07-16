@@ -6,7 +6,7 @@
           <img
             style="width: 170px"
             src="@/assets/image/logo.png"
-            alt="Banco E2 Logo"
+            alt="Univepay Logo"
           />
           <div class="login-subtitle">Finance</div>
         </div>
