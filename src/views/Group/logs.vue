@@ -127,10 +127,10 @@
               <div class="detail-label">记录ID：</div>
               <div class="detail-value">{{ currentLog.AutoId }}</div>
             </div>
-            <div class="detail-row">
+            <!-- <div class="detail-row">
               <div class="detail-label">集团代码：</div>
               <div class="detail-value">{{ currentLog.GroupCode }}</div>
-            </div>
+            </div> -->
             <div class="detail-row">
               <div class="detail-label">用户邮箱：</div>
               <div class="detail-value">{{ currentLog.Email }}</div>

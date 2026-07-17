@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard,Folder,Search } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard, Folder, Search } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // // 布局组件
@@ -119,6 +119,9 @@ import loginIPWhiteList from '../views/Group/loginIPWhiteList.vue'
 import groupOrderFuzzyQuery from '../views/Group/groupOrderFuzzyQuery.vue'
 import groupApplyU from '../views/Group/groupApplyU.vue'
 
+// 操作手册
+import ManualView from '../views/Manual/ManualView.vue'
+
 // 集团统计报表
 import GroupStatistics from '../views/GroupStatistics/index.vue'
 import GroupDailyReport from '../views/GroupStatistics/DailyReport.vue'
@@ -135,6 +138,8 @@ const router = createRouter({
     { path: '/set-password', name: 'SetPassword', title: '设置密码', component: SetPassword },
     // 重置密码页面 - 忘记密码重置
     // { path: '/reset-password', name: 'ResetPassword', title: '重置密码', component: ResetPassword },
+    // 操作手册页面 - 任何人都可以访问
+    { path: '/manual', name: 'Manual', title: '操作手册', component: ManualView },
 
     // 主应用布局 - 包含左侧菜单，所有非登录页面都在这个布局下
     {
@@ -151,7 +156,7 @@ const router = createRouter({
         { path: 'groupOrderFuzzyQuery', name: 'groupOrderFuzzyQuery', icon: Search, component: groupOrderFuzzyQuery, title: '订单查询', meta: { roles: ['admin', 'finance', 'operator'] } },
         // 资金流水
         { path: 'CapitalFlow', name: 'CapitalFlow', title: '资金流水', icon: FolderOpened, component: CapitalFlow, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
-         
+
         // 统计报表
         {
           path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] },
@@ -183,7 +188,7 @@ const router = createRouter({
             // { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
             // { path: 'groupTransfer', name: 'groupTransfer', component: groupTransfer, title: '集团商户互转', meta: { roles: ['admin', 'finance'] } },
             { path: 'loginIPWhiteList', name: 'loginIPWhiteList', component: loginIPWhiteList, title: '集团IP白名单', meta: { roles: ['admin'] } },
-            { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '集团支付密码', meta: { roles: ['admin', 'finance'] } },
+            { path: 'grouppayPassword', name: 'grouppayPassword', component: grouppayPassword, title: '支付密码管理', meta: { roles: ['admin', 'finance'] } },
             // { path: 'groupApplyU', name: 'groupApplyU', component: groupApplyU, title: '集团申请下发', meta: { roles: ['admin', 'finance'] } },
           ]
         },
@@ -255,7 +260,7 @@ import useUserStore from '../stores/user';
 
 router.beforeEach((to, from, next) => {
   // 定义不需要登录的页面
-  const whiteList = ['/Login', '/set-password'];
+  const whiteList = ['/Login', '/set-password', '/manual'];
 
   // 直接从URL判断是否为白名单页面，避免创建不必要的store实例
   if (whiteList.includes(to.path)) {

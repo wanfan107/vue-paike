@@ -406,7 +406,7 @@ watch(
 /* 密码强度指示器样式 */
 
 
-:v-deep(.password-strength-container) {
+:deep(.password-strength-container) {
   width: 100%;
   // margin-top: 10px;
   // padding: 10px;
@@ -414,19 +414,19 @@ watch(
   border-radius: 6px;
 }
 
-:v-deep(.password-strength-header) {
+:deep(.password-strength-header) {
   font-size: 14px;
   font-weight: 500;
   color: #606266;
   margin-bottom: 8px;
 }
 
-:v-deep(.password-strength-boxes) {
+:deep(.password-strength-boxes) {
   display: flex;
   margin: 8px 0;
 }
 
-:v-deep(.password-strength-box) {
+:deep(.password-strength-box) {
   width: 25%;
   height: 5px;
   background-color: #e4e7ed;
@@ -434,7 +434,7 @@ watch(
   margin-left: 5px;
 }
 
-:v-deep(.password-strength-text) {
+:deep(.password-strength-text) {
   margin-top: 5px;
   font-size: 12px;
   font-weight: 500;
