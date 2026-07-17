@@ -1,5 +1,6 @@
 <template>
   <div class="login-page">
+    <a href="/manual" class="manual-link">📖 集团商户后台操作文档</a>
     <div class="login-container">
       <div class="login-header">
         <div class="login-logo">
@@ -1277,6 +1278,7 @@ async function confirmBind(account) {
 }
 
 .login-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1570,6 +1572,22 @@ async function confirmBind(account) {
   margin-bottom: 20px;
   text-transform: uppercase;
   font-size: 12px;
+}
+
+.manual-link {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  font-size: 14px;
+  color: #409eff;
+  text-decoration: none;
+  transition: color 0.2s;
+  z-index: 9;
+
+  &:hover {
+    color: #409eff;
+    text-decoration: underline;
+  }
 }
 .el-dialog__body {
   padding: 0 20px;
