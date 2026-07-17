@@ -119,8 +119,7 @@ import loginIPWhiteList from '../views/Group/loginIPWhiteList.vue'
 import groupOrderFuzzyQuery from '../views/Group/groupOrderFuzzyQuery.vue'
 import groupApplyU from '../views/Group/groupApplyU.vue'
 
-// 操作手册
-import ManualView from '../views/Manual/ManualView.vue'
+
 
 // 集团统计报表
 import GroupStatistics from '../views/GroupStatistics/index.vue'
@@ -138,8 +137,6 @@ const router = createRouter({
     { path: '/set-password', name: 'SetPassword', title: '设置密码', component: SetPassword },
     // 重置密码页面 - 忘记密码重置
     // { path: '/reset-password', name: 'ResetPassword', title: '重置密码', component: ResetPassword },
-    // 操作手册页面 - 任何人都可以访问
-    { path: '/manual', name: 'Manual', title: '操作手册', component: ManualView },
 
     // 主应用布局 - 包含左侧菜单，所有非登录页面都在这个布局下
     {
@@ -260,7 +257,7 @@ import useUserStore from '../stores/user';
 
 router.beforeEach((to, from, next) => {
   // 定义不需要登录的页面
-  const whiteList = ['/Login', '/set-password', '/manual'];
+  const whiteList = ['/Login', '/set-password'];
 
   // 直接从URL判断是否为白名单页面，避免创建不必要的store实例
   if (whiteList.includes(to.path)) {

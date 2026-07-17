@@ -1,6 +1,6 @@
 <template>
   <div class="login-page">
-    <a href="/manual" class="manual-link">📖 集团商户后台操作文档</a>
+    <a href="/manual/merchant.html" class="manual-link">📖 集团商户后台操作文档</a>
     <div class="login-container">
       <div class="login-header">
         <div class="login-logo">
