@@ -111,12 +111,25 @@
                 <span v-else>-</span>
               </template>
             </el-table-column> -->
-            <el-table-column prop="telegram" label="网站" min-width="280">
+            <el-table-column prop="telegram" label="网站" min-width="320">
               <template #default="{ row }">
-                <span v-if="row.qq">
-                  {{ row.qq }}
-                </span>
-                <span v-else>-</span>
+                <div v-if="editingCode === row.code" class="website-edit-cell">
+                  <el-input
+                    v-model="editWebsite"
+                    maxlength="50"
+                    show-word-limit
+                    size="small"
+                    placeholder="请输入网站"
+                    @keyup.enter="saveWebsite(row)"
+                    @keyup.esc="cancelEdit"
+                  />
+                  <el-button size="small" type="primary" :loading="saving" @click="saveWebsite(row)">保存</el-button>
+                  <el-button size="small" @click="cancelEdit">取消</el-button>
+                </div>
+                <div v-else class="website-cell">
+                  <span class="website-text">{{ row.qq || '-' }}</span>
+                  <el-button link type="primary" size="small" class="edit-btn" @click="startEdit(row)">编辑</el-button>
+                </div>
               </template>
             </el-table-column>
             <el-table-column v-if="hasCreditUsed" prop="creditUsed" label="授信已用" width="120" align="right" >
@@ -143,8 +156,8 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
-import { Search, Refresh } from '@element-plus/icons-vue';
-import { ElMessage } from 'element-plus';
+import { Search, Refresh, Edit } from '@element-plus/icons-vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
 import { formatCurrency } from '@/utils/currency';
@@ -236,6 +249,58 @@ const loadData = async () => {
 //   searchForm.status = '';
 //   loadData();
 // };
+
+// 网站字段行内编辑状态
+const editingCode = ref('');
+const editWebsite = ref('');
+const saving = ref(false);
+
+const startEdit = (row) => {
+  editingCode.value = row.code;
+  editWebsite.value = row.qq || '';
+};
+
+const cancelEdit = () => {
+  editingCode.value = '';
+  editWebsite.value = '';
+};
+
+const saveWebsite = async (row) => {
+  const newVal = (editWebsite.value || '').trim();
+  if (newVal.length > 50) {
+    ElMessage.warning('网站长度不能超过50个字符');
+    return;
+  }
+  if (newVal === (row.qq || '')) {
+    editingCode.value = '';
+    editWebsite.value = '';
+    return;
+  }
+  try {
+    await ElMessageBox.confirm(
+      `确认将商户 ${row.code} 的网站修改为：「${newVal || '(空)'}」？`,
+      '修改确认',
+      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+    );
+  } catch (e) {
+    return; // 用户取消
+  }
+  saving.value = true;
+  try {
+    const res = await http.updateMerchantWebsite({ merchantCode: row.code, website: newVal });
+    if (res.code === 200) {
+      ElMessage.success('修改成功');
+      row.qq = newVal;
+      cancelEdit();
+    } else {
+      ElMessage.error(res.msg || '修改失败');
+    }
+  } catch (e) {
+    ElMessage.error('修改失败');
+  } finally {
+    saving.value = false;
+  }
+};
 
 onMounted(() => {
   loadData();
@@ -338,6 +403,36 @@ onMounted(() => {
 
 .table-container {
   margin-top: $spacing-lg;
+}
+
+.website-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .website-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  // 默认隐藏编辑按钮，鼠标悬停时才显示
+  .edit-btn {
+    opacity: 0;
+    transition: opacity 0.15s ease;
+    flex-shrink: 0;
+  }
+  &:hover .edit-btn {
+    opacity: 1;
+  }
+}
+
+.website-edit-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  .el-input {
+    flex: 1;
+  }
 }
 
 :deep(.el-table) {

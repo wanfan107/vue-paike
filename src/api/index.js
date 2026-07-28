@@ -24,6 +24,8 @@ export const http = {
     getGroupMenus: () => request_group.get("/Auth/group/menus"),  // 未用
     // 集团可访问商户
     getGroupMerchants: () => request_group.get("/Auth/group/merchants"),
+    // 修改商户网站字段（仅修改 uc_merchants.qq）
+    updateMerchantWebsite: (data) => request_group.post("/Auth/group/merchants/updateWebsite", data),
     // 集团用户列表 （查询）
     getGroupUsers: () => request_group.post("/Auth/group/users"),
     // 创建集团用户 （创建）
