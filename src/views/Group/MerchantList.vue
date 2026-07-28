@@ -113,23 +113,40 @@
             </el-table-column> -->
             <el-table-column prop="telegram" label="网站" min-width="320">
               <template #default="{ row }">
-                <div v-if="editingCode === row.code" class="website-edit-cell">
-                  <el-input
-                    v-model="editWebsite"
-                    maxlength="50"
-                    show-word-limit
-                    size="small"
-                    placeholder="请输入网站"
-                    @keyup.enter="saveWebsite(row)"
-                    @keyup.esc="cancelEdit"
-                  />
-                  <el-button size="small" type="primary" :loading="saving" @click="saveWebsite(row)">保存</el-button>
-                  <el-button size="small" @click="cancelEdit">取消</el-button>
-                </div>
-                <div v-else class="website-cell">
-                  <span class="website-text">{{ row.qq || '-' }}</span>
-                  <el-button link type="primary" size="small" class="edit-btn" @click="startEdit(row)">编辑</el-button>
-                </div>
+                <el-tooltip
+                  v-if="editingCode === row.code"
+                  :content="'点击外部自动保存'"
+                  placement="top"
+                  :show-after="300"
+                >
+                  <div class="website-edit-wrap">
+                    <el-input
+                      ref="websiteInputRef"
+                      v-model="editWebsite"
+                      maxlength="50"
+                      size="small"
+                      placeholder="请输入网站"
+                      @input="filterWebsiteInput"
+                      @blur="handleBlur(row)"
+                      @keyup.enter="handleEnter(row)"
+                      @keyup.esc="cancelEdit"
+                      @mousedown.stop
+                    />
+                    <span class="edit-hint">仅允许字母、数字和 . 点 · 失焦保存 · Enter 确定 · Esc 取消</span>
+                  </div>
+                </el-tooltip>
+                <el-tooltip
+                  v-else
+                  :content="'点击编辑'"
+                  placement="top"
+                  :show-after="300"
+                >
+                  <div class="website-cell" @click="startEdit(row)">
+                    <span class="website-text">{{ row.qq || '—' }}</span>
+                    <span v-if="!row.qq" class="website-placeholder">点击填写</span>
+                    <el-icon class="edit-icon"><Edit /></el-icon>
+                  </div>
+                </el-tooltip>
               </template>
             </el-table-column>
             <el-table-column v-if="hasCreditUsed" prop="creditUsed" label="授信已用" width="120" align="right" >
@@ -155,7 +172,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted, nextTick } from 'vue';
 import { Search, Refresh, Edit } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
@@ -253,27 +270,59 @@ const loadData = async () => {
 // 网站字段行内编辑状态
 const editingCode = ref('');
 const editWebsite = ref('');
-const saving = ref(false);
+const websiteInputRef = ref(null);
+const isSubmitting = ref(false);
+
+const filterWebsiteInput = (val) => {
+  const filtered = (val || '').replace(/[^a-zA-Z0-9.]/g, '');
+  if (filtered !== val) {
+    editWebsite.value = filtered;
+  }
+};
 
 const startEdit = (row) => {
   editingCode.value = row.code;
   editWebsite.value = row.qq || '';
+  nextTick(() => {
+    if (websiteInputRef.value?.focus) {
+      websiteInputRef.value.focus();
+    }
+  });
 };
 
 const cancelEdit = () => {
   editingCode.value = '';
   editWebsite.value = '';
+  isSubmitting.value = false;
+};
+
+const handleBlur = async (row) => {
+  if (isSubmitting.value) return;
+  const newVal = (editWebsite.value || '').trim();
+  if (newVal === (row.qq || '')) {
+    cancelEdit();
+    return;
+  }
+  isSubmitting.value = true;
+  await saveWebsite(row);
+};
+
+const handleEnter = async (row) => {
+  if (isSubmitting.value) return;
+  const newVal = (editWebsite.value || '').trim();
+  if (newVal === (row.qq || '')) {
+    cancelEdit();
+    return;
+  }
+  isSubmitting.value = true;
+  await saveWebsite(row);
 };
 
 const saveWebsite = async (row) => {
   const newVal = (editWebsite.value || '').trim();
   if (newVal.length > 50) {
     ElMessage.warning('网站长度不能超过50个字符');
-    return;
-  }
-  if (newVal === (row.qq || '')) {
-    editingCode.value = '';
-    editWebsite.value = '';
+    isSubmitting.value = false;
     return;
   }
   try {
@@ -283,22 +332,21 @@ const saveWebsite = async (row) => {
       { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
     );
   } catch (e) {
-    return; // 用户取消
+    cancelEdit();
+    return;
   }
-  saving.value = true;
   try {
     const res = await http.updateMerchantWebsite({ merchantCode: row.code, website: newVal });
     if (res.code === 200) {
       ElMessage.success('修改成功');
       row.qq = newVal;
-      cancelEdit();
     } else {
       ElMessage.error(res.msg || '修改失败');
     }
   } catch (e) {
     ElMessage.error('修改失败');
   } finally {
-    saving.value = false;
+    cancelEdit();
   }
 };
 
@@ -408,21 +456,84 @@ onMounted(() => {
 .website-cell {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  min-height: 32px;
+
+  &:hover {
+    background-color: #f5f7fa;
+
+    .edit-icon {
+      color: #db0011;
+    }
+  }
+
   .website-text {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    color: #303133;
+    font-size: 14px;
   }
-  // 默认隐藏编辑按钮，鼠标悬停时才显示
-  .edit-btn {
-    opacity: 0;
-    transition: opacity 0.15s ease;
+
+  .website-placeholder {
+    flex: 1;
+    color: #c0c4cc;
+    font-size: 13px;
+    font-style: italic;
+  }
+
+  .edit-icon {
+    color: #c0c4cc;
+    font-size: 14px;
+    transition: color 0.2s ease;
     flex-shrink: 0;
   }
-  &:hover .edit-btn {
-    opacity: 1;
+}
+
+.website-edit-wrap {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .el-input {
+    width: 100%;
+  }
+
+  :deep(.el-input__wrapper) {
+    border-radius: 6px;
+    box-shadow: 0 0 0 1px #db0011 inset;
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 0 0 1px #db0011 inset;
+    }
+
+    &.is-focus {
+      box-shadow: 0 0 0 2px rgba(219, 0, 17, 0.2) inset, 0 0 8px rgba(219, 0, 17, 0.15);
+    }
+  }
+
+  :deep(.el-input__inner) {
+    font-size: 14px;
+    height: 32px;
+    line-height: 32px;
+
+    &::placeholder {
+      color: #c0c4cc;
+    }
+  }
+
+  .edit-hint {
+    font-size: 11px;
+    color: #a8abb2;
+    line-height: 1;
+    letter-spacing: 0.3px;
   }
 }
 
