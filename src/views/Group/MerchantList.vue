@@ -124,15 +124,15 @@
                       ref="websiteInputRef"
                       v-model="editWebsite"
                       maxlength="50"
+                      show-word-limit
                       size="small"
-                      placeholder="请输入网站"
-                      @input="filterWebsiteInput"
+                      placeholder="请输入网站URL，如 https://example.com"
                       @blur="handleBlur(row)"
                       @keyup.enter="handleEnter(row)"
                       @keyup.esc="cancelEdit"
                       @mousedown.stop
                     />
-                    <span class="edit-hint">仅允许字母、数字和 . 点 · 失焦保存 · Enter 确定 · Esc 取消</span>
+                    <span class="edit-hint">以 http:// 或 https:// 开头 · 失焦保存 · Enter 确定 · Esc 取消</span>
                   </div>
                 </el-tooltip>
                 <el-tooltip
@@ -273,13 +273,6 @@ const editWebsite = ref('');
 const websiteInputRef = ref(null);
 const isSubmitting = ref(false);
 
-const filterWebsiteInput = (val) => {
-  const filtered = (val || '').replace(/[^a-zA-Z0-9.]/g, '');
-  if (filtered !== val) {
-    editWebsite.value = filtered;
-  }
-};
-
 const startEdit = (row) => {
   editingCode.value = row.code;
   editWebsite.value = row.qq || '';
@@ -322,6 +315,12 @@ const saveWebsite = async (row) => {
   const newVal = (editWebsite.value || '').trim();
   if (newVal.length > 50) {
     ElMessage.warning('网站长度不能超过50个字符');
+    isSubmitting.value = false;
+    return;
+  }
+  // URL 格式校验：允许空值（清空），非空必须为合法 URL（http/https 开头）
+  if (newVal && !/^(https?):\/\/[^\s]+$/.test(newVal)) {
+    ElMessage.warning('网站必须为合法的URL格式（以 http:// 或 https:// 开头）');
     isSubmitting.value = false;
     return;
   }
