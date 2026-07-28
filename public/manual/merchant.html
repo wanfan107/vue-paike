@@ -393,6 +393,7 @@
       max-width: 600px;
       margin-bottom: 24px;
     }
+
     .doc-subtitle1 {
       font-size: 18px;
       font-weight: 700;
@@ -980,6 +981,7 @@
 
     /* ========== Print / PDF Export Styles ========== */
     @media print {
+
       /* ========== Page Setup ========== */
       @page {
         size: A4;
@@ -1078,7 +1080,7 @@
         right: -80px;
         width: 380px;
         height: 380px;
-        background: rgba(255,255,255,0.06);
+        background: rgba(255, 255, 255, 0.06);
         border-radius: 50%;
       }
 
@@ -1089,11 +1091,11 @@
         left: -60px;
         width: 320px;
         height: 320px;
-        background: rgba(255,255,255,0.04);
+        background: rgba(255, 255, 255, 0.04);
         border-radius: 50%;
       }
 
-      .doc-cover > * {
+      .doc-cover>* {
         position: relative;
         z-index: 1;
       }
@@ -1103,8 +1105,8 @@
         font-size: 10pt;
         padding: 6px 18px;
         margin-bottom: 28px;
-        background: rgba(255,255,255,0.15);
-        border: 1px solid rgba(255,255,255,0.3);
+        background: rgba(255, 255, 255, 0.15);
+        border: 1px solid rgba(255, 255, 255, 0.3);
         color: white !important;
         border-radius: 100px;
         letter-spacing: 2px;
@@ -1123,9 +1125,10 @@
         font-size: 11pt;
         line-height: 1.8;
         margin-bottom: 0;
-        color: rgba(255,255,255,0.9) !important;
+        color: rgba(255, 255, 255, 0.9) !important;
         max-width: 140mm;
       }
+
       .doc-subtitle1 {
         font-size: 11pt;
         line-height: 1.8;
@@ -1137,7 +1140,7 @@
       .doc-meta {
         margin-top: auto;
         padding-top: 30px;
-        border-top: 1px solid rgba(255,255,255,0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
         display: flex;
         gap: 30px;
         flex-wrap: wrap;
@@ -1145,7 +1148,7 @@
 
       .doc-meta-item {
         font-size: 9.5pt;
-        color: rgba(255,255,255,0.85) !important;
+        color: rgba(255, 255, 255, 0.85) !important;
       }
 
       .doc-meta-item strong {
@@ -1243,7 +1246,8 @@
       }
 
       /* ========== Lists ========== */
-      ul, ol {
+      ul,
+      ol {
         margin-bottom: 10px;
         padding-left: 22px;
         line-height: 1.7;
@@ -1382,32 +1386,63 @@
         border-color: #059669;
         color: #065f46;
       }
-      .callout-tip::before { content: '✓'; color: #059669; }
-      .callout-tip .callout-title { color: #065f46; }
+
+      .callout-tip::before {
+        content: '✓';
+        color: #059669;
+      }
+
+      .callout-tip .callout-title {
+        color: #065f46;
+      }
 
       .callout-note {
         background: #e0f2fe;
         border-color: #0284c7;
         color: #0c4a6e;
       }
-      .callout-note::before { content: 'i'; font-style: italic; color: #0284c7; }
-      .callout-note .callout-title { color: #0c4a6e; }
+
+      .callout-note::before {
+        content: 'i';
+        font-style: italic;
+        color: #0284c7;
+      }
+
+      .callout-note .callout-title {
+        color: #0c4a6e;
+      }
 
       .callout-warning {
         background: #fef3c7;
         border-color: #d97706;
         color: #92400e;
       }
-      .callout-warning::before { content: '!'; color: #d97706; font-weight: 800; }
-      .callout-warning .callout-title { color: #92400e; }
+
+      .callout-warning::before {
+        content: '!';
+        color: #d97706;
+        font-weight: 800;
+      }
+
+      .callout-warning .callout-title {
+        color: #92400e;
+      }
 
       .callout-danger {
         background: #fee2e2;
         border-color: #dc2626;
         color: #991b1b;
       }
-      .callout-danger::before { content: '✕'; color: #dc2626; font-weight: 700; }
-      .callout-danger .callout-title { color: #991b1b; }
+
+      .callout-danger::before {
+        content: '✕';
+        color: #dc2626;
+        font-weight: 700;
+      }
+
+      .callout-danger .callout-title {
+        color: #991b1b;
+      }
 
       /* ========== Images ========== */
       .figure {
@@ -1593,12 +1628,12 @@
     <!-- ========== Sidebar Navigation ========== -->
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
-          <div class="sidebar-logo">
-            <div class="sidebar-logo-icon"><img
-                src="https://univepay-statics.s3.us-east-1.amazonaws.com/univepay_logo.png" alt="UnivePay"
-                onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'background:#d61b1a;color:white;padding:4px 10px;border-radius:6px;font-weight:700;font-size:14px;\'>U</span>'">
-            </div>
+        <div class="sidebar-logo">
+          <div class="sidebar-logo-icon"><img
+              src="https://univepay-statics.s3.us-east-1.amazonaws.com/univepay_logo.png" alt="UnivePay"
+              onerror="this.style.display='none';this.parentElement.innerHTML='<span style=\'background:#d61b1a;color:white;padding:4px 10px;border-radius:6px;font-weight:700;font-size:14px;\'>U</span>'">
           </div>
+        </div>
         <div class="sidebar-doc-title">集团商户后台操作文档</div>
       </div>
       <nav class="sidebar-nav" id="sidebarNav">
@@ -1616,6 +1651,7 @@
         <a href="#section-3-2" class="nav-item level-2">3.2 设置登录密码</a>
         <a href="#section-3-3" class="nav-item level-2">3.3 首次登录与 MFA 绑定</a>
         <a href="#section-3-4" class="nav-item level-2">3.4 选择商户进入系统</a>
+        <a href="#section-3-5" class="nav-item level-2">3.5 配置商户网址</a>
         <a href="#section-4" class="nav-item level-1">4. 新增集团普通用户</a>
         <a href="#section-5" class="nav-item level-1">5. 管理集团普通用户</a>
         <a href="#section-5-1" class="nav-item level-2">5.1 编辑用户信息</a>
@@ -1695,10 +1731,10 @@
           <span class="doc-badge">操作手册 · OPERATIONS GUIDE</span>
           <h1 class="doc-title">集团商户后台操作文档</h1>
           <p class="doc-subtitle1">集团账户概念的推出，是在保障资金安全边界的前提下，为多商户运营客户量身打造的高效管理方案：</p>
-           <ul>
-          <li>安全与效率的完美平衡：打破传统模式下各商户号密码、支付要素及多重身份验证（MFA）分散且易混淆的局限。通过全局集团账户，实现统一准入、按需切换。</li>
-          <li>去中心化的资金流转：通过智能流转逻辑，将资金变动的决策权与审批流完全下放至商户端，最大程度减少平台人工干预。在提升资金周转时效的同时，确保每一步资金指令均来自商户的合规授权。</li>
-        </ul>
+          <ul>
+            <li>安全与效率的完美平衡：打破传统模式下各商户号密码、支付要素及多重身份验证（MFA）分散且易混淆的局限。通过全局集团账户，实现统一准入、按需切换。</li>
+            <li>去中心化的资金流转：通过智能流转逻辑，将资金变动的决策权与审批流完全下放至商户端，最大程度减少平台人工干预。在提升资金周转时效的同时，确保每一步资金指令均来自商户的合规授权。</li>
+          </ul>
           <p class="doc-subtitle">本文档详细介绍集团管理员在商户（MC）后台的完整操作流程，涵盖账号激活、用户管理、商户管理、财务管理、安全管理、订单查询及统计报表等核心功能模块。</p>
           <div class="doc-meta">
             <div class="doc-meta-item">
@@ -2007,6 +2043,43 @@
         <div class="callout callout-note">
           <div class="callout-title">商户切换</div>
           <p>登录后，可在系统左下角点击"切换账户"按钮，切换到该集团下的其他商户。</p>
+        </div>
+
+        <h3 id="section-3-5">3.5 配置商户网址</h3>
+        <p>管理员可在<strong>集团商户管理</strong>页面为每个商户配置网址，方便操作员识别不同商户。点击商户列表中的<strong>"网站"</strong>单元格即可进入编辑模式。</p>
+
+        <div class="figure">
+          <img src="image/image-64.png" alt="商户网址编辑示意图"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+            style="max-width:100%;height:auto;border:1px solid var(--rule);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);">
+          <div class="img-placeholder" style="display:none;">商户网址编辑示意图</div>
+          <div class="figure-caption">点击单元格进入编辑模式</div>
+        </div>
+
+        <div class="figure">
+          <img src="image/image-65.png" alt="商户网址保存示意图"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'"
+            style="max-width:100%;height:auto;border:1px solid var(--rule);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);">
+          <div class="img-placeholder" style="display:none;">商户网址保存示意图</div>
+          <div class="figure-caption">失焦或按 Enter 自动保存</div>
+        </div>
+
+        <p><strong>操作说明：</strong></p>
+        <ol class="step-list">
+          <li>在商户列表中，找到目标商户行，点击"<strong>网站</strong>"单元格</li>
+          <li>输入网址内容，只允许<strong>英文字母、数字和小数点「.」</strong></li>
+          <li>完成编辑后，<strong>鼠标点击输入框外部</strong>或按<strong>回车键</strong>自动保存</li>
+          <li>按 <strong>Esc 键</strong> 可取消编辑，不保存任何修改</li>
+        </ol>
+
+        <div class="callout callout-note">
+          <div class="callout-title">输入规则</div>
+          <p>网址字段只允许输入英文字母（a-z, A-Z）、数字（0-9）和小数点（.），其他特殊字符和中文字符将被自动过滤。</p>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-title">快捷操作</div>
+          <p>失焦保存 · Enter 确定 · Esc 取消</p>
         </div>
 
         <hr>
@@ -2369,7 +2442,9 @@
 
         <!-- ========== Section 6: 集团财务管理 ========== -->
         <h2 id="section-7">7. 集团财务管理</h2>
-<p><strong>🚨 安全警示：为保障资金安全，所有商户后台提交的交易与配置变更流程均会实时推送到指定的 Telegram 工作群进行多重确认。系统支持针对每个独立审批流自定义群成员的确认权限。例如：“新增钱包地址”流程必须由群内指定的“xxxx”和“yyyy”账号授权方可生效，从而彻底杜绝无关人员冒名顶替或越权放行造成的资金损失。</strong></p>
+        <p><strong>🚨 安全警示：为保障资金安全，所有商户后台提交的交易与配置变更流程均会实时推送到指定的 Telegram
+            工作群进行多重确认。系统支持针对每个独立审批流自定义群成员的确认权限。例如：“新增钱包地址”流程必须由群内指定的“xxxx”和“yyyy”账号授权方可生效，从而彻底杜绝无关人员冒名顶替或越权放行造成的资金损失。</strong>
+        </p>
         <h3 id="section-7-1">7.1 集团商户互转</h3>
         <p>集团管理员或财务角色用户可在<strong>"集团商户互转"</strong>页面进行商户间余额互转。</p>
 
@@ -3502,6 +3577,7 @@
       'section-3-2': '3.2 设置登录密码',
       'section-3-3': '3.3 首次登录与 MFA 绑定',
       'section-3-4': '3.4 选择商户进入系统',
+      'section-3-5': '3.5 配置商户网址',
       'section-4': '4. 新增集团普通用户',
       'section-5': '5. 管理集团普通用户',
       'section-5-1': '5.1 编辑用户信息',
