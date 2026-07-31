@@ -125,8 +125,10 @@
 <el-form-item label="MFA2验证码" prop="code">
   <el-input
     v-model="ruleForm.code"
-    placeholder="请输入MFA2验证码"
+    :placeholder="mfaInGrace ? 'MFA 免验中，无需输入' : '请输入MFA2验证码'"
+    :disabled="mfaInGrace"
   ></el-input>
+  <div v-if="mfaInGrace" style="font-size:12px;color:#67c23a;margin-top:4px">{{ mfaRemainingText }}</div>
 </el-form-item>
                 
                 <!-- 备注 -->
@@ -324,8 +326,22 @@ const ruleForm = reactive({
   // remark: ""
 });
 
-// 表单验证规则
-const rules = {
+// ===== MFA grace：验一次后 10 分钟内、限 N 次免重复输入验证码 =====
+// mfaGraceUntil: 免验失效时刻（毫秒时间戳，来自后端 MfaGraceUntil UTC ISO）
+const mfaGraceUntil = ref(0);
+// nowTick: 每秒刷新，驱动倒计时与 mfaInGrace 重算
+const nowTick = ref(Date.now());
+const mfaInGrace = computed(() => mfaGraceUntil.value > 0 && nowTick.value < mfaGraceUntil.value);
+const mfaRemainingText = computed(() => {
+  if (!mfaInGrace.value || !mfaGraceUntil.value) return '';
+  const sec = Math.max(0, Math.floor((mfaGraceUntil.value - nowTick.value) / 1000));
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  return `MFA 免验 ${m}:${s}`;
+});
+
+// 表单验证规则（code 在 grace 内不强制）
+const rules = computed(() => ({
   fromMerchant: [
     { required: true, message: '请选择转出商户', trigger: 'change' }
   ],
@@ -339,11 +355,14 @@ const rules = {
   password: [
     { required: true, message: '请输入支付密码', trigger: 'blur' }
   ],
-code: [
-  { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
-  { pattern: /^\d{6}$/, message: '请输入6位数字验证码', trigger: 'blur' }
-]
-};
+  code: mfaInGrace.value
+    ? []
+    : [
+        { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
+        { pattern: /^\d{6}$/, message: '请输入6位数字验证码', trigger: 'blur' }
+      ]
+}));
+
 
 // 获取商户列表
 const getMerchantList = () => {
@@ -384,13 +403,18 @@ const submit = async () => {
             toMerchantCode: ruleForm.toMerchant,
             amount: ruleForm.amount,
             currency: ruleForm.currency,
-            code: ruleForm.code,
+            // grace 内不发送验证码（后端跳过 TOTP）
+            code: mfaInGrace.value ? "" : ruleForm.code,
             applicantCode: ""
           })
           .then((res) => {
             loading.value = false;
             if (res.Success) {
               ElMessage.success(res.Data?.Message || '余额互转申请已提交');
+              // 记录 MFA grace 失效时刻，10 分钟内、限 N 次免再输入验证码
+              if (res.Data?.MfaGraceUntil) {
+                mfaGraceUntil.value = new Date(res.Data.MfaGraceUntil).getTime();
+              }
               reset();
             } else {
               ElMessage.error(res.ErrorMessage || '转账失败');
@@ -530,12 +554,15 @@ const handleHistorySizeChange = (val) => {
 };
 
 let refreshTimer = null;
+let mfaTickTimer = null;
 // 页面挂载时初始化
 onMounted(() => {
   // 获取商户列表
   getMerchantList();
    // 每10秒刷新一次
   refreshTimer = setInterval(getMerchantList, 10000);
+  // 每秒刷新 nowTick，驱动 MFA grace 倒计时与 mfaInGrace 重算
+  mfaTickTimer = setInterval(() => { nowTick.value = Date.now(); }, 1000);
   // 初始化时间范围和获取转账记录
   initTimeRange();
   getTransferHistory();
@@ -545,6 +572,10 @@ onUnmounted(() => {
   if (refreshTimer) {
     clearInterval(refreshTimer);
     refreshTimer = null;
+  }
+  if (mfaTickTimer) {
+    clearInterval(mfaTickTimer);
+    mfaTickTimer = null;
   }
 });
 </script>
