@@ -117,18 +117,17 @@
                   <el-input
                     v-model="ruleForm.password"
                     type="password"
-                    placeholder="请输入集团账户支付密码"
+                    placeholder="请输入转出账户支付密码"
                   ></el-input>
                 </el-form-item>
                 
     <!-- MFA2验证码 -->
-<el-form-item label="MFA2验证码" prop="code">
+<el-form-item label="MFA2验证码" >
   <el-input
     v-model="ruleForm.code"
-    :placeholder="mfaInGrace ? 'MFA 免验中，无需输入' : '请输入MFA2验证码'"
-    :disabled="mfaInGrace"
+    placeholder="'请输入MFA2验证码'"
   ></el-input>
-  <div v-if="mfaInGrace" style="font-size:12px;color:#67c23a;margin-top:4px">{{ mfaRemainingText }}</div>
+  <div style="font-size:12px;color:#67c23a;margin-top:4px">输入正确后10分钟内无需输入</div>
 </el-form-item>
                 
                 <!-- 备注 -->

@@ -156,11 +156,11 @@ const router = createRouter({
 
         // 统计报表
         {
-          path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] },
+          path: 'Statistics', name: 'Statistics', title: '统计报表', icon: DataAnalysis, redirect: 'Realtime', meta: { roles: ['admin', 'merchant', 'finance', 'operator'], showForCurrency: 'BRL' },
           children: [
-            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
-            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
-            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+            { path: 'Realtime', name: 'Realtime', component: Realtime, title: '即时统计', meta: { roles: ['admin', 'merchant', 'finance', 'operator'], showForCurrency: 'BRL' } },
+            { path: 'dailyReport', name: 'dailyReport', component: DailyReport, title: '每日报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'], showForCurrency: 'BRL' } },
+            { path: 'monthlyReport', name: 'monthlyReport', component: MonthlyReport, title: '每月报表', meta: { roles: ['admin', 'merchant', 'finance', 'operator'], showForCurrency: 'BRL' } },
           ]
         },
 

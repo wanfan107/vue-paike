@@ -262,10 +262,10 @@ const router = useRouter();
 const loading = ref(false);
 const submitFormRef = ref(null);
 const detail = reactive({
-  balance: '10000.00',
-  unsettledBalance: '5000.00',
+  balance: '',
+  unsettledBalance: '',
   type: '每日结算',
-  rate: '7.25'
+  rate: ''
 });
 const ruleForm = reactive({
   amount: "",

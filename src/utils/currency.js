@@ -41,6 +41,42 @@ const CURRENCY_CONFIG = {
     thousandsSeparator: ',',
     decimalSeparator: '.'
   },
+  PHP: {
+    symbol: '₱',
+    decimals: 2,
+    thousandsSeparator: ',',
+    decimalSeparator: '.'
+  },
+  IDR: {
+    symbol: 'Rp',
+    decimals: 2,
+    thousandsSeparator: '.',
+    decimalSeparator: ','
+  },
+  PKR: {
+    symbol: '₨',
+    decimals: 2,
+    thousandsSeparator: ',',
+    decimalSeparator: '.'
+  },
+  NGN: {
+    symbol: '₦',
+    decimals: 2,
+    thousandsSeparator: ',',
+    decimalSeparator: '.'
+  },
+  VND: {
+    symbol: '₫',
+    decimals: 0,
+    thousandsSeparator: '.',
+    decimalSeparator: ','
+  },
+  THB: {
+    symbol: '฿',
+    decimals: 2,
+    thousandsSeparator: ',',
+    decimalSeparator: '.'
+  },
 };
 
 const DEFAULT_CURRENCY = 'BRL';

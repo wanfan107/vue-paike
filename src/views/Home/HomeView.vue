@@ -4,7 +4,7 @@
       <header class="page-header">
         <h1>Univepay | 首 页</h1>
         <div class="user-actions">
-          <div class="balance-display">
+          <div v-if="isBRL" class="balance-display">
             <span class="balance-label">可用余额</span>
             <span class="balance-amount">{{ showData ? formatBalance(availableBalance) : '****' }}</span>
           </div>
@@ -135,6 +135,7 @@ const availableBalance = ref(0); // 可用余额
 // 初始化store
 const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
+const isBRL = computed(() => currency.value === 'BRL');
 
 const orderTypes = ref([]);
 

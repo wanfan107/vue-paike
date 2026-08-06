@@ -74,7 +74,8 @@ const props = defineProps({
 
 // 初始化store
 const userStore = useUserStore();
-
+const currency = computed(() => userStore.merchantInfo?.currency);
+const isBRL = computed(() => currency.value === 'BRL');
 const currencySymbol = computed(() => getCurrencySymbol(userStore.merchantInfo?.currency));
 const currencyConfig = computed(() => getCurrencyConfig(userStore.merchantInfo?.currency));
 
@@ -113,14 +114,19 @@ const animatedValues = sourceRefs.map(sourceRef => {
 // 获取数据的函数
 const getdata = async () => {
   try {
-    // // 获取商户信息
-    // const merchantRes = await http.merchant({
-    //   id: userStore.merchantInfo.id,
-    // });
-    // console.log("merchantRes", merchantRes);
-    
-    // 获取期初金额（使用financeReportByDay接口）
-    const today = new Date();
+    if(!isBRL.value){
+      // 获取商户信息
+    const merchantRes = await http.merchant({
+      id: userStore.merchantInfo.id,
+    });
+    if (merchantRes.code === 200 && merchantRes.data) {
+      projectList[0].name = "余额";
+      projectList[0].desc = "当日初始余额";
+      projectList[0].amount = merchantRes.data.Balance || 0;
+    }
+    }else{
+      // 获取期初金额（使用financeReportByDay接口）
+const today = new Date();
     const startDate = today.toISOString().split('T')[0] ;
     const endDate = today.toISOString().split('T')[0] ;
     
@@ -136,6 +142,30 @@ const getdata = async () => {
     } else {
       projectList[0].amount = userStore.merchantInfo?.Balance ? Number(userStore.merchantInfo.Balance) : 0;
     }
+    }
+    // // 获取商户信息
+    // const merchantRes = await http.merchant({
+    //   id: userStore.merchantInfo.id,
+    // });
+    // console.log("merchantRes", merchantRes);
+    
+    // 获取期初金额（使用financeReportByDay接口）
+    // const today = new Date();
+    // const startDate = today.toISOString().split('T')[0] ;
+    // const endDate = today.toISOString().split('T')[0] ;
+    
+    // const financeRes = await http.financeReportByDay({
+    //   startDate,
+    //   endDate,
+    // });
+    // console.log('financeRes:', financeRes);
+    
+    // if (financeRes.code === 200 && financeRes.data?.list?.length > 0) {
+    //   const prevBalance = financeRes.data.list[0].PreviousDayEndBalance ? Number(financeRes.data.list[0].PreviousDayEndBalance) : 0;
+    //   projectList[0].amount = prevBalance !== 0 ? prevBalance : (userStore.merchantInfo?.Balance ? Number(userStore.merchantInfo.Balance) : 0);
+    // } else {
+    //   projectList[0].amount = userStore.merchantInfo?.Balance ? Number(userStore.merchantInfo.Balance) : 0;
+    // }
     
     // 获取收款成功率数据
     const collectRes = await http.collectSuccessRate({

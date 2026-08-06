@@ -266,6 +266,13 @@ onMounted(() => {
     const userRole = getUserRole()
     return roles.includes(userRole)
   }
+
+  // 检查菜单项是否满足币种条件
+  const hasCurrencyPermission = (meta) => {
+    if (!meta || !meta.showForCurrency) return true
+    const userCurrency = userStore.merchantInfo?.currency
+    return userCurrency === meta.showForCurrency
+  }
   
   // 过滤菜单项，只保留用户有权限访问的
   const filterMenuByPermission = (menuItems) => {
@@ -275,9 +282,16 @@ onMounted(() => {
         return false
       }
       
+      // 检查币种条件
+      if (!hasCurrencyPermission(item.meta)) {
+        return false
+      }
+      
       // 如果有子菜单，过滤子菜单
       if (item.children && item.children.length > 0) {
-        const filteredChildren = item.children.filter(child => hasPermission(child.roles))
+        const filteredChildren = item.children.filter(child => {
+          return hasPermission(child.roles) && hasCurrencyPermission(child.meta)
+        })
         if (filteredChildren.length > 0) {
           item.children = filteredChildren
           return true
@@ -304,7 +318,8 @@ onMounted(() => {
         name: route.name,
         title: route.title,
         icon: route.icon,
-        roles: route.meta?.roles
+        roles: route.meta?.roles,
+        meta: route.meta
       }
       
       // 如果有子菜单，处理子菜单
@@ -313,7 +328,8 @@ onMounted(() => {
           path: `${menuItem.path}/${childRoute.path}`,
           name: childRoute.name,
           title: childRoute.title,
-          roles: childRoute.meta?.roles
+          roles: childRoute.meta?.roles,
+          meta: childRoute.meta
         }))
       }
       
