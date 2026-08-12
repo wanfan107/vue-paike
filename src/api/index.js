@@ -111,8 +111,10 @@ export const http = {
     // 提现
     /*withdraw: data => request.post('/USDT/transfer', data),*/
     withdraw: data => request.post('/Pay/Payout', data),
-    //提U：
+    //提U：（已废弃，改为WF审批）
     usdttransfer: data => request.post('/USDT/transfer', data),
+    //提U审批：唯一正路径 BizType=MerchantWithdrawUsdt
+    wfWithdrawApply: data => request.post('/WfWithdraw/apply', data),
     // 统计报表
     financeReport: (params) => request.post('/Finance/dailyorderstats', params),
     // 统计报表查每天，每月

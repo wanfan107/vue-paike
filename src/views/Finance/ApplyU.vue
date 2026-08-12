@@ -274,6 +274,7 @@ const ruleForm = reactive({
   walletAddress:  "",
   password: "",
   code: "",
+  remark: "",
 });
 
 const rules = {
@@ -507,45 +508,59 @@ const onSave = () => {
   });
 };
 
-// 提交表单
+// 提交表单（§6.1 唯一正路径：WfWithdraw/apply，BizType=MerchantWithdrawUsdt）
 const submit = () => {
   loading.value = true;
   http
-    .usdttransfer({
-      id: userStore.merchantInfo.id,
+    .wfWithdrawApply({
+      merchantCode: userStore.merchantInfo.id,
       amount: ruleForm.amount,
-      password: ruleForm.password,
-      code: ruleForm.code,
       walletAddress: ruleForm.walletAddress,
+      code: ruleForm.code,
+      payPassword: ruleForm.password,
+      remark: ruleForm.remark || "",
     })
     .then((res) => {
       loading.value = false;
-      if (res.code === 200) {
+      // §6.1 成功：{ success:true, data:{ bizNo, processInstanceId, ... } }，不立即扣款
+      const ok = res.success === true || (res.code === 200 && res.data) || (res.Success === true);
+      const data = res.data || res.Data || {};
+      const bizNo = data.bizNo || data.BizNo || '';
+      if (ok) {
 ElMessageBox.alert(
   `<div style="text-align: center; padding: 8px;">
-    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">提交成功</div>
-    <div style="font-size: 14px; color: #909399; line-height: 1.6;">您的申请已提交，请等待审核</div>
+    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">申请已提交</div>
+    <div style="font-size: 14px; color: #606266; line-height: 1.8;">
+      ${bizNo ? `<div>单号：<span style="font-family: monospace;">${bizNo}</span></div>` : ''}
+      <div>请完成 Telegram 商户群双人确认，后续进入 OP / Manager 双审</div>
+      <div style="color: #909399; font-size: 12px; margin-top: 6px;">审批通过后才会执行扣款与转U</div>
+    </div>
   </div>`,
-  '提示',
+  '提U审批申请',
   {
     confirmButtonText: '确定',
     type: 'success',
     showClose: false,
     closeOnClickModal: true,
     dangerouslyUseHTMLString: true,
-    width: '360px',
+    width: '440px',
     center: true,
     callback: () => {
       reset();
     }
   }
 );
-      } else if(res.code==201){
-        ElMessage.error(res.msg || '提交失败');
+      } else {
+        ElMessage.error(res.msg || res.message || res.ErrorMessage || '提交失败');
       }
     }) 
-    .catch(() => {
+    .catch((err) => {
       loading.value = false;
+      // 后端已废弃旧接口时返回 410/引导文案
+      const msg = err?.response?.data?.msg || err?.message || '提交失败，请稍后重试';
+      if (err?.response?.status === 410) {
+        ElMessageBox.alert(msg || '旧提U路径已停用，请改用提U审批流程', '流程已变更', { type: 'warning' });
+      } 
     });
 };
 
@@ -558,6 +573,7 @@ const reset = () => {
     walletAddress:  "",
     password: "",
     code: "",
+    remark: "",
   });
 };
 

@@ -122,7 +122,7 @@ const getdata = async () => {
     if (merchantRes.code === 200 && merchantRes.data) {
       projectList[0].name = "余额";
       projectList[0].desc = "当日初始余额";
-      projectList[0].amount = merchantRes.data.Balance || 0;
+      projectList[0].amount = Number(merchantRes.data.Balance) || 0;
     }
     }else{
       // 获取期初金额（使用financeReportByDay接口）
