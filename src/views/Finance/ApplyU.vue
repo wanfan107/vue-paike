@@ -286,7 +286,7 @@ const rules = {
     { 
       validator: (rule, value, callback) => {
         if (value && (!isNaN(value) && Number(value) > 0)) {
-          if (Number(value) < 1) {
+          if (Number(value) < 1000) {
             callback(new Error('到账U数最低为1000'));
           } else {
             callback();

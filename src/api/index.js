@@ -163,4 +163,11 @@ export const http = {
     statisticsByDayBoth: (params) => request.get('/Collect/statisticsByDayBoth', { params }),
     // 导出记录
     exportList: (params) => request.post('/Transfer/exportlist', params),
+    /**
+     * 大额出款审核（响应外壳为 { code: 0/-1, message, data }，业务失败也是 HTTP 200）
+     */
+    // 查询待审列表（大额出款 + 风控暂停）
+    payoutReviewPending: (data) => request.post('/payout-review/pending', data),
+    // 批量放行/拒绝（action: allow | reject；serialNos 为系统单号数组，1~50 条）
+    payoutReviewDecide: (data) => request.post('/payout-review/decide', data),
 }

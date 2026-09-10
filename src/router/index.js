@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard, Folder, Search } from '@element-plus/icons-vue'
+import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard, Folder, Search, Finished } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
 // // 布局组件
@@ -98,6 +98,7 @@ import MonthlyReport from '../views/Statistics/MonthlyReport.vue'
 import ReceiptOrder from '../views/ReceiptOrder/index.vue'
 import payment from '../views/payment/index.vue'
 import withdraw from '../views/withdraw/index.vue'
+import PayoutReview from '../views/PayoutReview/index.vue'
 import ApplyU from '../views/Finance/ApplyU.vue'
 import RateInquiry from '../views/RateInquiry/index.vue'
 import Rotation from '../views/Finance/Rotation.vue'
@@ -171,6 +172,8 @@ const router = createRouter({
         { path: 'payment', name: 'payment', title: '付款订单', icon: CreditCard, component: payment, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 下发订单
         { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+        // 大额出款审核（大额出款 + 风控暂停，先提交生效后到不得改判）
+        { path: 'payoutReview', name: 'payoutReview', title: '大额出款审核', icon: Finished, component: PayoutReview, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 集团管理
         {
           path: 'group',
