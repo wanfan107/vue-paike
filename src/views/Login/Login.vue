@@ -839,6 +839,7 @@ groupLoginLogin();
 //  单商户登录
 async function singleLoginLogin() {
   try {
+    const { fingerprint, deviceInfo } = await getDeviceInfo();
     isLoading.value = true;
     const res = await http.prelogin(loginForm.value);
 
@@ -923,7 +924,11 @@ const { getData } = useVisitorData({
 
 async function getDeviceInfo() {
   try {
-    const visitorData = await getData();
+    // linkedId：把本次识别事件与登录框账号关联，便于事后在 Fingerprint 控制台按账号过滤查询
+    const visitorData = await getData({ 
+      linkedId: loginForm.value.username,
+      tag: { userAction: 'login' },        // webhook 回来时后端能对上这是登录动作
+     });
     console.log('-----',visitorData);
     
     const fingerprint = visitorData?.visitor_id || '';
