@@ -173,7 +173,7 @@ const router = createRouter({
         // 下发订单
         { path: 'withdraw', name: 'withdraw', title: '下发订单', icon: Postcard, component: withdraw, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 大额出款审核（大额出款 + 风控暂停，先提交生效后到不得改判）
-        { path: 'payoutReview', name: 'payoutReview', title: '大额出款审核', icon: Finished, component: PayoutReview, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
+        { path: 'payoutReview', name: 'payoutReview', title: '大额审核', icon: Finished, component: PayoutReview, meta: { roles: ['admin', 'merchant', 'finance', 'operator'] } },
         // 集团管理
         {
           path: 'group',
