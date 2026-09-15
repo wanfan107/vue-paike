@@ -70,8 +70,7 @@
             </el-input>
           </el-form-item>
 
-          <!-- // aws验证码 -->
-          <AwsCaptcha />
+          <!-- AWS WAF 验证码弹窗已全局挂载在 App.vue，由拦截器统一驱动 -->
 
           <!-- <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
             <el-link type="primary" @click="showForgotPasswordDialog = true">忘记密码？</el-link>
@@ -313,7 +312,6 @@ import FingerprintJS, { sources as fpSources, loadSources } from '@fingerprintjs
 import { useVisitorData } from '@fingerprint/vue';
 import { http } from '@/api';
 import md5 from 'js-md5';
-import AwsCaptcha from '@/components/AwsCaptcha.vue';
 
 
 // 组件注册

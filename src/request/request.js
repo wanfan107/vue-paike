@@ -5,6 +5,8 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus';
 // 导入Pinia store
 import useUserStore from '@/stores/user';
+// AWS WAF 人机验证兜底（405 CAPTCHA / 202 Challenge）
+import { handleWafBlock } from './wafCaptcha';
 
 //1. 创建新的axios实例
 const service = axios.create({
@@ -34,28 +36,33 @@ service.interceptors.request.use(config => {
 service.interceptors.response.use(response => {
   // 直接返回响应数据，方便调用处使用
   console.log('响应数据:', response.data);
-  if(response.data.code === 200){
+  if (response.data.code === 200) {
     return response.data
-  }else if(response.data.code === 401){
+  } else if (response.data.code === 401) {
     ElMessage.error(response.data.msg);
-    if( response.data.msg=='登录失效，请重新登录'){
-       const userStore = useUserStore();
-       userStore.resetToken();
-       window.location.href = "/Login";
+    if (response.data.msg == '登录失效，请重新登录') {
+      const userStore = useUserStore();
+      userStore.resetToken();
+      window.location.href = "/Login";
     }
     return response.data
-  }else if(response.data.code === 403){
+  } else if (response.data.code === 403) {
     ElMessage.error(response.data.msg);
     return response.data
-  } else if(response.data.code === 500){
+  } else if (response.data.code === 500) {
     ElMessage.error(response.data.msg);
     // return response.data
   }
   return response.data
 }, error => {
+  // AWS WAF 人机验证兜底：405 弹拼图后自动重放 / 202 静默质询后自动重放
+  const wafRetry = handleWafBlock(service, error);
+  if (wafRetry) {
+    return wafRetry;
+  }
   // 从Pinia store获取store实例
   const userStore = useUserStore();
-  
+
   if (error && error.response) {
     switch (error.response.status) {
       case 400:
@@ -103,7 +110,7 @@ service.interceptors.response.use(response => {
   } else {
     error.message = '连接服务器失败'
   }
-  
+
   ElMessage.error(error.message);
   return Promise.reject(error);
 })
