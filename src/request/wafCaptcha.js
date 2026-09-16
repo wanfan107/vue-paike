@@ -41,6 +41,29 @@ const silentAcquireToken = () => {
 }
 
 /**
+ * 在 axios 响应【成功】拦截器最前面调用。
+ * AWS Challenge 动作返回 HTTP 202（属于 2xx，axios 会 resolve 而非 reject），
+ * 必须在成功回调中拦截，否则空响应体会被当成业务数据下发。
+ * @param {AxiosInstance} service 当前 axios 实例（用于重放原请求）
+ * @param {any} response axios 成功响应
+ * @returns {Promise|null} 命中 Challenge 时返回重放 Promise；未命中返回 null
+ */
+export const handleWafChallengeOnSuccess = (service, response) => {
+  // 成功回调里只会出现 Challenge（CAPTCHA 是 405，必定走错误回调）
+  if (detectWafBlock(response) !== 'challenge') return null
+  const config = response?.config
+  if (!config) return null
+  if (config.__wafChallengeRetried) return Promise.reject(new Error('WAF_CHALLENGE_RETRY_EXHAUSTED'))
+  config.__wafChallengeRetried = true
+  return silentAcquireToken()
+    .then((token) => {
+      setWafTokenHeader(config, token)
+      return service(config)
+    })
+    .catch(() => Promise.reject(new Error('WAF_CHALLENGE_SDK_UNAVAILABLE')))
+}
+
+/**
  * 在 axios 响应错误拦截器中调用。
  * @param {AxiosInstance} service 当前 axios 实例（用于重放原请求）
  * @param {any} error axios 拒绝错误

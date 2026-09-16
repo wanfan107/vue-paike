@@ -6,7 +6,7 @@ import { ElMessage } from 'element-plus';
 // 导入Pinia store
 import useUserStore from '@/stores/user';
 // AWS WAF 人机验证兜底（405 CAPTCHA / 202 Challenge）
-import { handleWafBlock } from './wafCaptcha';
+import { handleWafBlock, handleWafChallengeOnSuccess } from './wafCaptcha';
 
 //1. 创建新的axios实例
 const service = axios.create({
@@ -34,6 +34,11 @@ service.interceptors.request.use(config => {
 
 // 3.响应拦截器
 service.interceptors.response.use(response => {
+  // AWS WAF 静默 Challenge：202 属于 2xx 会进入此成功回调，需在最前面拦截并自动重放
+  const wafChallengeRetry = handleWafChallengeOnSuccess(service, response);
+  if (wafChallengeRetry) {
+    return wafChallengeRetry;
+  }
   // 直接返回响应数据，方便调用处使用
   console.log('响应数据:', response.data);
   if (response.data.code === 200) {
