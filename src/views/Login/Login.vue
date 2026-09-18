@@ -799,6 +799,7 @@ async function submitForm() {
 
 // 点击按钮触发验证/登录
 async function checkHuman() {
+  if (isLoading.value) return; // 防止重复提交（回车+按钮连点）
 // 判断是单商户登录还是集团商户登录
 if (loginForm.value.username.includes('@')) {
   // 集团商户登录
@@ -837,8 +838,8 @@ groupLoginLogin();
 //  单商户登录
 async function singleLoginLogin() {
   try {
-    const { fingerprint, deviceInfo } = await getDeviceInfo();
     isLoading.value = true;
+        const { fingerprint, deviceInfo } = await getDeviceInfo();
     const res = await http.prelogin(loginForm.value);
 
     console.log(res);
