@@ -7,7 +7,7 @@
     "node": "^20.19.0 || >=22.12.0"
   },
   "scripts": {
-    "dev": "node -r ./scripts/setup-agent.cjs node_modules/vite/bin/vite.js",
+    "dev": "vite",
     "build": "vite build",
     "preview": "vite preview"
   },
@@ -36,7 +36,6 @@
     "@rollup/plugin-terser": "^1.0.0",
     "@vitejs/plugin-vue": "^6.0.2",
     "fast-glob": "^3.3.3",
-    "global-agent": "^4.1.3",
     "sass": "^1.97.1",
     "vite": "^7.2.4",
     "vite-plugin-svg-icons": "^2.0.1",
