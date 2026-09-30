@@ -122,6 +122,7 @@
                         </el-table-column>
                         <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
                         <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
+                        <el-table-column prop="SuccessFeePayout" label="付款手续费" align="center" />
                         <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
                           <template #default="scope">
                             {{ toPercent(scope.row.SuccessRateCountPayout) }}

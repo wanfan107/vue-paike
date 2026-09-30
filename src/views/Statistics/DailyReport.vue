@@ -163,6 +163,12 @@
                         >
                         </el-table-column>
                         <el-table-column
+                          prop="SuccessFeePayout"
+                          label="付款手续费"
+                          align="center"
+                        >
+                        </el-table-column>
+                        <el-table-column
                           prop="SuccessRatePayout"
                           label="付款笔数成功率"
                           align="center"
@@ -684,6 +690,7 @@ const onRowClick = (row) => {
           SuccessRatePayin: toPercent(row.SuccessRatePayin),
           SuccessCountPayout: row.SuccessCountPayout || 0,
           SuccessAmountPayout: row.SuccessAmountPayout || 0,
+          SuccessFeePayout: row.SuccessFeePayout || 0,
           SuccessRatePayout: toPercent(row.SuccessRatePayout),
         },
         {
@@ -694,6 +701,7 @@ const onRowClick = (row) => {
           SuccessRatePayin: '-',
           SuccessCountPayout: 0,
           SuccessAmountPayout: 0,
+          SuccessFeePayout: 0,
           SuccessRatePayout: '-',
         }
       ];
@@ -710,6 +718,7 @@ const onRowClick = (row) => {
           SuccessRatePayin: toPercent(item.SuccessRatePayin),
           SuccessRatePayout: toPercent(item.SuccessRatePayout),
           SuccessOrderFee: item.SuccessOrderFee || 0,
+          SuccessFeePayout: item.SuccessFeePayout || 0,
         }));
 
         const extraItems = [
@@ -721,6 +730,7 @@ const onRowClick = (row) => {
             SuccessRatePayin: '-',
             SuccessCountPayout: 0,
             SuccessAmountPayout: 0,
+            SuccessFeePayout: 0,
             SuccessRatePayout: '-',
           }
         ];
@@ -769,6 +779,7 @@ const onExpandChange = (row, expandedRows) => {
         SuccessRatePayin: toPercent(item.SuccessRatePayin),
         SuccessRatePayout: toPercent(item.SuccessRatePayout),
         SuccessOrderFee: item.SuccessOrderFee || 0,
+        SuccessFeePayout: item.SuccessFeePayout || 0,
       }));
 
       // 添加违规订单数据（收款手续费作为一列，不再单独一行）
@@ -781,6 +792,7 @@ const onExpandChange = (row, expandedRows) => {
           SuccessRatePayin: '-',
           SuccessCountPayout: 0,
           SuccessAmountPayout: 0,
+          SuccessFeePayout: 0,
           SuccessRatePayout: '-',
         }
       ];
@@ -1161,7 +1173,7 @@ const getCollectionPieChart = (row) => {
   };
 };
 
-// 付款饼图：按后端返回的 PayoutByBank 维度统计（如 PIX 金额、USDT 金额）
+// 付款饼图：按后端返回的 PayoutByBank 维度统计（如 PIX 金额、USDT 金额）+ 代付手续费
 const getPaymentPieChart = (row) => {
   // 使用后端按 bank 维度返回的代付成功金额列表
   const bankList = row.PayoutByBank || [];
@@ -1169,6 +1181,12 @@ const getPaymentPieChart = (row) => {
     name: it.bank || "未知",
     value: Number(it.amount) || 0,
   })).filter(item => item.value > 0);
+
+  // 追加代付手续费（= 单笔手续费 + 比例手续费，status=2）作为独立扇区，与收款饼图的"手续费"扇区对称
+  const payoutFeeValue = Number(row.SuccessFeePayout) || 0;
+  if (payoutFeeValue > 0) {
+    data.push({ name: '手续费', value: payoutFeeValue });
+  }
 
   // 高级渐变色方案（与收款不同的配色）
   const colors = [
