@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.logs') }}</h1>
     </header>
 
     <main>
@@ -170,14 +170,17 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
 import StatusPill from '@/components/StatusPill.vue';
 import { http } from '@/api';
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "集团登录记录",
+    default: "",
   },
 });
 // 搜索表单

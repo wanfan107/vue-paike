@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.dailyReport') }}</h1>
     </header>
 
     <main>
@@ -220,6 +220,7 @@
 <script setup>
 import { Search, Refresh, Download } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
 import useUserStore from "@/stores/user";
@@ -250,10 +251,12 @@ const areaGradient = (color, alpha = 0.3) =>
   ]);
 
 // 每日报表
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "每日报表",
+    default: "",
   },
 });
 

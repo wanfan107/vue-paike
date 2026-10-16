@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.merchantList') }}</h1>
     </header>
 
     <main>
@@ -170,6 +170,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Search, Refresh, Edit } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
@@ -183,7 +184,7 @@ const currency = computed(() => userStore.merchantInfo?.currency);
 defineProps({
   title: {
     type: String,
-    default: "商户列表",
+    default: "",
   },
 });
 
@@ -194,6 +195,8 @@ const searchForm = reactive({
 });
 
 // 状态变量
+const { t } = useI18n();
+
 const loading = ref(false);
 const merchantList = ref([]);
 

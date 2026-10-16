@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.permissionManagement') }}</h1>
     </header>
 
     <main>
@@ -451,6 +451,7 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Plus, Clock } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
@@ -460,13 +461,15 @@ import StatusPill from '@/components/StatusPill.vue';
 defineProps({
   title: {
     type: String,
-    default: "操作员管理",
+    default: "",
   },
 });
 
 const userStore = useUserStore();
 
 // 假数据 - 完整的商户列表
+const { t } = useI18n();
+
 const allMerchants = ref([]);
 
 // 假数据 - 操作员列表

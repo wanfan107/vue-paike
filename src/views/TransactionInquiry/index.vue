@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.transactionInquiry') }}</h1>
     </header>
 
     <main>
@@ -39,13 +39,16 @@
 <script setup>
 import { Search } from "@element-plus/icons-vue";
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 
 // 银行页面
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "交易搜索",
+    default: "",
   },
 });
 

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.payment') }}</h1>
     </header>
 
     <main>
@@ -422,7 +422,7 @@ const formatBRL = (value) => {
 const props = defineProps({
   title: {
     type: String,
-    default: "付款订单",
+    default: "",
   },
 });
 

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.groupDailyReport') }}</h1>
     </header>
 
     <main>
@@ -163,6 +163,7 @@
 <script setup>
 import { Search, Refresh } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, onBeforeUnmount, computed, watch, nextTick } from "vue";
+import { useI18n } from "vue-i18n";
 import { ElMessage } from "element-plus";
 import * as echarts from 'echarts';
 import { http } from "@/api";
@@ -196,8 +197,10 @@ const areaGradient = (color, alpha = 0.3) =>
 
 const currency = computed(() => userStore.merchantInfo?.currency);
 
+const { t } = useI18n();
+
 const props = defineProps({
-  title: { type: String, default: "集团每日报表" },
+  title: { type: String, default: "" },
 });
 
 const show = ref(true);

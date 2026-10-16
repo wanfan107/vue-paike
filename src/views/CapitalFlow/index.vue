@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.CapitalFlow') }}</h1>
     </header>
 
     <main>
@@ -164,7 +164,7 @@ const { t } = useI18n();
 const props = defineProps({
   title: {
     type: String,
-    default: "资金流水",
+    default: "",
   },
 });
 

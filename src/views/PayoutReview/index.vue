@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.payoutReview') }}</h1>
     </header>
 
     <main>
@@ -182,14 +182,16 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Refresh } from '@element-plus/icons-vue';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
+const { t } = useI18n();
 import CopyText from '@/components/CopyText.vue';
 import StatusPill from '@/components/StatusPill.vue';
 
-const title = '大额出款审核';
+
 const userStore = useUserStore();
 
 // 集团身份才显示商户筛选（商户 JWT 只能查本号，由后端保证）

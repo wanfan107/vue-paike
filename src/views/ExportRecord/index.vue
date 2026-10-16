@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.exportRecord') }}</h1>
     </header>
 
     <main>
@@ -77,16 +77,19 @@
 
 <script setup>
 import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Refresh } from "@element-plus/icons-vue";
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import { ElMessage } from 'element-plus';
 import StatusPill from "@/components/StatusPill.vue";
 // 导出记录
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "导出记录",
+    default: "",
   },
 });
 

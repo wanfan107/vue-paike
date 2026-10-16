@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.groupApplyU') }}</h1>
       <hr />
     </header>
 
@@ -288,10 +288,11 @@ import { useRouter } from 'vue-router';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+const { t } = useI18n();
 import { Warning, Refresh } from "@element-plus/icons-vue";
 import EditableSelect from '@/components/EditableSelect.vue';
 // 页面标题
-const title = '集团下发申请';
+
 
 // 初始化store和router
 const userStore = useUserStore();

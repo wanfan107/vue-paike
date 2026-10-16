@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.transactionInquiry2') }}</h1>
     </header>
 
     <main>
@@ -117,15 +117,18 @@
 
 <script setup>
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
 import StatusPill from '@/components/StatusPill.vue';
 
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: '集团订单查询',
+    default: "",
   },
 });
 

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.groupTransfer') }}</h1>
       <hr />
     </header>
 
@@ -294,6 +294,7 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+const { t } = useI18n();
 import CopyText from '@/components/CopyText.vue';
 import { formatCurrency } from '@/utils/currency';
 
@@ -301,7 +302,7 @@ const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
 
 // 页面标题
-const title = '集团商户互转';
+
 
 // 响应式数据
 const loading = ref(false);

@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.home') }}</h1>
       <hr />
     </header>
 
@@ -39,12 +39,15 @@
 <script setup>
 import { Search } from "@element-plus/icons-vue";
 import { ref } from 'vue';
+import { useI18n } from 'vue-i18n';
 
 // 银行页面
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "交易搜索",
+    default: "",
   },
 });
 

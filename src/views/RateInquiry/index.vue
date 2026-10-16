@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.rateInquiry') }}</h1>
     </header>
 
     <main>
@@ -52,13 +52,16 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
+
+const { t } = useI18n();
 
 const props = defineProps({
   title: {
     type: String,
-    default: "商户费率",
+    default: "",
   },
 });
 

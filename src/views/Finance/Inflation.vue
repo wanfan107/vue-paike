@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('order.inflation.pageTitle') }}</h1>
       <hr />
     </header>
 
@@ -173,10 +173,11 @@ import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+const { t } = useI18n();
 import { Warning } from "@element-plus/icons-vue";
 import { formatCurrency } from '@/utils/currency';
 // 页面标题
-const title = '内充申请';
+
 
 // 初始化store和router
 const userStore = useUserStore();

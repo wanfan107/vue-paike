@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.loginIPWhiteList') }}</h1>
       <hr />
     </header>
 
@@ -175,13 +175,16 @@
 <script setup>
 import { Search } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
+
+const { t } = useI18n();
 
 const props = defineProps({
   title: {
     type: String,
-    default: "集团IP白名单",
+    default: "",
   },
 });
 

@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.totalView') }}</h1>
     </header>
 
     <main>
@@ -57,6 +57,7 @@
 <script setup>
 import { Search, Refresh, ArrowRight, Calendar } from "@element-plus/icons-vue";
 import { ref, reactive, computed, onMounted, onBeforeUnmount, watch } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import ProjectBox from "./component/project.vue";
@@ -86,10 +87,12 @@ const areaGradient = (color, alpha = 0.3) =>
   ]);
 
 // 银行页面
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "即时报表",
+    default: "",
   },
 });
 

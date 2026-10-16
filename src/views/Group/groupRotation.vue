@@ -1,7 +1,7 @@
 ﻿<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ title }}</h1>
+      <h1>{{ t('menu.groupRotation') }}</h1>
       <hr />
     </header>
 
@@ -164,16 +164,19 @@
 <script setup>
 import {  Warning } from "@element-plus/icons-vue";
 import { ref, reactive, computed } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
 import { formatCurrency, getCurrencySymbol } from '@/utils/currency';
 
 // 账户互转
+const { t } = useI18n();
+
 const props = defineProps({
   title: {
     type: String,
-    default: "账户互转",
+    default: "",
   },
 });
 
