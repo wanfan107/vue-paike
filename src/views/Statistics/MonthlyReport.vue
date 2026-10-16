@@ -104,7 +104,9 @@
                           prop="typeName"
                           :label="t('statistics.monthly.colType')"
                           align="center"
-                        ></el-table-column>
+                        >
+                          <template #default="scope">{{ rowTypeLabel(scope.row.typeName) }}</template>
+                        </el-table-column>
                         <el-table-column
                           prop="SuccessCountPayin"
                           :label="t('statistics.monthly.colPayinCount')"
@@ -243,7 +245,7 @@ const areaGradient = (color, alpha = 0.3) =>
   ]);
 
 // 月报表
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   title: {
@@ -264,26 +266,6 @@ const mapping = {
 const preserveExpanded = ref(false);
 const show = ref(true);
 const expandRowKeys = ref([]);
-
-// 下拉选项数据
-const options = [
-  {
-    label: "ALL",
-    value: -1,
-  },
-  {
-    label: "未通知",
-    value: 0,
-  },
-  {
-    label: "通知成功",
-    value: 1,
-  },
-  {
-    label: "通知失败",
-    value: 2,
-  },
-];
 
 // 标签类型颜色映射
 const tagTypeColor = {
@@ -327,7 +309,10 @@ const columns = computed(() => [
 ]);
 
 // 计算属性
+// themeTick：主题切换时自增，令 computed 重新读取 cssVar
+const themeTick = ref(0);
 const realTimeChart = computed(() => {
+  void themeTick.value;
   // 生成假数据用于展示收款金额和付款金额
   const dates = [];
   const collectionAmounts = [];
@@ -473,6 +458,7 @@ const realTimeChart = computed(() => {
 });
 
 const balanceChartOption = computed(() => {
+  void themeTick.value;
   const months = balanceChartData.value.months;
   const PreviousMonthBalance = balanceChartData.value.PreviousMonthBalance;
 
@@ -609,6 +595,13 @@ const balanceChartData = ref({
 // 路由实例
 const router = useRouter();
 
+
+// 展开行类型文案：typeName 为内部标记（同时用于比较逻辑），展示时按当前语言翻译
+const ROW_TYPE_KEY_MAP = {
+  '汇总': 'statistics.monthly.rowSummary',
+  '违规订单': 'statistics.monthly.rowViolation',
+};
+const rowTypeLabel = (name) => (ROW_TYPE_KEY_MAP[name] ? t(ROW_TYPE_KEY_MAP[name]) : name);
 
 // 点击行展开/收起
 const onRowClick = (row) => {
@@ -1557,9 +1550,21 @@ const updateMainCharts = () => {
   }
 };
 
+// 主题切换：自增 themeTick 令 computed 重读 cssVar，再重绘主图表与已展开行的明细图表
+const updateCharts = () => {
+  themeTick.value++;
+  updateMainCharts();
+  expandRowKeys.value.forEach((key) => {
+    const row = tableData.value.find((r) => r.Month === key);
+    if (row) updateRowCharts(row);
+  });
+};
+
 // 初始化数据
-// 主题切换：重读 cssVar 重绘图表
 const onThemeChange = () => updateCharts();
+
+// 语言切换：图表内文案需重算重绘（computed 不追踪 i18n 文案变化）
+watch(locale, () => updateCharts());
 
 onMounted(async () => {
   window.addEventListener('app-theme-change', onThemeChange);

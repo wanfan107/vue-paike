@@ -98,7 +98,7 @@ const cssVar = (name, fallback) =>
   getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 
 // 集团即时统计
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   title: {
@@ -453,6 +453,9 @@ const selectInverse = () => {
 
 // 主题切换：重读 cssVar 重绘图表
 const onThemeChange = () => { themeTick.value++; };
+
+// 语言切换：图表内文案需重算重绘（computed 不追踪 i18n 文案变化）
+watch(locale, () => { themeTick.value++; });
 
 onMounted(async () => {
   window.addEventListener('app-theme-change', onThemeChange);

@@ -43,7 +43,7 @@ const showSuccessDialog = ref(false);
 const loading = ref(false);
 const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
-const passwordStrengthColor = ref("#ff0000"); // 默认红色
+const passwordStrengthColor = ref("var(--color-send)"); // 默认低强度色
 const passwordStrengthWidth = ref("0%");
 const merchantOptions = ref([]);
 const formList = computed(() => [
@@ -118,7 +118,7 @@ const formList = computed(() => [
           h("div", {
             class: "password-strength-box",
             style: {
-              backgroundColor: i < passwordStrength.value ? passwordStrengthColor.value : "#e4e7ed",
+              backgroundColor: i < passwordStrength.value ? passwordStrengthColor.value : "var(--color-border-soft)",
               marginLeft: i > 0 ? "5px" : "0",
             },
           })
@@ -179,13 +179,13 @@ const merchantInfo = computed(() => userStore.merchantInfo);
 const calculatePasswordStrength = (password) => {
   let strength = 0;
   let text = t('order.groupPayPassword.strength.low');
-  let color = "#ff0000"; // 红色
+  let color = "var(--color-send)"; // 低强度
   let width = "0%";
 
   if (!password) {
     passwordStrength.value = 0;
     passwordStrengthText.value = "";
-    passwordStrengthColor.value = "#ff0000";
+    passwordStrengthColor.value = "var(--color-send)";
     passwordStrengthWidth.value = "0%";
     return;
   }
@@ -213,16 +213,16 @@ const calculatePasswordStrength = (password) => {
   // 根据强度设置文本和颜色
   if (strength <= 1) {
     text = t('order.groupPayPassword.strength.low');
-    color = "#ff0000"; // 红色
+    color = "var(--color-send)"; // 低强度
   } else if (strength <= 2) {
     text = t('order.groupPayPassword.strength.mid');
-    color = "#ff8800"; // 橙色
+    color = "var(--color-status-warn)"; // 中强度
   } else if (strength <= 3) {
     text = t('order.groupPayPassword.strength.midHigh');
-    color = "#aabb00"; // 黄绿色
+    color = "var(--brand-primary)"; // 中高强度
   } else {
     text = t('order.groupPayPassword.strength.high');
-    color = "#00ff00"; // 绿色
+    color = "var(--color-receive)"; // 高强度
   }
 
   passwordStrengthText.value = text;
@@ -318,7 +318,6 @@ watch(
   }
 );
 </script>
-// ... existing code ...
 <style scoped lang="scss">
 .pay-password-container {
   display: flex;
@@ -332,66 +331,66 @@ watch(
 .pay-password-card {
   width: 100%;
   max-width: 700px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   transition: all 0.3s ease;
   overflow: hidden;
 
   &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    box-shadow: var(--shadow-md);
     transform: translateY(-2px);
   }
 }
 
 .card-header {
-  background-color: #f8f9fa;
+  background-color: var(--color-elevated);
   padding: 24px;
   text-align: center;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
 .header-title {
   font-size: 20px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
 .header-subtitle {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .form-container {
   padding: 24px;
 }
 
-:v-deep(.el-form-item) {
+:deep(.el-form-item) {
   margin-bottom: 20px;
 }
 
-:v-deep(.el-form-item__label) {
+:deep(.el-form-item__label) {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
-:v-deep(.el-input__inner),
-:v-deep(.el-textarea__inner) {
+:deep(.el-input__inner),
+:deep(.el-textarea__inner) {
   height: 40px;
   border-radius: 6px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border);
   transition: all 0.3s;
   font-size: 14px;
 }
 
-:v-deep(.el-textarea__inner) {
+:deep(.el-textarea__inner) {
   height: auto;
   min-height: 80px;
 }
 
 
-:v-deep(.el-button--primary) {
+:deep(.el-button--primary) {
   // background-color: #409eff;
   // border-color: #409eff;
   // border-radius: 6px;
@@ -400,17 +399,17 @@ watch(
   transition: all 0.3s;
 }
 
-:v-deep(.el-button) {
+:deep(.el-button) {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.3s;
 }
 
 /* 针对标题样式的优化 */
-:v-deep(.el-form-item__label[for=""]) {
+:deep(.el-form-item__label[for=""]) {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 8px;
   display: block;
 }
@@ -453,7 +452,7 @@ watch(
 :deep(.password-strength-header) {
   font-size: 14px;
   font-weight: 500;
-  color: #606266;
+  color: var(--text-regular);
   margin-bottom: 8px;
 }
 

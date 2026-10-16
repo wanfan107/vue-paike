@@ -55,7 +55,7 @@
                   <span style="float: left">{{ optionItem.name }}</span>
                   <span
                     v-if="optionItem.subLabel"
-                    style="float: right; color: #8492a6; font-size: 13px"
+                    style="float: right; color: var(--text-secondary); font-size: 13px"
                     >{{ optionItem.subLabel }}</span
                   >
                 </el-option>
@@ -356,7 +356,7 @@ const handleInput = (prop, val) => {
   }
   .el-form-item__label {
     font-size: 12px !important;
-    color: #000000 !important;
+    color: var(--text-primary) !important;
     padding-bottom: 0 !important;
   }
 }
@@ -407,7 +407,7 @@ h2 {
 :deep(.password-strength-header) {
   font-size: 14px;
   font-weight: 500;
-  color: #606266;
+  color: var(--text-regular);
   margin-bottom: 8px;
 }
 

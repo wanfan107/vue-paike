@@ -87,7 +87,7 @@ const areaGradient = (color, alpha = 0.3) =>
   ]);
 
 // 银行页面
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   title: {
@@ -359,6 +359,9 @@ watch(realTimeChart, (newOption) => {
 
 // 主题切换：重读 cssVar 重绘图表
 const onThemeChange = () => { themeTick.value++; };
+
+// 语言切换：图表内文案需重算重绘（computed 不追踪 i18n 文案变化）
+watch(locale, () => { themeTick.value++; });
 
 onMounted(() => {
   window.addEventListener('app-theme-change', onThemeChange);

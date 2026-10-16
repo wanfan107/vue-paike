@@ -197,7 +197,7 @@ const areaGradient = (color, alpha = 0.3) =>
 
 const currency = computed(() => userStore.merchantInfo?.currency);
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
 
 const props = defineProps({
   title: { type: String, default: "" },
@@ -259,7 +259,10 @@ let balanceChart = null;
 const merchantColors = ['#2d8ef6', '#ff9f43', '#ee5a24', '#6c5ce7', '#00cec9', '#fd79a8', '#0984e3', '#e17055'];
 
 // 收款/付款金额趋势图
+// themeTick：主题切换时自增，令 computed 重新读取 cssVar
+const themeTick = ref(0);
 const lineChartOption = computed(() => {
+  void themeTick.value;
   const points = groupChart.value;
   const dates = points.map(p => p.x);
   const series = [];
@@ -421,6 +424,7 @@ const lineChartOption = computed(() => {
 
 // 期初余额趋势图
 const balanceChartOption = computed(() => {
+  void themeTick.value;
   const points = groupChart.value;
   const dates = points.map(p => p.x);
   const series = [
@@ -561,8 +565,13 @@ const initBalanceChart = () => {
 };
 
 const updateCharts = () => {
+  themeTick.value++;
   if (lineChart) lineChart.setOption(lineChartOption.value, true);
   if (balanceChart) balanceChart.setOption(balanceChartOption.value, true);
+  expandRowKeys.value.forEach((key) => {
+    const row = tableData.value.find((r) => (r.OrderDate || r.id) === key);
+    if (row) updateRowCharts(row);
+  });
 };
 
 const handleResize = () => {
@@ -1060,6 +1069,9 @@ const selectInverse = () => {
 
 // 主题切换：重读 cssVar 重绘图表
 const onThemeChange = () => updateCharts();
+
+// 语言切换：图表内文案需重算重绘（computed 不追踪 i18n 文案变化）
+watch(locale, () => updateCharts());
 
 onMounted(async () => {
   window.addEventListener('app-theme-change', onThemeChange);
