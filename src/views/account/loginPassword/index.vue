@@ -1,14 +1,14 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>修改登录密码</h1>
+      <h1>{{ t('account.loginPassword.pageTitle') }}</h1>
     </header>
 
     <main>
       <div class="form-panel">
         <div class="panel-header">
-          <div class="panel-title">修改登录密码</div>
-          <div class="panel-subtitle">更新您的账户登录密码</div>
+          <div class="panel-title">{{ t('account.loginPassword.panelTitle') }}</div>
+          <div class="panel-subtitle">{{ t('account.loginPassword.panelSubtitle') }}</div>
         </div>
         <div class="form-container">
           <SubmitForm
@@ -40,6 +40,9 @@ import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import SubmitForm from '@/components/SubmitForm.vue';
 import SuccessDialog from '@/components/SuccessDialog.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 获取用户 store 和 router
 const userStore = useUserStore();

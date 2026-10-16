@@ -1,14 +1,14 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>账户配置</h1>
+      <h1>{{ t('account.config.pageTitle') }}</h1>
     </header>
 
     <main>
       <div class="form-panel">
         <div class="panel-header">
-          <div class="panel-title">账户配置</div>
-          <div class="panel-subtitle">管理您的账户接口和安全设置</div>
+          <div class="panel-title">{{ t('account.config.panelTitle') }}</div>
+          <div class="panel-subtitle">{{ t('account.config.panelSubtitle') }}</div>
         </div>
         <div class="form-container">
           <SubmitForm
@@ -64,6 +64,9 @@ import useUserStore from '@/stores/user';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import SubmitForm from '@/components/SubmitForm.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 获取用户 store
 const userStore = useUserStore();

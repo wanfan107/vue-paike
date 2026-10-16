@@ -1,13 +1,13 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>商户信息</h1>
+      <h1>{{ t('account.info.pageTitle') }}</h1>
     </header>
 
     <main>
       <div class="form-panel">
         <div class="panel-header">
-          <div class="panel-title">商户信息</div>
+          <div class="panel-title">{{ t('account.info.panelTitle') }}</div>
         </div>
         <div class="form-container">
           <SubmitForm
@@ -27,6 +27,9 @@
 import { ref, watch } from 'vue';
 import useUserStore from '@/stores/user';
 import SubmitForm from '@/components/SubmitForm.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const userStore = useUserStore();
 

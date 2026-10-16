@@ -2,16 +2,16 @@
   <div class="page-container">
     <div class="page-content-wrapper">
       <header class="page-header">
-        <h1>PIX | 首 页</h1>
+        <h1>PIX | {{ t('home.pageTitle') }}</h1>
         <div class="user-actions">
           <div v-if="isBRL" class="balance-display">
-            <span class="balance-label">可用余额</span>
+            <span class="balance-label">{{ t('home.balance.availableLabel') }}</span>
             <span class="balance-amount">{{ showData ? formatBalance(availableBalance) : '****' }}</span>
           </div>
           <el-tooltip
             class="box-item"
             effect="dark"
-            :content="showData ? '隐藏金额' : '查看金额'"
+            :content="showData ? t('home.hideAmount') : t('home.viewAmount')"
             placement="bottom"
           >
             <el-button 
@@ -27,7 +27,7 @@
           <el-tooltip
             class="box-item"
             effect="dark"
-            content="刷新数据"
+            :content="t('common.refresh')"
             placement="bottom"
           >
             <el-button 
@@ -48,12 +48,12 @@
         <ProjectBox ref="projectBoxRef" :show-data="showData" />
         <!-- 快速访问 -->
         <div class="section-header">
-          <h2>快捷访问</h2>
+          <h2>{{ t('home.quickAccess') }}</h2>
         </div>
         <FastBox />
         <!-- 最近交易 -->
         <div class="section-header">
-          <h2>最新交易</h2>
+          <h2>{{ t('home.recentTransactions') }}</h2>
           <!-- <el-button class="simple-button" size="small" plain>
             <svg-icon icon-class="caidan" size="20px" class="custom-class" />
             完整报表
@@ -69,47 +69,47 @@
             element-loading-spinner="el-icon-loading"
             element-loading-background="rgba(255, 255, 255, 0.8)"
           >
-            <el-table-column label="商户单号" width="280" align="center">
+            <el-table-column :label="t('home.recent.merchantOrder')" width="280" align="center">
               <template #default="{ row }">
                 <CopyText 
                   :text="row.merchantorderno" 
-                  title="点击复制订单号"
+                  :title="t('home.recent.copyMerchantOrder')"
                 />
               </template>
             </el-table-column>
-            <el-table-column label="平台订单号" width="280" align="center">
+            <el-table-column :label="t('home.recent.platformOrder')" width="280" align="center">
               <template #default="{ row }">
                 <CopyText 
                   :text="row.orderno" 
                   :id="'orderno-' + row.orderno"
-                  title="点击复制平台订单号"
+                  :title="t('home.recent.copyPlatformOrder')"
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="orderamount" label="订单金额" align="center">
+            <el-table-column prop="orderamount" :label="t('home.recent.amount')" align="center">
               <template #default="{ row }">
                 {{ formatCurrency(row.orderamount, currency.value) }}
               </template>
             </el-table-column>
-            <el-table-column prop="realamount" label="入账金额" align="center">
+            <el-table-column prop="realamount" :label="t('home.recent.realAmount')" align="center">
               <template #default="{ row }">
                 {{ formatCurrency(row.realamount, currency.value) }}
               </template>
             </el-table-column>
-            <el-table-column prop="balance" label="变后余额" align="center">
+            <el-table-column prop="balance" :label="t('home.recent.balanceAfter')" align="center">
               <template #default="{ row }">
                 {{ formatCurrency(row.balance, currency.value) }}
               </template>
             </el-table-column>
-            <el-table-column prop="createtime" label="入账时间" width="180" align="center" />
-            <el-table-column prop="type" label="类型" align="center">
+            <el-table-column prop="createtime" :label="t('home.recent.entryTime')" width="180" align="center" />
+            <el-table-column prop="type" :label="t('home.recent.type')" align="center">
               <template #default="{ row }">
                 <el-tag :type="getTypeColor(row.type)">
                   {{ getTypeName(row.type) }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="memo" label="类型说明" show-overflow-tooltip align="center" />
+            <el-table-column prop="memo" :label="t('home.recent.typeDesc')" show-overflow-tooltip align="center" />
           </el-table>
         </section>
       </main>
@@ -125,6 +125,9 @@ import CopyText from '@/components/CopyText.vue';
 import useUserStore from '../../stores/user';
 import { http } from '@/api';
 import { formatCurrency } from '../../utils/currency';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 定义响应式变量
 const loading = ref(false);

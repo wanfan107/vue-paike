@@ -1,8 +1,28 @@
 // 中文语言包（阶段一：全局框架文案）
 export default {
   home: {
+    pageTitle: '首页',
     searchPlaceholder: '请输入系统单、客户订单号查询、银行单号查询',
     enterSearchCondition: '请输入搜索条件',
+    hideAmount: '隐藏金额',
+    viewAmount: '查看金额',
+    quickAccess: '快捷访问',
+    recentTransactions: '最新交易',
+    balance: {
+      availableLabel: '可用余额',
+    },
+    recent: {
+      merchantOrder: '商户单号',
+      platformOrder: '平台订单号',
+      amount: '订单金额',
+      realAmount: '入账金额',
+      balanceAfter: '变后余额',
+      entryTime: '入账时间',
+      type: '类型',
+      typeDesc: '类型说明',
+      copyMerchantOrder: '点击复制订单号',
+      copyPlatformOrder: '点击复制平台订单号',
+    },
   },
   menu: {
     home: '首页',
@@ -512,6 +532,27 @@ export default {
         failed: '转账失败，请稍后重试',
         historyFailed: '获取转账记录失败',
       },
+    },
+  },
+  account: {
+    info: {
+      pageTitle: '商户信息',
+      panelTitle: '商户信息',
+    },
+    payPassword: {
+      pageTitle: '修改支付密码',
+      panelTitle: '修改支付密码',
+      panelSubtitle: '更新您的账户支付密码',
+    },
+    loginPassword: {
+      pageTitle: '修改登录密码',
+      panelTitle: '修改登录密码',
+      panelSubtitle: '更新您的账户登录密码',
+    },
+    config: {
+      pageTitle: '账户配置',
+      panelTitle: '账户配置',
+      panelSubtitle: '管理您的账户接口和安全设置',
     },
   },
 }

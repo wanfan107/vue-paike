@@ -1,8 +1,28 @@
 // English locale (Phase 1: global framework texts)
 export default {
   home: {
+    pageTitle: 'Home',
     searchPlaceholder: 'Search by system order, customer order, or bank order',
     enterSearchCondition: 'Please enter search condition',
+    hideAmount: 'Hide amount',
+    viewAmount: 'View amount',
+    quickAccess: 'Quick Access',
+    recentTransactions: 'Recent Transactions',
+    balance: {
+      availableLabel: 'Available Balance',
+    },
+    recent: {
+      merchantOrder: 'Merchant Order',
+      platformOrder: 'Platform Order',
+      amount: 'Order Amount',
+      realAmount: 'Net Amount',
+      balanceAfter: 'Balance After',
+      entryTime: 'Entry Time',
+      type: 'Type',
+      typeDesc: 'Type Description',
+      copyMerchantOrder: 'Click to copy order number',
+      copyPlatformOrder: 'Click to copy platform order',
+    },
   },
   menu: {
     home: 'Home',
@@ -512,6 +532,27 @@ export default {
         failed: 'Transfer failed, please retry later',
         historyFailed: 'Failed to load transfer records',
       },
+    },
+  },
+  account: {
+    info: {
+      pageTitle: 'Merchant Info',
+      panelTitle: 'Merchant Info',
+    },
+    payPassword: {
+      pageTitle: 'Change Withdrawal Password',
+      panelTitle: 'Change Withdrawal Password',
+      panelSubtitle: 'Update your account withdrawal password',
+    },
+    loginPassword: {
+      pageTitle: 'Change Login Password',
+      panelTitle: 'Change Login Password',
+      panelSubtitle: 'Update your account login password',
+    },
+    config: {
+      pageTitle: 'Account Settings',
+      panelTitle: 'Account Settings',
+      panelSubtitle: 'Manage your account APIs and security',
     },
   },
 }

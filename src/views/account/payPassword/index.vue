@@ -1,14 +1,14 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>修改支付密码</h1>
+      <h1>{{ t('account.payPassword.pageTitle') }}</h1>
     </header>
 
     <main>
       <div class="form-panel">
         <div class="panel-header">
-          <div class="panel-title">修改支付密码</div>
-          <div class="panel-subtitle">更新您的账户支付密码</div>
+          <div class="panel-title">{{ t('account.payPassword.panelTitle') }}</div>
+          <div class="panel-subtitle">{{ t('account.payPassword.panelSubtitle') }}</div>
         </div>
         <div class="form-container">
           <SubmitForm
@@ -38,6 +38,9 @@ import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import SubmitForm from '@/components/SubmitForm.vue';
 import SuccessDialog from '@/components/SuccessDialog.vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 获取用户 store
 const userStore = useUserStore();
