@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ t('menu.home') }}</h1>
@@ -10,7 +10,7 @@
         <div class="search-container">
           <el-input
             v-model="input"
-            placeholder="请输入系统单、客户订单号查询、银行单号查询"
+            :placeholder="t('home.searchPlaceholder')"
             clearable
             @keyup.enter="handleSearch"
           />
@@ -20,13 +20,13 @@
             round 
             @click="handleSearch"
           >
-            搜索
+            {{ t('common.search') }}
           </el-button>
         </div>
         <div class="empty-state" v-if="datalist.length==0">
           <div class="empty-icon">📋</div>
           <h2>{{ title }}</h2>
-          <p>请输入搜索条件</p>
+          <p>{{ t('home.enterSearchCondition') }}</p>
         </div>
         <div class="empty-state" v-else>
           <!-- 这里显示搜索结果 -->
@@ -40,6 +40,7 @@
 import { Search } from "@element-plus/icons-vue";
 import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import { ElMessage } from 'element-plus';
 
 // 银行页面
 const { t } = useI18n();
@@ -56,7 +57,7 @@ const input = ref('');
 
 const handleSearch = () => {
   if (!input.value.trim()) {
-    ElMessage.warning('请输入搜索条件');
+    ElMessage.warning(t('home.enterSearchCondition'));
     return;
   }
   // 实现搜索逻辑

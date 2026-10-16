@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ t('order.transfer.pageTitle') }}</h1>
@@ -7,36 +7,27 @@
 
     <main class="page-content">
       <div class="content-wrapper">
-        <!-- 通知卡片 -->
-        <!-- <el-card class="notification-card">
-          <div class="notification-content">
-            <i class="el-icon-info-circle notification-icon"></i>
-            <span>通过Telegram申请转账已经上线，欢迎使用。</span>
-          </div>
-        </el-card> -->
-
         <!-- 账户信息和表单卡片 -->
-        <!-- <el-card class="form-card" shadow="never"> -->
           <!-- 账户信息描述 -->
           <div class="account-info">
-            <h3 class="section-title">账户信息</h3>
+            <h3 class="section-title">{{ t('order.transfer.account.title') }}</h3>
             <el-descriptions border>
-              <el-descriptions-item label="可用余额" :span="1">
+              <el-descriptions-item :label="t('order.transfer.account.available')" :span="1">
                 <span class="balance-value">({{ detail.balance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="待结算余额" :span="1">
+              <el-descriptions-item :label="t('order.transfer.account.pending')" :span="1">
                 <span class="balance-value">({{ detail.unsettledBalance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="授信余额" :span="1">
+              <el-descriptions-item :label="t('order.transfer.account.credit')" :span="1">
                 <span class="balance-value">({{ detail.creditBalance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="方式" :span="1">
-                商户确认/人工审核
+              <el-descriptions-item :label="t('order.transfer.account.method')" :span="1">
+                {{ t('order.transfer.account.methodText') }}
               </el-descriptions-item>
-              <el-descriptions-item label="周期" :span="1">
+              <el-descriptions-item :label="t('order.transfer.account.cycle')" :span="1">
                 {{ detail.type }}
               </el-descriptions-item>
-              <el-descriptions-item label="汇率" :span="2">
+              <el-descriptions-item :label="t('order.transfer.account.rate')" :span="2">
                 {{ detail.rate }}
               </el-descriptions-item>
             </el-descriptions>
@@ -45,34 +36,34 @@
           <!-- 表单区域 -->
           <div class="form-section">
             <div class="section-header">
-              <h3 class="section-title">开始申请</h3>
+              <h3 class="section-title">{{ t('order.transfer.form.title') }}</h3>
             </div>
             <div class="form-container">
               <el-form  :model="ruleForm" :rules="rules" ref="formRef" label-width="120px">
                 <!-- 提现金额 -->
-                <el-form-item label="提现金额" prop="amount">
+                <el-form-item :label="t('order.transfer.form.amount')" prop="amount">
                   <div class="amount-input-container">
                     <el-input
                       v-model.number="ruleForm.amount"
                       type="number"
-                      placeholder="最小5，单笔手续费0.0450 + 0%"
+                      :placeholder="t('order.transfer.form.amountPlaceholder')"
                       @input="() => { calculateAmounts(); convertAmountToU(); }"
                     ></el-input>
-                    <el-button type="primary" size="small">拆分 - 笔订单</el-button>
+                    <el-button type="primary" size="small">{{ t('order.transfer.form.splitBtn') }}</el-button>
                   </div>
                 </el-form-item>
                 
                 <!-- 到账金额和手续费 -->
                 <div class="row-container">
-                  <el-form-item label="到账金额" prop="arrivalAmount">
+                  <el-form-item :label="t('order.transfer.form.arrivalAmount')" prop="arrivalAmount">
                     <el-input
                       v-model="ruleForm.arrivalAmount"
                     type="number"
-                    placeholder="到账金额"
+                    :placeholder="t('order.transfer.form.arrivalPlaceholder')"
                     @input="convertUToAmount"
                     ></el-input>
                   </el-form-item>
-                  <el-form-item label="手续费" prop="fee">
+                  <el-form-item :label="t('order.transfer.form.fee')" prop="fee">
                     <el-input
                       v-model="ruleForm.fee"
                       disabled
@@ -81,66 +72,66 @@
                 </div>
                 
                 <!-- 转账账号 -->
-                <el-form-item label="转账账号" prop="transferAccount">
+                <el-form-item :label="t('order.transfer.form.account')" prop="transferAccount">
                   <el-input
                     v-model="ruleForm.transferAccount"
-                    placeholder="请输入转账账号"
+                    :placeholder="t('order.transfer.form.accountPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- 银行/类型 -->
-                <el-form-item label="银行/类型" prop="bankType">
+                <el-form-item :label="t('order.transfer.form.bankType')" prop="bankType">
                   <el-select
                     v-model="ruleForm.bankType"
-                    placeholder="请选择收款银行"
+                    :placeholder="t('order.transfer.form.bankPlaceholder')"
                     style="width: 100%"
                   >
-                    <el-option label="中国银行" value="BOC" />
-                    <el-option label="工商银行" value="ICBC" />
-                    <el-option label="建设银行" value="CCB" />
-                    <el-option label="农业银行" value="ABC" />
-                    <el-option label="招商银行" value="CMB" />
+                    <el-option :label="t('order.transfer.form.banks.boc')" value="BOC" />
+                    <el-option :label="t('order.transfer.form.banks.icbc')" value="ICBC" />
+                    <el-option :label="t('order.transfer.form.banks.ccb')" value="CCB" />
+                    <el-option :label="t('order.transfer.form.banks.abc')" value="ABC" />
+                    <el-option :label="t('order.transfer.form.banks.cmb')" value="CMB" />
                   </el-select>
                 </el-form-item>
                 
                 <!-- 收款人 -->
-                <el-form-item label="收款人" prop="recipient">
+                <el-form-item :label="t('order.transfer.form.recipient')" prop="recipient">
                   <el-input
                     v-model="ruleForm.recipient"
-                    placeholder="请输入收款人真实姓名"
+                    :placeholder="t('order.transfer.form.recipientPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- 证件号 -->
-                <el-form-item label="证件号" prop="recipientTaxId">
+                <el-form-item :label="t('order.transfer.form.taxId')" prop="recipientTaxId">
                   <el-input
                     v-model="ruleForm.recipientTaxId"
-                    placeholder="请输入收款人证件号"
+                    :placeholder="t('order.transfer.form.taxIdPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- 支付密码 -->
-                <el-form-item label="支付密码" prop="password">
+                <el-form-item :label="t('order.transfer.form.password')" prop="password">
                   <el-input
                     v-model="ruleForm.password"
                     type="password"
-                    placeholder="请输入支付密码"
+                    :placeholder="t('order.transfer.form.passwordPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- MFA2验证码 -->
-                <el-form-item label="MFA2验证码" prop="googleCode">
+                <el-form-item :label="t('order.transfer.form.mfa')" prop="googleCode">
                   <el-input
                     v-model="ruleForm.googleCode"
-                    placeholder="如未绑定请至账号管理->基本信息中设置"
+                    :placeholder="t('order.transfer.form.mfaPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- 操作按钮 -->
                 <el-form-item>
                   <div class="form-actions">
-                    <el-button @click="reset">重置</el-button>
-                    <el-button type="primary" @click="submit"  :disabled="true" title="暂未开放" :loading="loading">确认 (暂未开放)</el-button>
+                    <el-button @click="reset">{{ t('order.transfer.form.reset') }}</el-button>
+                    <el-button type="primary" @click="submit"  :disabled="true" :title="t('order.transfer.form.submitTitle')" :loading="loading">{{ t('order.transfer.form.submit') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -153,19 +144,19 @@
           <!-- 转账记录 -->
           <div class="transfer-history">
             <div class="history-header">
-              <h3>转账记录</h3>
+              <h3>{{ t('order.transfer.table.title') }}</h3>
               <div class="history-controls">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
+                  :range-separator="t('common.to')"
+                  :start-placeholder="t('order.transfer.table.startDate')"
+                  :end-placeholder="t('order.transfer.table.endDate')"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   @change="getTransferHistory"
                 />
                 <el-button type="primary" size="small" @click="getTransferHistory">
-                  查询
+                  {{ t('order.transfer.table.searchBtn') }}
                 </el-button>
               </div>
             </div>
@@ -177,32 +168,31 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180" />
-              <el-table-column prop="fromAccount" label="转出账户" />
-              <el-table-column prop="toAccount" label="转入账户" />
-              <el-table-column prop="amount" label="转账金额" width="120">
+              <el-table-column prop="orderNo" :label="t('order.transfer.table.orderNo')" width="180" />
+              <el-table-column prop="fromAccount" :label="t('order.transfer.table.fromAccount')" />
+              <el-table-column prop="toAccount" :label="t('order.transfer.table.toAccount')" />
+              <el-table-column prop="amount" :label="t('order.transfer.table.amount')" width="120">
                 <template #default="scope">
                   {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100">
+              <el-table-column prop="status" :label="t('order.transfer.table.status')" width="100">
                 <template #default="scope">
                   <el-tag :type="scope.row.status === 'SUCCESS' ? 'success' : 'danger'">
-                    {{ scope.row.status === 'SUCCESS' ? '成功' : '失败' }}
+                    {{ scope.row.status === 'SUCCESS' ? t('order.transfer.table.statusSuccess') : t('order.transfer.table.statusFailed') }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" />
-              <el-table-column prop="remark" label="备注" />
+              <el-table-column prop="createTime" :label="t('order.transfer.table.time')" width="180" />
+              <el-table-column prop="remark" :label="t('order.transfer.table.remark')" />
             </el-table>
             
             <div class="history-empty" v-if="!historyLoading && transferHistory.length === 0">
-              <el-empty description="暂无转账记录" />
+              <el-empty :description="t('order.transfer.table.empty')" />
             </div>
           </div>
         
 
-        <!-- </el-card> -->
       </div>
     </main>
   </div>
@@ -212,11 +202,12 @@
 import { ref, reactive, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
-const { t } = useI18n();
 import { Warning } from "@element-plus/icons-vue";
 import { formatCurrency } from '@/utils/currency';
+const { t } = useI18n();
 // 页面标题
 
 
@@ -245,23 +236,23 @@ const ruleForm = reactive({
 // 表单验证规则
 const rules = {
   amount: [
-    { required: true, message: '请输入提现金额', trigger: 'blur' },
-    { type: 'number', min: 5, message: '提现金额不能小于5', trigger: 'blur' }
+    { required: true, message: t('order.transfer.rules.amountRequired'), trigger: 'blur' },
+    { type: 'number', min: 5, message: t('order.transfer.rules.amountMin'), trigger: 'blur' }
   ],
   transferAccount: [
-    { required: true, message: '请输入转账账号', trigger: 'blur' }
+    { required: true, message: t('order.transfer.rules.accountRequired'), trigger: 'blur' }
   ],
   bankType: [
-    { required: true, message: '请选择银行/类型', trigger: 'change' }
+    { required: true, message: t('order.transfer.rules.bankRequired'), trigger: 'change' }
   ],
   recipient: [
-    { required: true, message: '请输入收款人', trigger: 'blur' }
+    { required: true, message: t('order.transfer.rules.recipientRequired'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入支付密码', trigger: 'blur' }
+    { required: true, message: t('order.transfer.rules.passwordRequired'), trigger: 'blur' }
   ],
   googleCode: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
+    { required: true, message: t('order.transfer.rules.mfaRequired'), trigger: 'blur' }
   ]
 };
 
@@ -355,13 +346,13 @@ const submit = async () => {
           .then((res) => {
             loading.value = false;
             if (res.code === 200) {
-              ElMessage.success("申请成功");
+              ElMessage.success(t('order.transfer.msg.success'));
               reset();
             }
           })
           .catch(() => {
             loading.value = false;
-            ElMessage.error("申请失败，请稍后重试");
+            ElMessage.error(t('order.transfer.msg.failed'));
           });
       }
     });
@@ -412,27 +403,9 @@ const getTransferHistory = async () => {
     
     // 模拟转账记录数据
     transferHistory.value = [
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 86400000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00001',
-      //   amount: 5000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '测试转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // }
     ];
   } catch (error) {
-    ElMessage.error('获取转账记录失败');
+    ElMessage.error(t('order.transfer.msg.historyFailed'));
   } finally {
     historyLoading.value = false;
   }

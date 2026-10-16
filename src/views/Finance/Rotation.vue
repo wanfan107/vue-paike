@@ -1,22 +1,22 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ t('menu.Rotation') }}</h1>
+      <h1>{{ t('order.rotation.pageTitle') }}</h1>
       <hr />
     </header>
 
     <main class="page-content">
       <div class="content-wrapper">
           <div class="account-balance">
-            <span class="balance-label">账户余额</span>
+            <span class="balance-label">{{ t('order.rotation.balanceLabel') }}</span>
             <span class="balance-amount">{{ formatCurrency(currentAccount.balance, currency.value) }}</span>
           </div>
           <div class="form-container">
           <el-form :model="transferForm" :rules="rules" ref="transferFormRef" label-width="120px">
-            <el-form-item label="转账金额" prop="amount">
+            <el-form-item :label="t('order.rotation.form.amount')" prop="amount">
               <el-input 
                 v-model.number="transferForm.amount" 
-                placeholder="请输入转账金额" 
+                :placeholder="t('order.rotation.form.amountPlaceholder')" 
                 type="number"
                 :min="0.01"
                 :step="0.01"
@@ -25,34 +25,34 @@
               </el-input>
             </el-form-item>
             
-            <el-form-item label="到账商户号" prop="toMerchant">
+            <el-form-item :label="t('order.rotation.form.toMerchant')" prop="toMerchant">
               <el-input 
                 v-model="transferForm.toMerchant" 
-                placeholder="到账商户号" 
+                :placeholder="t('order.rotation.form.toMerchantPlaceholder')" 
               ></el-input>
             </el-form-item>
             
-            <el-form-item label="支付密码" prop="password">
+            <el-form-item :label="t('order.rotation.form.password')" prop="password">
               <el-input 
                 v-model="transferForm.password" 
                 type="password"
-                placeholder="请输入支付密码"
+                :placeholder="t('order.rotation.form.passwordPlaceholder')"
                 :show-password="true"
               ></el-input>
             </el-form-item>
             
-            <el-form-item label="MFA2验证码" prop="mfaCode">
+            <el-form-item :label="t('order.rotation.form.mfa')" prop="mfaCode">
               <el-input 
                 v-model="transferForm.mfaCode" 
-                placeholder="请输入MFA2验证码"
+                :placeholder="t('order.rotation.form.mfaPlaceholder')"
               ></el-input>
             </el-form-item>
             
             <el-form-item>
               <div class="form-actions">
-                <el-button @click="resetForm">重置</el-button>
-                <el-button type="primary" :disabled="true" title="暂未开放">
-                  提交（暂未开放）
+                <el-button @click="resetForm">{{ t('order.rotation.form.reset') }}</el-button>
+                <el-button type="primary" :disabled="true" :title="t('order.rotation.form.submitTitle')">
+                  {{ t('order.rotation.form.submit') }}
                 </el-button>
               </div>
             </el-form-item>
@@ -65,19 +65,19 @@
           <!-- 转账记录 -->
           <div class="transfer-history">
             <div class="history-header">
-              <h3>转账记录</h3>
+              <h3>{{ t('order.rotation.table.title') }}</h3>
               <div class="history-controls">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
+                  :range-separator="t('order.rotation.table.separator')"
+                  :start-placeholder="t('order.rotation.table.startDate')"
+                  :end-placeholder="t('order.rotation.table.endDate')"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   @change="getTransferHistory"
                 />
                 <el-button type="primary" size="small" @click="getTransferHistory">
-                  查询
+                  {{ t('order.rotation.table.searchBtn') }}
                 </el-button>
               </div>
             </div>
@@ -89,27 +89,27 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180" />
-              <el-table-column prop="fromAccount" label="转出账户" />
-              <el-table-column prop="toAccount" label="转入账户" />
-              <el-table-column prop="amount" label="转账金额" width="120">
+              <el-table-column prop="orderNo" :label="t('order.rotation.table.orderNo')" width="180" />
+              <el-table-column prop="fromAccount" :label="t('order.rotation.table.fromAccount')" />
+              <el-table-column prop="toAccount" :label="t('order.rotation.table.toAccount')" />
+              <el-table-column prop="amount" :label="t('order.rotation.table.amount')" width="120">
                 <template #default="scope">
                   {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100">
+              <el-table-column prop="status" :label="t('order.rotation.table.status')" width="100">
                 <template #default="scope">
                   <el-tag :type="scope.row.status === 'SUCCESS' ? 'success' : 'danger'">
-                    {{ scope.row.status === 'SUCCESS' ? '成功' : '失败' }}
+                    {{ scope.row.status === 'SUCCESS' ? t('order.rotation.table.statusSuccess') : t('order.rotation.table.statusFailed') }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" />
-              <el-table-column prop="remark" label="备注" />
+              <el-table-column prop="createTime" :label="t('order.rotation.table.time')" width="180" />
+              <el-table-column prop="remark" :label="t('order.rotation.table.remark')" />
             </el-table>
             
             <div class="history-empty" v-if="!historyLoading && transferHistory.length === 0">
-              <el-empty description="暂无转账记录" />
+              <el-empty :description="t('order.rotation.table.empty')" />
             </div>
           </div>
       </div>
@@ -118,7 +118,7 @@
     <!-- 授信款未还清弹窗 -->
     <el-dialog
       v-model="showPrepayDialog"
-      title="提示"
+      :title="t('order.rotation.dialog.prepayTitle')"
       width="400px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -129,13 +129,13 @@
           <el-icon><Warning /></el-icon>
         </div>
         <div class="dialog-message">
-          授信款未还清，不能提U
+          {{ t('order.rotation.dialog.prepayMessage') }}
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="handleDialogClose">
-            确定
+            {{ t('order.rotation.dialog.confirm') }}
           </el-button>
         </span>
       </template>
@@ -144,7 +144,7 @@
 </template>
 <script setup>
 import {  Warning } from "@element-plus/icons-vue";
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRouter } from 'vue-router';
 import { ElMessage } from 'element-plus';
@@ -200,12 +200,12 @@ const transferForm = reactive({
 // 表单验证规则
 const rules = {
   amount: [
-    { required: true, message: '请输入转账金额', trigger: 'blur' },
-    { type: 'number', min: 0.01, message: '转账金额不能小于0.01', trigger: 'blur' },
+    { required: true, message: t('order.rotation.rules.amountRequired'), trigger: 'blur' },
+    { type: 'number', min: 0.01, message: t('order.rotation.rules.amountMin'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (value > currentAccount.balance) {
-          callback(new Error('转账金额不能超过账户余额'));
+          callback(new Error(t('order.rotation.rules.amountExceed')));
         } else {
           callback();
         }
@@ -214,10 +214,10 @@ const rules = {
     }
   ],
   password: [
-    { required: true, message: '请输入支付密码', trigger: 'blur' }
+    { required: true, message: t('order.rotation.rules.passwordRequired'), trigger: 'blur' }
   ],
   mfaCode: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
+    { required: true, message: t('order.rotation.rules.mfaRequired'), trigger: 'blur' }
   ]
 };
 
@@ -236,7 +236,7 @@ const submitTransfer = async () => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // 模拟转账成功
-        ElMessage.success('转账成功');
+        ElMessage.success(t('order.rotation.msg.success'));
         
         // 重置表单
         resetForm();
@@ -247,7 +247,7 @@ const submitTransfer = async () => {
         // 刷新转账记录
         getTransferHistory();
       } catch (error) {
-        ElMessage.error('转账失败，请稍后重试');
+        ElMessage.error(t('order.rotation.msg.failed'));
       } finally {
         loading.value = false;
       }
@@ -282,88 +282,15 @@ const getTransferHistory = async () => {
     
     // 模拟转账记录数据
     transferHistory.value = [
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 86400000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00001',
-      //   amount: 5000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 86400000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '测试转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // },
-      // {
-      //   orderNo: 'TRF' + (Date.now() - 172800000),
-      //   fromAccount: 'C95647',
-      //   toAccount: 'E00002',
-      //   amount: 3000.00,
-      //   status: 'SUCCESS',
-      //   createTime: new Date(Date.now() - 172800000).toISOString().slice(0, 19).replace('T', ' '),
-      //   remark: '业务转账'
-      // }
     ];
   } catch (error) {
-    ElMessage.error('获取转账记录失败');
+    ElMessage.error(t('order.rotation.msg.historyFailed'));
   } finally {
     historyLoading.value = false;
   }
 };
 
 // 页面挂载时初始化
-import { onMounted } from 'vue';
 import { http } from "@/request";
 onMounted(() => {
   initTimeRange();

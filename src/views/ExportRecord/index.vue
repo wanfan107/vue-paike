@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="app-page">
     <header class="app-page-header">
       <h1>{{ t('menu.exportRecord') }}</h1>
@@ -9,7 +9,7 @@
       <el-card class="notification-card">
         <div class="notification-content">
           <i class="el-icon-info-circle notification-icon"></i>
-          <span>导出的文件生成后保留三天，三天后会自动删除。</span>
+          <span>{{ t('common.exportNote') }}</span>
         </div>
       </el-card>
 
@@ -19,7 +19,7 @@
             :icon="Refresh"
             @click="onSearch"
             :loading="loading"
-          >刷新</el-button>
+          >{{ t('common.refresh') }}</el-button>
         </div>
         <div class="table-panel">
           <el-table
@@ -51,7 +51,7 @@
                   :disabled="!scope.row.fileurl || !isValidUrl(scope.row.fileurl)"
                   @click="handleDownload(scope.row)"
                 >
-                  下载
+                  {{ t('common.download') }}
                 </el-button>
                 <span v-else>{{ scope.row[item.prop] }}</span>
               </template>
@@ -125,20 +125,23 @@ const searchParams = reactive({
 
 // 表格列配置
 const columns = reactive([
-  // 文件名、类型、状态
-  { label: "文件名", prop: "fileName", align: "left" },
-  { label: "类型", prop: "type", align: "center" },
-  { label: "状态", prop: "status", align: "center" },
-  { label: "创建人", prop: "creatorName", align: "center" },
-  { label: "创建时间", prop: "createdon", align: "center" },
-  { label: "操作", prop: "fileurl", align: "center" },
+  { label: t('order.export.fileName'), prop: "fileName", align: "left" },
+  { label: t('order.export.type'), prop: "type", align: "center" },
+  { label: t('order.export.status'), prop: "status", align: "center" },
+  { label: t('order.export.creator'), prop: "creatorName", align: "center" },
+  { label: t('order.export.createdAt'), prop: "createdon", align: "center" },
+  { label: t('common.action'), prop: "fileurl", align: "center" },
 ]);
 
-// 状态列文案映射（0→生成中 / 1→生成成功 / 2→生成失败 / '-'→排队中）
-const STATUS_TEXT = { 0: "生成中", 1: "生成成功", 2: "生成失败" };
+// 状态列文案映射
+const STATUS_TEXT = computed(() => ({
+  0: t('order.export.statusGenerating'),
+  1: t('order.export.statusSuccess'),
+  2: t('order.export.statusFailed'),
+}));
 const getStatusText = (status) => {
-  if (status === "-") return "排队中";
-  return STATUS_TEXT[status] ?? status;
+  if (status === "-") return t('order.export.statusQueued');
+  return STATUS_TEXT.value[status] ?? status;
 };
 const getStatusType = (status) => {
   const s = Number(status);
