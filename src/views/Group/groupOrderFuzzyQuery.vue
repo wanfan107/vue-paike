@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <header class="page-header">
-      <h1>{{ t('menu.groupOrderFuzzy') }}</h1>
+      <h1>{{ t('menu.groupOrderFuzzyQuery') }}</h1>
       <hr />
     </header>
 
