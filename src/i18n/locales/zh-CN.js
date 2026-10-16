@@ -7,7 +7,7 @@ export default {
   menu: {
     home: '首页',
     groupOrderFuzzyQuery: '订单查询',
-    CapitalFlow: '资金流水',
+    CapitalFlow: '账户明细',
     Statistics: '统计报表',
     Realtime: '即时统计',
     dailyReport: '每日报表',
@@ -286,7 +286,7 @@ export default {
       msg: { callbackDone: '已对订单 {no} 进行回调' },
     },
     capital: {
-      pageTitle: '资金流水',
+      pageTitle: '账户明细',
       search: {
         timeLabel: '时间范围',
         quickTime: '快捷时间',

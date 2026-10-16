@@ -7,7 +7,7 @@ export default {
   menu: {
     home: 'Home',
     groupOrderFuzzyQuery: 'Order Query',
-    CapitalFlow: 'Transactions',
+    CapitalFlow: 'Account Details',
     Statistics: 'Statistics',
     Realtime: 'Realtime',
     dailyReport: 'Daily Report',
@@ -286,7 +286,7 @@ export default {
       msg: { callbackDone: 'Callback sent for order {no}' },
     },
     capital: {
-      pageTitle: 'Transactions',
+      pageTitle: 'Account Details',
       search: {
         timeLabel: 'Time Range',
         quickTime: 'Quick Filter',
