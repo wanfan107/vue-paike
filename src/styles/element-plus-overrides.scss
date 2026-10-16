@@ -59,6 +59,14 @@
   color: var(--text-secondary);
 }
 
+// ---------- EP 2.7+ 新结构：el-input__inner 有独立背景 ----------
+// 暗黑模式下 inner 背景会被 EP 硬编码为 #f7f7f8（浅灰），必须强制透明
+html.dark {
+  .el-input__inner {
+    background-color: transparent !important;
+  }
+}
+
 // ---------- 日期选择器 ----------
 .el-date-editor.el-input__wrapper,
 .el-date-editor.el-input__wrapper {
