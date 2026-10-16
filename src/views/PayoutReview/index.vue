@@ -8,26 +8,26 @@
         <!-- 搜索和筛选区域 -->
         <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="时间窗口">
+            <el-form-item :label="t('order.payoutReview.search.hours')">
               <el-select v-model="searchForm.hours" style="width: 130px">
-                <el-option label="近1小时" :value="1" />
-                <el-option label="近3小时" :value="3" />
-                <el-option label="近6小时" :value="6" />
+                <el-option :label="t('order.payoutReview.search.hours1')" :value="1" />
+                <el-option :label="t('order.payoutReview.search.hours3')" :value="3" />
+                <el-option :label="t('order.payoutReview.search.hours6')" :value="6" />
               </el-select>
             </el-form-item>
 
-            <el-form-item label="类型">
+            <el-form-item :label="t('order.payoutReview.search.type')">
               <el-select v-model="searchForm.reviewType" style="width: 140px">
-                <el-option label="全部" value="" />
-                <el-option label="大额出款" value="LargePayout" />
-                <el-option label="风控暂停" value="RiskHold" />
+                <el-option :label="t('order.payoutReview.search.all')" value="" />
+                <el-option :label="t('order.payoutReview.search.largePayout')" value="LargePayout" />
+                <el-option :label="t('order.payoutReview.search.riskHold')" value="RiskHold" />
               </el-select>
             </el-form-item>
 
-            <el-form-item v-if="isGroup" label="商户">
+            <el-form-item v-if="isGroup" :label="t('order.payoutReview.search.merchant')">
               <el-select
                 v-model="searchForm.merchantCode"
-                placeholder="全部商户"
+                :placeholder="t('order.payoutReview.search.allMerchants')"
                 clearable
                 filterable
                 style="width: 220px"
@@ -43,10 +43,10 @@
 
             <el-form-item class="search-actions">
               <el-button type="primary" :icon="Search" :loading="loading" @click="handleSearch">
-                搜索
+                {{ t('common.search') }}
               </el-button>
               <el-button :icon="Refresh" :loading="loading" @click="handleRefresh">
-                刷新
+                {{ t('common.refresh') }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -55,7 +55,7 @@
         <!-- 批量操作栏（表格上方） -->
         <div v-if="selectedRows.length" class="batch-bar">
           <span class="batch-info">
-            已选 <b>{{ selectedRows.length }}</b> 笔
+            {{ t('order.payoutReview.batch.selected', { n: selectedRows.length }) }}
           </span>
           <el-button
             size="small"
@@ -64,7 +64,7 @@
             :disabled="!selectedRows.length || deciding"
             @click="submitDecide('allow')"
           >
-            批量放行
+            {{ t('order.payoutReview.batch.allow') }}
           </el-button>
           <el-button
             size="small"
@@ -73,9 +73,9 @@
             :disabled="!selectedRows.length || deciding"
             @click="submitDecide('reject')"
           >
-            批量拒绝
+            {{ t('order.payoutReview.batch.reject') }}
           </el-button>
-          <span class="batch-tip">单次最多处理 50 单</span>
+          <span class="batch-tip">{{ t('order.payoutReview.batch.maxTip') }}</span>
         </div>
 
         <!-- 表格内容区域 -->
@@ -87,7 +87,7 @@
             @selection-change="onSelectionChange"
           >
             <el-table-column type="selection" width="45" align="center" />
-            <el-table-column label="类型" width="100" align="center">
+            <el-table-column :label="t('order.payoutReview.table.type')" width="100" align="center">
               <template #default="{ row }">
                 <StatusPill
                   :type="row.reviewType === 'RiskHold' ? 'danger' : 'warning'"
@@ -95,51 +95,50 @@
                 />
               </template>
             </el-table-column>
-            <el-table-column prop="merchant" label="商户号" width="100" align="center" />
-            <el-table-column label="商户单号" min-width="220" align="left">
+            <el-table-column prop="merchant" :label="t('order.payoutReview.table.merchant')" width="100" align="center" />
+            <el-table-column :label="t('order.payoutReview.table.merchantOrderNo')" min-width="220" align="left">
               <template #default="{ row }">
-                <CopyText :text="row.merchantOrder" title="点击复制商户单号" />
+                <CopyText :text="row.merchantOrder" :title="t('order.payoutReview.table.copyMerchantNo')" />
               </template>
             </el-table-column>
-            <el-table-column label="系统单号" min-width="220" align="left">
+            <el-table-column :label="t('order.payoutReview.table.serialNo')" min-width="220" align="left">
               <template #default="{ row }">
-                <CopyText :text="row.serialNo" title="点击复制系统单号" />
+                <CopyText :text="row.serialNo" :title="t('order.payoutReview.table.copySerialNo')" />
               </template>
             </el-table-column>
-            <el-table-column label="金额" width="120" align="right">
+            <el-table-column :label="t('order.payoutReview.table.amount')" width="120" align="right">
               <template #default="{ row }">
                 {{ formatAmount(row.amount) }}
               </template>
             </el-table-column>
-            <el-table-column prop="bankCardNo" label="出款账号" min-width="140" align="left" />
-            <el-table-column prop="bankAccount" label="户名" min-width="120" align="left" />
-            <el-table-column prop="currency" label="币种" width="70" align="center" />
-            <el-table-column label="风控详情" min-width="200" align="left">
+            <el-table-column prop="bankCardNo" :label="t('order.payoutReview.table.bankCardNo')" min-width="140" align="left" />
+            <el-table-column prop="bankAccount" :label="t('order.payoutReview.table.bankAccount')" min-width="120" align="left" />
+            <el-table-column prop="currency" :label="t('order.payoutReview.table.currency')" width="70" align="center" />
+            <el-table-column :label="t('order.payoutReview.table.riskDetail')" min-width="200" align="left">
               <template #default="{ row }">
                 <div v-if="row.reviewType === 'RiskHold'" class="risk-detail">
-                  <div class="risk-label">{{ row.riskTypeLabel || '风控暂停' }}</div>
+                  <div class="risk-label">{{ row.riskTypeLabel || t('order.payoutReview.risk.paused') }}</div>
                   <div
                     v-if="row.riskCurrentValue !== null && row.riskCurrentValue !== undefined"
                     class="risk-line"
                   >
-                    累计 {{ formatAmount(row.riskCurrentValue) }} / 阈值
-                    {{ formatAmount(row.riskTriggerValue) }}
+                    {{ t('order.payoutReview.risk.accumulated', { current: formatAmount(row.riskCurrentValue), trigger: formatAmount(row.riskTriggerValue) }) }}
                   </div>
                   <div v-if="row.riskTimeWindowSeconds" class="risk-line">
-                    统计窗口：{{ formatWindow(row.riskTimeWindowSeconds) }}
+                    {{ t('order.payoutReview.risk.window', { window: formatWindow(row.riskTimeWindowSeconds) }) }}
                   </div>
                   <div v-if="row.riskMess" class="risk-line">{{ row.riskMess }}</div>
                 </div>
                 <span v-else>-</span>
               </template>
             </el-table-column>
-            <el-table-column prop="createdOn" label="申请时间" width="160" align="center" />
-            <el-table-column label="备注" min-width="120" align="left">
+            <el-table-column prop="createdOn" :label="t('order.payoutReview.table.applyTime')" width="160" align="center" />
+            <el-table-column :label="t('order.payoutReview.table.memo')" min-width="120" align="left">
               <template #default="{ row }">
                 {{ row.memo || '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="150" align="center" fixed="right">
+            <el-table-column :label="t('order.payoutReview.table.action')" width="150" align="center" fixed="right">
               <template #default="{ row }">
                 <el-button
                   size="small"
@@ -148,7 +147,7 @@
                   :disabled="deciding"
                   @click.stop="handleRowDecide('allow', row)"
                 >
-                  放行
+                  {{ t('order.payoutReview.table.allow') }}
                 </el-button>
                 <el-button
                   size="small"
@@ -157,7 +156,7 @@
                   :disabled="deciding"
                   @click.stop="handleRowDecide('reject', row)"
                 >
-                  拒绝
+                  {{ t('order.payoutReview.table.reject') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -187,11 +186,10 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { Search, Refresh } from '@element-plus/icons-vue';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
-const { t } = useI18n();
 import CopyText from '@/components/CopyText.vue';
 import StatusPill from '@/components/StatusPill.vue';
 
-
+const { t } = useI18n();
 const userStore = useUserStore();
 
 // 集团身份才显示商户筛选（商户 JWT 只能查本号，由后端保证）
@@ -237,7 +235,7 @@ const fetchPending = async () => {
       // 数据已刷新，清空勾选
       selectedRows.value = [];
     } else {
-      ElMessage.error(res.message || '查询失败');
+      ElMessage.error(res.message || t('order.payoutReview.msg.queryFailed'));
     }
   } catch (err) {
     console.error('查询待审列表失败:', err);
@@ -274,7 +272,7 @@ const loadMerchantOptions = () => {
       }
     })
     .catch(() => {
-      ElMessage.error('获取商户列表失败');
+      ElMessage.error(t('order.payoutReview.msg.loadMerchantFailed'));
     });
 };
 
@@ -290,26 +288,30 @@ const handleRowDecide = (action, row) => {
 const submitDecide = async (action) => {
   const serialNos = selectedRows.value.map((r) => r.serialNo);
   if (!serialNos.length) {
-    ElMessage.warning('请先勾选要处理的订单');
+    ElMessage.warning(t('order.payoutReview.msg.batchNeedSelect'));
     return;
   }
   // 后端上限 50，前端先拦
   if (serialNos.length > 50) {
-    ElMessage.error('单次最多处理 50 单');
+    ElMessage.error(t('order.payoutReview.msg.batchMax50'));
     return;
   }
   await doDecide(action, serialNos);
 };
 
 const doDecide = async (action, serialNos) => {
-  const actionText = action === 'allow' ? '放行' : '拒绝';
+  const isAllow = action === 'allow';
+  const confirmTitle = isAllow ? t('order.payoutReview.confirm.allowTitle') : t('order.payoutReview.confirm.rejectTitle');
+  const confirmMsg = isAllow
+    ? t('order.payoutReview.confirm.allowMsg', { n: serialNos.length })
+    : t('order.payoutReview.confirm.rejectMsg', { n: serialNos.length });
   try {
     await ElMessageBox.confirm(
-      `即将${actionText} ${serialNos.length} 笔出款，${action === 'allow' ? '放行后进入出款队列' : '拒绝后将退回流水'}（先提交生效，后到不得改判）。确认执行？`,
-      `${actionText}确认`,
+      confirmMsg,
+      confirmTitle,
       {
-        confirmButtonText: '确认',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning',
       }
     );
@@ -321,10 +323,11 @@ const doDecide = async (action, serialNos) => {
   try {
     const res = await http.payoutReviewDecide({ action, serialNos });
     if (res.code === 0) {
+      const successCount = res.data?.successCount ?? serialNos.length;
       ElMessage.success(
-        action === 'allow'
-          ? `已放行 ${res.data?.successCount ?? serialNos.length} 笔，等待出款`
-          : `已拒绝 ${res.data?.successCount ?? serialNos.length} 笔，等待退回流水`
+        isAllow
+          ? t('order.payoutReview.msg.allowed', { n: successCount })
+          : t('order.payoutReview.msg.rejected', { n: successCount })
       );
     } else {
       const items = res.data?.items;
@@ -334,7 +337,7 @@ const doDecide = async (action, serialNos) => {
         items
           .filter((i) => !i.success)
           .forEach((i) => {
-            const msg = i.message || '处理失败';
+            const msg = i.message || t('order.payoutReview.msg.processFailed');
             counts[msg] = (counts[msg] || 0) + 1;
           });
         const reasonText = Object.entries(counts)
@@ -342,12 +345,16 @@ const doDecide = async (action, serialNos) => {
           .join('；');
         ElMessage({
           type: 'warning',
-          message: `成功 ${res.data?.successCount ?? 0} 笔，失败 ${res.data?.failCount ?? 0} 笔：${reasonText}`,
+          message: t('order.payoutReview.msg.partialFail', {
+            s: res.data?.successCount ?? 0,
+            f: res.data?.failCount ?? 0,
+            reason: reasonText,
+          }),
           duration: 6000,
         });
       } else {
         // 整单参数错误（action 非法 / 空数组 / 超 50 等），data 为 {}
-        ElMessage.error(res.message || '处理失败');
+        ElMessage.error(res.message || t('order.payoutReview.msg.processFailed'));
       }
     }
     // 成功或部分失败都刷新：已处理单从待审列表消失
@@ -372,8 +379,8 @@ const formatAmount = (value) => {
 // 统计窗口（秒）→「x 小时」
 const formatWindow = (seconds) => {
   const h = Number(seconds) / 3600;
-  if (Number.isInteger(h)) return `${h} 小时`;
-  return `${h.toFixed(1)} 小时`;
+  if (Number.isInteger(h)) return `${h} ${t('order.payoutReview.common.hours')}`;
+  return `${h.toFixed(1)} ${t('order.payoutReview.common.hours')}`;
 };
 
 onMounted(() => {
