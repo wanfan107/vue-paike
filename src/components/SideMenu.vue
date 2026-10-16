@@ -64,7 +64,7 @@ const props = defineProps({
 
 const currentRoute = useRoute()
 const userStore = useUserStore()
-const { t, te } = useI18n()
+const { t, te, locale } = useI18n()
 
 // 菜单标题：优先取 i18n（menu.<name>），缺失时回退路由中文 title
 const menuTitle = (route) => {
@@ -74,6 +74,8 @@ const menuTitle = (route) => {
 
 // 从路由配置中动态获取菜单数据
 const getMenuItemsFromRoutes = () => {
+  // 读取 locale 确保 computed 依赖追踪
+  locale.value
   const mainLayoutRoute = router.options.routes.find(route => route.path === '/')
   if (!mainLayoutRoute || !mainLayoutRoute.children) return []
 
@@ -99,6 +101,9 @@ const getMenuItemsFromRoutes = () => {
   })
   return filterMenuByPermission(menuItems)
 }
+
+// —— 关键：包成 computed，locale 变化时自动重算 ——
+const menuItems = computed(getMenuItemsFromRoutes)
 
 const getUserRole = () => {
   const roleCode = userStore.roleCode
@@ -133,8 +138,6 @@ const filterMenuByPermission = (menuItems) => {
     return true
   })
 }
-
-const menuItems = getMenuItemsFromRoutes()
 
 const handleOpen = (key, keyPath) => {}
 const handleClose = (key, keyPath) => {}

@@ -177,6 +177,7 @@ const router = createRouter({
         // 集团管理
         {
           path: 'group',
+          name: 'group',
           redirect: 'info',
           title: '集团账户管理',
           icon: Operation,
