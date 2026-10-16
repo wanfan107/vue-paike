@@ -2,7 +2,7 @@
   <header class="app-header">
     <!-- 左侧：侧栏折叠开关 -->
     <div class="header-left">
-      <button class="collapse-btn" @click="$emit('toggle-sidebar')" :title="collapsed ? '展开菜单' : '收起菜单'">
+      <button class="collapse-btn" @click="$emit('toggle-sidebar')" :title="collapsed ? t('header.expandMenu') : t('header.collapseMenu')">
         <el-icon :size="20">
           <Expand v-if="collapsed" />
           <Fold v-else />
@@ -132,7 +132,7 @@ const { t, locale } = useI18n()
 const { isDark, toggleTheme } = useTheme()
 
 const currentLocaleLabel = computed(
-  () => LOCALES.find((item) => item.value === locale.value)?.label || '中文'
+  () => LOCALES.find((item) => item.value === locale.value)?.label || t('common.zh'),
 )
 
 const handleLocaleCommand = (value) => setLocale(value)

@@ -17,7 +17,7 @@
 
     <template #footer>
       <div class="captcha-footer">
-        <el-button size="small" @click="handleCancel">取消</el-button>
+        <el-button size="small" @click="handleCancel">{{ t('common.cancel') }}</el-button>
       </div>
     </template>
   </el-dialog>

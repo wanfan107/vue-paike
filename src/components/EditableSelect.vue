@@ -31,17 +31,17 @@
                          @keyup.esc="cancelEdit" 
                          ref="editInput">
                 </div>
-                <div class="original-name">钱包地址: {{ option.original }}</div>
+                <div class="original-name">{{ t('editableSelect.walletLabel') }}: {{ option.original }}</div>
               </div>
               <div class="option-actions">
-                <el-button class="edit-btn"  size="small" @click.stop="startEdit(index)">编辑别名</el-button>
-                <el-button class="save-btn" type="success"  size="small" @click.stop="saveAlias(index)">保存</el-button>
+                <el-button class="edit-btn"  size="small" @click.stop="startEdit(index)">{{ t('editableSelect.editAlias') }}</el-button>
+                <el-button class="save-btn" type="success"  size="small" @click.stop="saveAlias(index)">{{ t('common.save') }}</el-button>
               </div>
             </div>
           </template>
           <div v-else class="empty-tip">
             <el-icon class="empty-icon"><CircleClose /></el-icon>
-            <span>暂无钱包地址</span>
+            <span>{{ t('editableSelect.empty') }}</span>
           </div>
         </div>
       </div>
@@ -51,6 +51,9 @@
 <script setup>
 import { ref, reactive, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue';
 import { CircleClose } from '@element-plus/icons-vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 // 定义props和emit
 const props = defineProps({

@@ -64,7 +64,7 @@
               <EditableSelect
                 v-else-if="item.name === 'select1'"
                 v-model="ruleForm[item.prop]"
-                :placeholder="item.placeholder || '请选择选项'"
+                :placeholder="item.placeholder || t('common.pleaseSelect')"
                 :options="item.options"
                 :disabled="disabled || formatDisabled(item.disabled)"
                 @change="(val) => defaultChange(item.prop, val)"
@@ -128,7 +128,7 @@
                 :precision="0"
                 :disabled="disabled || formatDisabled(item.disabled)"
                 :rows="item.rows || 5"
-                placeholder="请输入"
+                :placeholder="t('common.pleaseInput')"
                 @change="(val) => defaultChange(item.prop, val)"
               />
 
@@ -137,8 +137,8 @@
                 v-model="ruleForm[item.prop]"
                 :disabled="disabled || formatDisabled(item.disabled)"
                 :type="item.dateType"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :start-placeholder="t('common.startDate')"
+                :end-placeholder="t('common.endDate')"
                 :value-format="item.valueFormat || 'yyyy-MM-dd HH:mm:ss'"
                 @change="(val) => defaultChange(item.prop, val)"
               />
@@ -186,7 +186,7 @@
           :disabled="loading"
           type="primary"
           @click="onSave"
-          >提交</el-button
+          >{{ t('common.submit') }}</el-button
         >
       </div>
     </slot>
@@ -221,7 +221,10 @@
 <script setup>
 import { ref, onMounted, h } from 'vue';
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 import EditableSelect from './EditableSelect.vue';
+
+const { t } = useI18n();
 
 // 定义组件属性
 const props = defineProps({

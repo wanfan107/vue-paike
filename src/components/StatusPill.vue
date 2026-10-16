@@ -7,55 +7,50 @@
 
 <script setup>
 import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 
 /**
- * StatusPill —— 状态胶囊（NTX 风格：圆点 + 浅底 + 11px 胶囊）
- *
- * 用法 1（推荐，传业务状态码，自动映射类型与中文文案）：
- *   <StatusPill status="PENDING" />
- *
- * 用法 2（手动指定）：
- *   <StatusPill type="success" text="已结算" />
- *   <StatusPill type="danger" :dot="false">失败</StatusPill>
+ * StatusPill —— 状态胶囊（NTX 风格）
+ * 用法：<StatusPill status="PENDING" /> 自动映射类型 + 翻译文案
  */
 const props = defineProps({
-  // 业务原始状态码（不区分大小写）
   status: { type: String, default: '' },
-  // 手动指定类型：success | warning | danger | info | neutral | primary
   type: { type: String, default: '' },
-  // 手动指定文案
   text: { type: String, default: '' },
-  // 是否显示圆点
   dot: { type: Boolean, default: true }
 })
 
-// 常见支付订单状态码 → 视觉类型 + 中文文案
+// 状态码 → 视觉类型 + i18n key
 const STATUS_MAP = {
-  SUCCESS: { type: 'success', label: '成功' },
-  PAID: { type: 'success', label: '已支付' },
-  SETTLED: { type: 'success', label: '已结算' },
-  COMPLETED: { type: 'success', label: '已完成' },
-  DONE: { type: 'success', label: '完成' },
-  PENDING: { type: 'warning', label: '处理中' },
-  PROCESSING: { type: 'warning', label: '处理中' },
-  WAITING: { type: 'warning', label: '待处理' },
-  REVIEWING: { type: 'warning', label: '审核中' },
-  FAILED: { type: 'danger', label: '失败' },
-  FAIL: { type: 'danger', label: '失败' },
-  ERROR: { type: 'danger', label: '失败' },
-  REJECTED: { type: 'danger', label: '已拒绝' },
-  CANCELLED: { type: 'danger', label: '已取消' },
-  CANCELED: { type: 'danger', label: '已取消' },
-  REFUNDED: { type: 'info', label: '已退款' }
+  SUCCESS: { type: 'success', labelKey: 'status.success' },
+  PAID: { type: 'success', labelKey: 'status.paid' },
+  SETTLED: { type: 'success', labelKey: 'status.settled' },
+  COMPLETED: { type: 'success', labelKey: 'status.completed' },
+  DONE: { type: 'success', labelKey: 'status.completed' },
+  PENDING: { type: 'warning', labelKey: 'status.pending' },
+  PROCESSING: { type: 'warning', labelKey: 'status.processing' },
+  WAITING: { type: 'warning', labelKey: 'status.pending' },
+  REVIEWING: { type: 'warning', labelKey: 'status.reviewing' },
+  FAILED: { type: 'danger', labelKey: 'status.failed' },
+  FAIL: { type: 'danger', labelKey: 'status.failed' },
+  ERROR: { type: 'danger', labelKey: 'status.failed' },
+  REJECTED: { type: 'danger', labelKey: 'status.rejected' },
+  CANCELLED: { type: 'danger', labelKey: 'status.cancelled' },
+  CANCELED: { type: 'danger', labelKey: 'status.cancelled' },
+  REFUNDED: { type: 'info', labelKey: 'status.refunded' }
 }
 
 const mapped = computed(() => {
   if (props.status) {
     const hit = STATUS_MAP[String(props.status).toUpperCase()]
-    if (hit) return hit
-    return { type: 'neutral', label: props.status }
+    if (hit) return { type: hit.type, label: t(hit.labelKey) }
   }
-  return { type: 'neutral', label: '' }
+  if (props.type && props.text) {
+    return { type: props.type, label: props.text }
+  }
+  return { type: props.type || 'info', label: props.text || t('status.unknown') }
 })
 
 const pillClass = computed(() => `is-${props.type || mapped.value.type}`)
