@@ -9,7 +9,7 @@
         <el-card class="notification-card">
           <div class="notification-content">
             <i class="el-icon-info-circle notification-icon"></i>
-            <span>通过Telegram申请提U已经上线，欢迎使用。</span>
+            <span>{{ t('order.applyU.banner') }}</span>
           </div>
         </el-card>
 
@@ -17,26 +17,26 @@
         <!-- <el-card class="form-card" shadow="never"> -->
           <!-- 账户信息描述 -->
           <div class="account-info">
-            <h3 class="section-title">账户信息</h3>
+            <h3 class="section-title">{{ t('order.applyU.account.title') }}</h3>
             <dl class="detail-list">
               <div class="detail-row">
-                <dt>可用余额</dt>
+                <dt>{{ t('order.applyU.account.available') }}</dt>
                 <dd><span class="balance-value">({{ detail.balance }})</span></dd>
               </div>
               <div class="detail-row">
-                <dt>待结算余额</dt>
+                <dt>{{ t('order.applyU.account.pending') }}</dt>
                 <dd><span class="balance-value">({{ detail.unsettledBalance }})</span></dd>
               </div>
               <div class="detail-row">
-                <dt>方式</dt>
-                <dd>商户确认/人工审核</dd>
+                <dt>{{ t('order.applyU.account.method') }}</dt>
+                <dd>{{ t('order.applyU.account.methodText') }}</dd>
               </div>
               <div class="detail-row">
-                <dt>周期</dt>
+                <dt>{{ t('order.applyU.account.cycle') }}</dt>
                 <dd>{{ detail.type }}</dd>
               </div>
               <div class="detail-row">
-                <dt>汇率</dt>
+                <dt>{{ t('order.applyU.account.rate') }}</dt>
                 <dd class="is-amount">{{ detail.rate }}</dd>
               </div>
             </dl>
@@ -45,7 +45,7 @@
           <!-- 表单区域 -->
           <div class="form-section">
             <div class="section-header">
-              <h3 class="section-title">开始申请</h3>
+              <h3 class="section-title">{{ t('order.applyU.form.title') }}</h3>
               <!-- <el-button type="primary"  @click="showWalletDialog = true">新增钱包地址</el-button> -->
             </div>
             <div class="form-container">
@@ -60,73 +60,73 @@
               >
                 <el-row :gutter="10">
                   <el-col :span="24">
-                    <el-form-item label="金额(法币)" prop="amount">
+                    <el-form-item :label="t('order.applyU.form.amount')" prop="amount">
                       <el-input
                         v-model="ruleForm.amount"
                         type="number"
-                        placeholder="手续费：0.00 + 0%"
+                        :placeholder="t('order.applyU.form.amountPlaceholder')"
                         @input="() => convertAmountToU()"
                         @blur="() => blur({ key: 'amount', val: ruleForm.amount })"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="到账U数" prop="uAmount">
+                    <el-form-item :label="t('order.applyU.form.uAmount')" prop="uAmount">
                       <el-input
                         v-model="ruleForm.uAmount"
                         type="number"
-                        placeholder="单位：USDT"
+                        :placeholder="t('order.applyU.form.uAmountPlaceholder')"
                         @input="() => convertUToAmount()"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="手续费" prop="fee">
+                    <el-form-item :label="t('order.applyU.form.fee')" prop="fee">
                       <el-input
                         v-model="ruleForm.fee"
-                        placeholder="单位：₹"
+                        :placeholder="t('order.applyU.form.feePlaceholder')"
                         disabled
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="钱包地址" prop="walletAddress">
+                    <el-form-item :label="t('order.applyU.form.walletAddress')" prop="walletAddress">
                       <EditableSelect
                         v-model="ruleForm.walletAddress"
-                        :placeholder="'请选择钱包地址'"
+                        :placeholder="t('order.applyU.form.walletPlaceholder')"
                         :options="walletAddressOptions"
                         :merchant-id="userStore.merchantInfo.id"
                       />
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="支付密码" prop="password">
+                    <el-form-item :label="t('order.applyU.form.password')" prop="password">
                       <el-input
                         v-model="ruleForm.password"
                         type="password"
                         show-password
                         autocomplete="new-password"
-                        placeholder="请输入支付密码"
+                        :placeholder="t('order.applyU.form.passwordPlaceholder')"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="MFA2验证码" prop="code">
+                    <el-form-item :label="t('order.applyU.form.mfa')" prop="code">
                       <el-input
                         v-model="ruleForm.code"
-                        placeholder="请输入MFA2验证码"
+                        :placeholder="t('order.applyU.form.mfaPlaceholder')"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                 </el-row>
                 <div style="text-align: center; width: 100%; padding-bottom: 20px; margin-top: 10px;">
-                  <el-button @click="reset">重置</el-button>
+                  <el-button @click="reset">{{ t('order.applyU.form.reset') }}</el-button>
                   <el-button
                     :loading="loading"
                     :disabled="loading"
                     type="primary"
                     @click="onSave"
-                  >提交</el-button>
+                  >{{ t('order.applyU.form.submit') }}</el-button>
                 </div>
               </el-form>
             </div>
@@ -136,7 +136,7 @@
               <!-- 授信款未还清弹窗 -->
     <el-dialog
       v-model="showPrepayDialog"
-      title="提示"
+      :title="t('order.applyU.dialog.title')"
       width="400px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -147,13 +147,13 @@
           <el-icon><Warning /></el-icon>
         </div>
         <div class="dialog-message">
-          授信款未还清，不能提U
+          {{ t('order.applyU.dialog.prepayMessage') }}
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="handleDialogClose">
-            确定
+            {{ t('common.confirm') }}
           </el-button>
         </span>
       </template>

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ t('order.inflation.pageTitle') }}</h1>
@@ -11,7 +11,7 @@
         <el-card class="notification-card">
           <div class="notification-content">
             <i class="el-icon-info-circle notification-icon"></i>
-            <span>通过Telegram申请冲U已经上线，欢迎使用。</span>
+            <span>{{ t('order.inflation.banner') }}</span>
           </div>
         </el-card>
 
@@ -19,24 +19,24 @@
         <!-- <el-card class="form-card" shadow="never"> -->
           <!-- 账户信息描述 -->
           <div class="account-info">
-            <h3 class="section-title">账户信息</h3>
+            <h3 class="section-title">{{ t('order.inflation.account.title') }}</h3>
             <el-descriptions border>
-              <el-descriptions-item label="可用余额" :span="1">
+              <el-descriptions-item :label="t('order.inflation.account.available')" :span="1">
                 <span class="balance-value">({{ detail.balance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="待结算余额" :span="1">
+              <el-descriptions-item :label="t('order.inflation.account.pending')" :span="1">
                 <span class="balance-value">({{ detail.unsettledBalance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="授信余额" :span="1">
+              <el-descriptions-item :label="t('order.inflation.account.credit')" :span="1">
                 <span class="balance-value">({{ detail.creditBalance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="方式" :span="1">
-                商户确认/人工审核
+              <el-descriptions-item :label="t('order.inflation.account.method')" :span="1">
+                {{ t('order.inflation.account.methodText') }}
               </el-descriptions-item>
-              <el-descriptions-item label="周期" :span="1">
+              <el-descriptions-item :label="t('order.inflation.account.cycle')" :span="1">
                 {{ detail.type }}
               </el-descriptions-item>
-              <el-descriptions-item label="汇率" :span="2">
+              <el-descriptions-item :label="t('order.inflation.account.rate')" :span="2">
                 {{ detail.rate }}
               </el-descriptions-item>
             </el-descriptions>
@@ -45,34 +45,34 @@
           <!-- 表单区域 -->
           <div class="form-section">
             <div class="section-header">
-              <h3 class="section-title">开始申请</h3>
+              <h3 class="section-title">{{ t('order.inflation.form.title') }}</h3>
             </div>
             <div class="form-container">
               <el-form :model="ruleForm" :loading="loading" label-width="120px">
                 <!-- 到账金额 -->
-                <el-form-item label="到账金额" prop="amount">
+                <el-form-item :label="t('order.inflation.form.amount')" prop="amount">
                   <el-input
                     v-model="ruleForm.amount"
                     type="number"
-                    placeholder="请输入金额"
+                    :placeholder="t('order.inflation.form.amountPlaceholder')"
                     @input="() => convertAmountToU()"
                   ></el-input>
                 </el-form-item>
                 
                 <!-- 应付U数 -->
-                <el-form-item label="应付U数" prop="uAmount">
+                <el-form-item :label="t('order.inflation.form.uAmount')" prop="uAmount">
                   <el-input
                     v-model="ruleForm.uAmount"
                     type="number"
-                    placeholder="单位：USDT"
+                    :placeholder="t('order.inflation.form.uAmountPlaceholder')"
                     @input="() => convertUToAmount()"
                   ></el-input>
                 </el-form-item>
                                 <!-- 操作按钮 -->
                 <el-form-item>
                   <div class="form-actions">
-                    <el-button @click="reset">重置</el-button>
-                    <el-button type="primary" @click="submit"  :disabled="true" title="暂未开放" :loading="loading">提交 (暂未开放)</el-button>
+                    <el-button @click="reset">{{ t('common.reset') }}</el-button>
+                    <el-button type="primary" @click="submit"  :disabled="true" :title="t('order.inflation.form.submitDisabled')" :loading="loading">{{ t('order.inflation.form.submit') }}</el-button>
                   </div>
                 </el-form-item>
               </el-form>
@@ -85,19 +85,19 @@
           <!-- 转账记录 -->
           <div class="transfer-history">
             <div class="history-header">
-              <h3>转账记录</h3>
+              <h3>{{ t('order.inflation.table.title') }}</h3>
               <div class="history-controls">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
+                  :range-separator="t('common.to')"
+                  :start-placeholder="t('order.inflation.table.startDate')"
+                  :end-placeholder="t('order.inflation.table.endDate')"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   @change="getTransferHistory"
                 />
                 <el-button type="primary" size="small" @click="getTransferHistory">
-                  查询
+                  {{ t('common.search') }}
                 </el-button>
               </div>
             </div>
@@ -109,27 +109,27 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180" />
-              <el-table-column prop="fromAccount" label="转出账户" />
-              <el-table-column prop="toAccount" label="转入账户" />
-              <el-table-column prop="amount" label="转账金额" width="120">
+              <el-table-column prop="orderNo" :label="t('order.inflation.table.orderNo')" width="180" />
+              <el-table-column prop="fromAccount" :label="t('order.inflation.table.fromAccount')" />
+              <el-table-column prop="toAccount" :label="t('order.inflation.table.toAccount')" />
+              <el-table-column prop="amount" :label="t('order.inflation.table.amount')" width="120">
                 <template #default="scope">
                   {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100">
+              <el-table-column prop="status" :label="t('order.inflation.table.status')" width="100">
                 <template #default="scope">
                   <el-tag :type="scope.row.status === 'SUCCESS' ? 'success' : 'danger'">
-                    {{ scope.row.status === 'SUCCESS' ? '成功' : '失败' }}
+                    {{ scope.row.status === 'SUCCESS' ? t('common.success') : t('common.failed') }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" />
-              <el-table-column prop="remark" label="备注" />
+              <el-table-column prop="createTime" :label="t('order.inflation.table.time')" width="180" />
+              <el-table-column prop="remark" :label="t('order.inflation.table.remark')" />
             </el-table>
             
             <div class="history-empty" v-if="!historyLoading && transferHistory.length === 0">
-              <el-empty description="暂无转账记录" />
+              <el-empty :description="t('order.inflation.table.empty')" />
             </div>
           </div>
         
@@ -141,7 +141,7 @@
     <!-- 提交成功二维码弹窗 -->
     <el-dialog
       v-model="showQrCodeDialog"
-      title="支付二维码"
+      :title="t('order.inflation.dialog.qrTitle')"
       width="400px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -149,17 +149,17 @@
     >
       <div class="dialog-content">
         <div class="qr-code-container" v-if="qrCodeUrl">
-          <img :src="qrCodeUrl" alt="支付二维码" class="qr-code-image" />
-          <div class="qr-code-tip">请使用钱包扫描二维码进行支付</div>
+          <img :src="qrCodeUrl" :alt="t('order.inflation.dialog.qrAlt')" class="qr-code-image" />
+          <div class="qr-code-tip">{{ t('order.inflation.dialog.qrTip') }}</div>
         </div>
         <div class="dialog-message" v-else>
-          正在生成二维码，请稍候...
+          {{ t('order.inflation.dialog.qrLoading') }}
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="handleQrCodeDialogClose">
-            确定
+            {{ t('common.confirm') }}
           </el-button>
         </span>
       </template>
