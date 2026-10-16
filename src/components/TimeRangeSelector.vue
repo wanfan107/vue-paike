@@ -101,9 +101,9 @@ onMounted(() => {
 
   .time-btn {
     padding: 6px 15px;
-    border: 1px solid #dcdfe6;
-    background-color: #fff;
-    color: #606266;
+    border: 1px solid var(--color-border, #dcdfe6);
+    background-color: var(--color-surface, #fff);
+    color: var(--text-regular, #606266);
     cursor: pointer;
     font-size: 14px;
     transition: all 0.3s;
@@ -127,16 +127,16 @@ onMounted(() => {
     }
 
     &:hover {
-      border-color: #c0c4cc;
-      color: #606266;
+      border-color: var(--color-border, #c0c4cc);
+      color: var(--text-regular, #606266);
       position: relative;
       z-index: 1;
     }
 
     &.active {
-      border-color: #db0011;
-      background-color: #db0011;
-      color: #fff;
+      border-color: var(--brand-primary, #16a34a);
+      background-color: var(--brand-primary, #16a34a);
+      color: var(--text-inverse, #fff);
       position: relative;
       z-index: 2;
     }

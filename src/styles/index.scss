@@ -1,40 +1,14 @@
-// @forward "element-plus/theme-chalk/src/common/var.scss" with (
-//   $colors: (
-//     "primary": (
-//       "base": #d61b1a,
-//       "color": #fff,
-//     ),
-//   )
-// );
- 
-// @use "element-plus/theme-chalk/src/index.scss" as *;
-
 // src/styles/index.scss
+// 引入顺序：tokens（变量）→ global（基础重置）→ element-plus-overrides（EP 组件外观）
+@forward './variables.scss';
+@use './tokens/index.scss' as *;
+@use './variables.scss' as *;
 
-// 使用 CSS 变量覆盖 Element Plus 默认主题色
-// src/styles/index.scss
+// 全局基础样式（背景、字体、链接、滚动条、工具类）
+@use './global.scss';
 
-@use 'sass:color'; // ✅ 显式引入 color 模块
+// Element Plus 组件全局外观覆盖（需在 EP 默认 CSS 之后加载）
+@use './element-plus-overrides.scss';
 
-// 使用 CSS 变量覆盖 Element Plus 默认主题色
-:root {
-  --el-color-primary: #d61b1a;
-  --el-color-primary-light-3: #{color.mix(#fff, #d61b1a, 30%)};
-  --el-color-primary-light-5: #{color.mix(#fff, #d61b1a, 50%)};
-  --el-color-primary-light-7: #{color.mix(#fff, #d61b1a, 70%)};
-  --el-color-primary-light-9: #{color.mix(#fff, #d61b1a, 90%)};
-  --el-color-primary-dark-2: #{color.mix(#000, #d61b1a, 20%)};
-
-  // 可选：自定义其他颜色（如边框、背景等）
-  --el-border-color-base: #d61b1a;
-  --el-fill-color-light: #fdf6f6;
-
-  --el-border-radius-base: 24px;
-}
-
-$background-color: #f7fafc; // 背景色 - 浅灰色
-
-// 如果你需要额外的全局样式，也可以在这里添加
-body {
-  font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-}
+// 统一页面布局规范（搜索面板 / 表格面板 / 统计卡片）
+@use './page-layout.scss';

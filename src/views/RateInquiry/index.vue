@@ -1,15 +1,14 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
-        <el-skeleton v-if="loading" :rows="10" animated />
-        <div v-else-if="!projectList.products || projectList.products.length === 0">暂无费率信息</div>
-        <template v-else>
+    <main>
+      <el-skeleton v-if="loading" :rows="10" animated />
+      <div v-else-if="!projectList.products || projectList.products.length === 0">暂无费率信息</div>
+      <template v-else>
+        <div class="app-panel">
           <div v-for="(item, index) in projectList.products" :key="index" class="product-row">
             <div class="rate-card rate-card-receive">
               <div class="card-header">
@@ -45,8 +44,8 @@
               </div>
             </div>
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
     </main>
   </div>
 </template>
@@ -136,41 +135,6 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: 100%;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 0px;
-    height: 0px;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: 0 $spacing-xl;
-  border-radius: $border-radius-md;
-}
-
 .product-row {
   display: flex;
   gap: 16px;
@@ -183,22 +147,22 @@ onMounted(() => {
 }
 
 .rate-card {
-  background-color: white;
+  background-color: var(--color-surface, white);
   border-radius: 12px;
   padding: 16px;
   margin: 0 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.05));
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 12px;
 
   &-receive {
-    border: 1px solid #e6f7e6;
+    border: 1px solid var(--color-border-soft);
   }
 
   &-pay {
-    border: 1px solid #fde6e6;
+    border: 1px solid var(--color-border-soft);
   }
 }
 
@@ -207,11 +171,11 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .btn-add {
-  background-color: #4CAF50;
+  background-color: var(--brand-primary);
   color: white;
   border: none;
   width: 40px;
@@ -222,7 +186,7 @@ onMounted(() => {
 }
 
 .btn-minus {
-  background-color: #f44336;
+  background-color: var(--color-send);
   color: white;
   border: none;
   width: 40px;
@@ -243,7 +207,7 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 
   .label {
     font-weight: 500;
@@ -251,7 +215,7 @@ onMounted(() => {
 
   .value {
     font-weight: 600;
-    color: #333;
+    color: var(--text-primary);
   }
 }
 </style>

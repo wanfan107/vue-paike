@@ -1,0 +1,123 @@
+// ============================================================
+// 统一页面布局规范
+// 所有列表页/详情页共用此布局系统
+// 使用方式：页面根容器加 class="app-page"，搜索区加 .search-panel，表格区加 .table-panel
+// ============================================================
+
+// ---------- 页面容器 ----------
+.app-page {
+  padding: 20px;
+  min-height: 100%;
+}
+
+// ---------- 页面标题区 ----------
+.app-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+
+  h1 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+  }
+}
+
+// ---------- 面板卡片（搜索区 / 表格区 / 通用内容区） ----------
+.app-panel {
+  background-color: var(--color-surface, #ffffff);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--color-border-soft, #f0f1f3);
+  padding: 20px;
+  transition: box-shadow 0.2s ease;
+}
+
+.app-panel + .app-panel {
+  margin-top: 24px;
+}
+
+// ---------- 搜索面板 ----------
+.search-panel {
+  @extend .app-panel;
+  padding: 16px 20px;
+
+  .search-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px 20px;
+    align-items: flex-end;
+
+    :deep(.el-form-item) {
+      margin-bottom: 0;
+      margin-right: 0;
+    }
+
+    :deep(.el-form-item__label) {
+      font-size: 13px;
+      color: var(--text-secondary, #6b7280);
+      font-weight: 500;
+      padding-bottom: 6px;
+    }
+
+    // 日期选择器限制最大宽度，避免挤压按钮
+    :deep(.el-date-editor--daterange),
+    :deep(.el-date-editor--monthrange) {
+      max-width: 280px;
+    }
+  }
+
+  // 操作按钮组
+  .search-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+  }
+}
+
+// ---------- 表格面板 ----------
+.table-panel {
+  @extend .app-panel;
+  padding: 16px 20px 20px;
+
+  // 表格工具栏（时间快捷选择、批量操作等）
+  .table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  // 分页居中
+  .pagination-wrapper {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+  }
+}
+
+// ---------- 统计卡片 ----------
+.stat-card {
+  background-color: var(--color-surface, #ffffff);
+  border-radius: 16px;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--color-border-soft, #f0f1f3);
+  padding: 20px;
+  transition: all 0.25s ease;
+  cursor: default;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.08));
+  }
+}
+
+// ---------- 空状态 ----------
+.app-empty {
+  padding: 48px 0;
+  text-align: center;
+  color: var(--text-faint, #9ca3af);
+  font-size: 13px;
+}

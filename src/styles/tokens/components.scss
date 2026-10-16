@@ -1,0 +1,170 @@
+// ============================================================
+// Components Mapping —— 把 base + brand 映射为 CSS 变量
+// 同时覆盖 Element Plus 主题变量，使组件库与品牌挂钩
+// brand-tokens 是 vite alias，指向 src/styles/tokens/brand/${VITE_BRAND}.scss
+// 换品牌时只需切换 VITE_BRAND 环境变量，无需改此文件
+// ============================================================
+@use 'sass:color';
+@use './base.scss' as *;
+@use 'brand-tokens' as *;
+
+:root {
+  // ---------- 间距 ----------
+  --space-1:  #{$space-1};
+  --space-2:  #{$space-2};
+  --space-3:  #{$space-3};
+  --space-4:  #{$space-4};
+  --space-5:  #{$space-5};
+  --space-6:  #{$space-6};
+  --space-7:  #{$space-7};
+  --space-8:  #{$space-8};
+  --space-9:  #{$space-9};
+  --space-10: #{$space-10};
+
+  // ---------- 圆角 ----------
+  --radius-xs: #{$radius-xs};
+  --radius-sm: #{$radius-sm};
+  --radius-md: #{$radius-md};
+  --radius-lg: #{$radius-lg};
+  --radius-xl: #{$radius-xl};
+  --radius-pill: #{$radius-pill};
+  // 兼容别名（account 系页面历史用法）
+  --radius-card: #{$radius-lg};
+
+  // ---------- 阴影 ----------
+  --shadow-xs: #{$shadow-xs};
+  --shadow-sm: #{$shadow-sm};
+  --shadow-md: #{$shadow-md};
+  // 兼容别名（account 系页面历史用法）
+  --shadow-card: #{$shadow-md};
+  --shadow-lg: #{$shadow-lg};
+  --shadow-xl: #{$shadow-xl};
+
+  // ---------- 品牌色 ----------
+  --brand-primary: #{$brand-primary};
+  --brand-primary-hover: #{$brand-primary-hover};
+  --brand-primary-active: #{$brand-primary-active};
+  --brand-primary-light: #{$brand-primary-light};
+  --brand-primary-soft: #{$brand-primary-soft};
+  --brand-primary-glow: #{$brand-primary-glow};
+
+  // ---------- 表面色 ----------
+  --color-bg: #{$color-bg};
+  // 兼容别名（account 系页面历史用法）
+  --color-bg-soft: #{$color-bg};
+  --color-surface: #{$color-surface};
+  --color-sidebar: #{$color-sidebar};
+  --color-topbar: #{$color-topbar};
+  --color-elevated: #{$color-elevated};
+  --color-hover: #{$color-hover};
+  --color-overlay: #{$color-overlay};
+
+  // ---------- 文字 ----------
+  --text-primary: #{$color-text-primary};
+  --text-regular: #{$color-text-regular};
+  --text-secondary: #{$color-text-secondary};
+  --text-faint: #{$color-text-faint};
+  --text-inverse: #{$color-text-inverse};
+
+  // ---------- 边框/分隔 ----------
+  --color-border: #{$color-border};
+  --color-border-soft: #{$color-border-soft};
+  --color-divider: #{$color-divider};
+
+  // ---------- 功能色 ----------
+  --color-success: #{$success};
+  --color-success-bg: #{$success-bg};
+  --color-warning: #{$warning};
+  --color-warning-bg: #{$warning-bg};
+  --color-danger: #{$danger};
+  --color-danger-bg: #{$danger-bg};
+  --color-info: #{$info};
+  --color-info-bg: #{$info-bg};
+
+  // ---------- 状态胶囊/金额语义色 ----------
+  --color-receive: #{$receive};
+  --color-receive-bg: #{$receive-bg};
+  --color-send: #{$send};
+  --color-send-bg: #{$send-bg};
+  --color-status-warn: #{$status-warn};
+  --color-status-warn-bg: #{$status-warn-bg};
+  --color-status-info: #{$status-info};
+  --color-status-info-bg: #{$status-info-bg};
+  --color-status-neutral: #{$status-neutral};
+  --color-status-neutral-bg: #{$status-neutral-bg};
+
+  // ---------- 字体 ----------
+  --font-display: #{$font-display};
+  --font-body: #{$font-body};
+  --font-mono: #{$font-mono};
+
+  // ---------- 字号 ----------
+  --font-xs: #{$font-xs};
+  --font-sm: #{$font-sm};
+  --font-base: #{$font-base};
+  --font-md: #{$font-md};
+  --font-lg: #{$font-lg};
+  --font-xl: #{$font-xl};
+  --font-2xl: #{$font-2xl};
+  --font-3xl: #{$font-3xl};
+
+  // ---------- 控件 ----------
+  --control-height: #{$control-height};
+  --control-radius: #{$control-radius};
+
+  // ---------- 动效 ----------
+  --ease-out: #{$ease-out};
+  --dur-fast: #{$dur-fast};
+  --dur-base: #{$dur-base};
+}
+
+// ============================================================
+// Element Plus 主题变量覆盖
+// 把 EP 的命名空间变量全部挂钩到品牌 CSS 变量
+// 注意：light 阶需在 SCSS 层用 color.mix 预计算，不能用 CSS mix()
+// ============================================================
+
+// 先用 SCSS 变量算好 light/dark 阶
+$_p-light-3: color.mix(#fff, $brand-primary, 30%);
+$_p-light-5: color.mix(#fff, $brand-primary, 50%);
+$_p-light-7: color.mix(#fff, $brand-primary, 70%);
+$_p-light-8: color.mix(#fff, $brand-primary, 80%);
+
+:root {
+  // 主色
+  --el-color-primary: #{$brand-primary};
+  --el-color-primary-light-3: #{$_p-light-3};
+  --el-color-primary-light-5: #{$_p-light-5};
+  --el-color-primary-light-7: #{$_p-light-7};
+  --el-color-primary-light-8: #{$_p-light-8};
+  --el-color-primary-light-9: #{$brand-primary-light};
+  --el-color-primary-dark-2: #{$brand-primary-hover};
+
+  // 功能色
+  --el-color-success: #{$success};
+  --el-color-warning: #{$warning};
+  --el-color-danger:  #{$danger};
+  --el-color-info:    #{$info};
+  --el-color-success-light-9: #{$success-bg};
+  --el-color-warning-light-9: #{$warning-bg};
+  --el-color-danger-light-9:  #{$danger-bg};
+  --el-color-info-light-9:    #{$info-bg};
+
+  // 文字
+  --el-text-color-primary:   var(--text-primary);
+  --el-text-color-regular:   var(--text-regular);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-secondary);
+
+  // 背景/边框
+  --el-bg-color:        var(--color-surface);
+  --el-bg-color-page:   var(--color-bg);
+  --el-fill-color-blank: var(--color-surface);
+  --el-border-color:         var(--color-border);
+  --el-border-color-light:   var(--color-divider);
+  --el-border-color-lighter: var(--color-divider);
+  --el-border-radius-base:   var(--control-radius);
+
+  // 字体
+  --el-font-family: var(--font-body);
+}

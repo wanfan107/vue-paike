@@ -1,0 +1,13 @@
+// ============================================================
+// Tokens 入口
+// @forward 把 base/brand 的变量转发给下游（@use 不会传递命名空间）
+// @use ... as * 让本文件内能引用这些变量
+// 换皮时：改 brand/univepay.scss 或切换 VITE_BRAND
+// ============================================================
+@forward './base.scss';
+@forward 'brand-tokens';
+@use './base.scss' as *;
+@use 'brand-tokens' as *;
+@use './components.scss';
+// 暗色主题（html.dark 覆盖，需在 components.scss 之后）
+@use './dark.scss';

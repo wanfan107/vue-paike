@@ -1,93 +1,84 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
     </header>
 
-    <main class="page-content">
-      <div>
-        <hr>
-      </div>
-      <div class="content-wrapper">
-        <div class="table-layout">
-          <div class="table_time">
-            <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px; flex-wrap: wrap;">
-              <el-date-picker
-                v-model="selectedTime"
-                type="datetime"
-                placeholder="选择时间"
-                format="YYYY-MM-DD HH:mm:ss"
-                value-format="YYYY-MM-DD HH:mm:ss"
-                :show-now="false"
-                style="width: 180px; border-radius: 4px;"
-                size="small"
-                @change="getdata"
-              />
-              <el-select
-                v-model="timeRange"
-                placeholder="选择时间范围"
-                style="width: 140px; border-radius: 4px;"
-                size="small"
-                @change="getdata"
-              >
-                <el-option label="近5分钟" value="5" />
-                <el-option label="近15分钟" value="15" />
-                <el-option label="近30分钟" value="30" />
-                <el-option label="近1小时" value="60" />
-              </el-select>
-              <el-popover
-                title="温馨提示"
-                content="为了统计准确性，统计时间自动提前两分钟。例如：当前时间是01:00:00，您统计近5分钟成功率数据，实际展示的订单数量及成功率区间为00:53:00-00:58:00"
-                placement="bottom"
-              >
-                <template #reference><el-icon><WarningFilled /></el-icon></template>
-              </el-popover>
-              <el-tooltip class="item" effect="dark" content="刷新数据" placement="bottom">
-                <el-button circle :icon="Refresh" style="margin-right: 10px;" @click.stop="getdata()"></el-button>
-              </el-tooltip>
-            </div>
+    <main>
+      <div class="table-layout">
+        <div class="table_time">
+          <div class="time-controls">
+            <el-date-picker
+              v-model="selectedTime"
+              type="datetime"
+              placeholder="选择时间"
+              format="YYYY-MM-DD HH:mm:ss"
+              value-format="YYYY-MM-DD HH:mm:ss"
+              :show-now="false"
+              style="width: 180px;"
+              @change="getdata"
+            />
+            <el-select
+              v-model="timeRange"
+              placeholder="选择时间范围"
+              style="width: 140px;"
+              @change="getdata"
+            >
+              <el-option label="近5分钟" value="5" />
+              <el-option label="近15分钟" value="15" />
+              <el-option label="近30分钟" value="30" />
+              <el-option label="近1小时" value="60" />
+            </el-select>
+            <el-popover
+              title="温馨提示"
+              content="为了统计准确性，统计时间自动提前两分钟。例如：当前时间是01:00:00，您统计近5分钟成功率数据，实际展示的订单数量及成功率区间为00:53:00-00:58:00"
+              placement="bottom"
+            >
+              <template #reference><el-icon><WarningFilled /></el-icon></template>
+            </el-popover>
+            <el-button :icon="Refresh" @click.stop="getdata()">刷新</el-button>
           </div>
+        </div>
 
-          <div class="merchant-filter-bar">
-            <span class="filter-label">商户筛选</span>
-            <div class="merchant-select-wrapper">
-              <el-select
-                v-model="selectedMerchants"
-                multiple
-                collapse-tags
-                collapse-tags-tooltip
-                placeholder="选择商户"
-                style="width: 250px;"
-                size="small"
-              >
-                <el-option
-                  v-for="m in merchantOptions"
-                  :key="m.code"
-                  :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`"
-                  :value="m.code"
-                />
-              </el-select>
-              <div class="select-buttons">
-                <el-button size="small" @click="selectAll">全选</el-button>
-                <el-button size="small" @click="selectInverse">反选</el-button>
-              </div>
+        <div class="merchant-filter-bar">
+          <span class="filter-label">商户筛选</span>
+          <div class="merchant-select-wrapper">
+            <el-select
+              v-model="selectedMerchants"
+              multiple
+              collapse-tags
+              collapse-tags-tooltip
+              placeholder="选择商户"
+              style="width: 250px;"
+              size="small"
+            >
+              <el-option
+                v-for="m in merchantOptions"
+                :key="m.code"
+                :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`"
+                :value="m.code"
+              />
+            </el-select>
+            <div class="select-buttons">
+              <el-button size="small" @click="selectAll">全选</el-button>
+              <el-button size="small" @click="selectInverse">反选</el-button>
             </div>
           </div>
-          <div class="chart-container">
-            <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
-              <el-table :data="tableRows" border size="small" :height="tableHeight">
-                <el-table-column prop="code" label="商户代码" align="center" width="160" />
-                <el-table-column prop="orderCount" label="创建订单" align="center" />
-                <el-table-column prop="successCount" label="成功订单" align="center" />
-                <el-table-column prop="successRate" label="成功率" align="center" />
-              </el-table>
-            </div>
-            <div class="resize-handle" @mousedown="startResize"></div>
+        </div>
+        <div class="chart-container">
+          <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
+            <el-table :data="tableRows" border size="small" :height="tableHeight">
+              <el-table-column prop="code" label="商户代码" align="center" width="160" />
+              <el-table-column prop="orderCount" label="创建订单" align="center" />
+              <el-table-column prop="successCount" label="成功订单" align="center" />
+              <el-table-column prop="successRate" label="成功率" align="center" />
+            </el-table>
           </div>
-          <!-- 图表 -->
-          <div class="chart-wrapper">
-            <div ref="chartContainer" style="width: 100%; height: 700px;"></div>
-          </div>
+          <div class="resize-handle" @mousedown="startResize"></div>
+        </div>
+        <!-- 图表 -->
+        <div class="chart-wrapper">
+          <div ref="chartContainer" style="width: 100%; height: 700px;"></div>
         </div>
       </div>
     </main>
@@ -100,6 +91,10 @@ import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import * as echarts from 'echarts';
+
+// 从设计 tokens 读取 CSS 变量（ECharts 画布无法解析 var(...)，必须取值）
+const cssVar = (name, fallback) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
 
 // 集团即时统计
 const props = defineProps({
@@ -223,8 +218,10 @@ const tableRows = computed(() => {
   return rows;
 });
 
-// 图表配置
+// 图表配置（themeTick：主题切换时自增，令 computed 重新读取 cssVar）
+const themeTick = ref(0);
 const realTimeChart = computed(() => {
+  void themeTick.value;
   const groupChart = apiData.value.groupChart || [];
   const times = groupChart.map(p => p.time);
 
@@ -246,7 +243,7 @@ const realTimeChart = computed(() => {
         smooth: true,
         showSymbol: true,
         lineStyle: { color, width: 3 },
-        itemStyle: { color, borderColor: "#fff", borderWidth: 1 },
+        itemStyle: { color, borderColor: cssVar('--color-surface', '#fff'), borderWidth: 1 },
         areaStyle: {
           color: {
             type: "linear",
@@ -267,7 +264,7 @@ const realTimeChart = computed(() => {
       left: "center",
       top: 20,
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 16,
       },
     },
@@ -308,14 +305,14 @@ const realTimeChart = computed(() => {
       itemWidth: 14,
       itemHeight: 14,
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 12,
       },
       pageTextStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
       },
-      pageIconColor: "#666",
-      pageIconInactiveColor: "#ccc",
+      pageIconColor: cssVar('--text-secondary', '#606266'),
+      pageIconInactiveColor: cssVar('--text-faint', '#c0c4cc'),
       pageFormatter: "{current}/{total}",
       pageButtonPosition: "end",
     },
@@ -330,21 +327,21 @@ const realTimeChart = computed(() => {
       type: "category",
       data: times,
       boundaryGap: false,
-      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      axisLine: { lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       splitLine: { show: false },
-      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
-      axisLabel: { textStyle: { color: "#666", align: "center" }, fontSize: 10, margin: 15, rotate: 0 },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisLabel: { textStyle: { color: cssVar('--text-secondary', '#606266'), align: "center" }, fontSize: 10, margin: 15, rotate: 0 },
     },
     yAxis: {
       type: "value",
       name: "成功率 (%)",
       min: 70,
       max: 100,
-      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
-      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
-      axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
+      axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      splitLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed'), type: "dashed" } },
+      axisLabel: { color: cssVar('--text-secondary', '#606266'), formatter: "{value}%", fontSize: 12 },
       axisTick: { show: false },
-      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+      nameTextStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12, padding: [0, 30, 0, 0] },
     },
     series,
   };
@@ -451,7 +448,11 @@ const selectInverse = () => {
   selectedMerchants.value = allCodes.filter(code => !selectedSet.has(code));
 };
 
+// 主题切换：重读 cssVar 重绘图表
+const onThemeChange = () => { themeTick.value++; };
+
 onMounted(async () => {
+  window.addEventListener('app-theme-change', onThemeChange);
   // 拉取集团商户列表（前端过滤掉 G 开头的 code，不展示给用户）
   try {
     const mres = await http.getGroupMerchants();
@@ -470,75 +471,25 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('app-theme-change', onThemeChange);
   destroyChart();
 });
 </script>
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-}
-
-.balance-info {
-  font-weight: 500;
-  color: $primary-color;
-}
-
-.notification-icon {
-  font-size: $font-size-large;
-  cursor: pointer;
-  position: relative;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: $spacing-lg;
-  border-radius: $border-radius-md;
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-xl;
-  color: #666;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: $spacing-lg;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 $spacing-sm 0;
-  font-size: $font-size-xl;
-  color: $text-color;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: $font-size-base;
-}
-
-.search-container {
+.time-controls {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-bottom: $spacing-lg;
-  input{
-    border-radius: 24px !important;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+
+  :deep(.el-input__wrapper),
+  :deep(.el-select__wrapper) {
+    height: 40px;
+    border-radius: 6px;
   }
 }
 
@@ -573,7 +524,7 @@ onBeforeUnmount(() => {
     align-items: center;
     gap: $spacing-md;
     padding: $spacing-md $spacing-lg;
-    background-color: #f5f7fa;
+    background-color: var(--color-hover);
     border-radius: $border-radius-md;
     margin-bottom: $spacing-lg;
 
@@ -593,11 +544,6 @@ onBeforeUnmount(() => {
         display: flex;
         flex-direction: row;
         gap: $spacing-xs;
-
-        ::deep(.el-button) {
-          padding: 4px 12px;
-          font-size: $font-size-small;
-        }
       }
     }
   }
@@ -616,7 +562,7 @@ onBeforeUnmount(() => {
     
     .resize-handle {
       height: 6px;
-      background: #e0e0e0;
+      background: var(--color-border-soft);
       cursor: row-resize;
       display: flex;
       align-items: center;
@@ -624,38 +570,17 @@ onBeforeUnmount(() => {
       margin-top: -1px;
       
       &:hover {
-        background: #c0c0c0;
+        background: var(--color-border);
       }
       
       &::after {
         content: '';
         width: 30px;
         height: 4px;
-        background: #999;
+        background: var(--text-faint);
         border-radius: 2px;
       }
     }
   }
 }
-
- hr {
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    color-scheme: light;
-    font-feature-settings: "kern";
-    font-family: "Geist Sans", sans-serif;
-    line-height: 1.5;
-    overflow-wrap: break-word;
-    margin: 0px;
-    box-sizing: content-box;
-    height: 0px;
-    overflow: visible;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-image: initial;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
 </style>

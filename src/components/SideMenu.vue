@@ -1,9 +1,9 @@
-<template>
-  <div class="side-menu">
+﻿<template>
+  <div class="side-menu" :class="{ 'is-collapsed': collapsed }">
     <!-- 品牌标识 -->
     <div class="menu-header">
-      <img src="../assets/image/logo.png" alt="" />
-      <p>FINANCE v1.2</p>
+      <img src="../assets/image/pix-payment-logo-lockup.png" alt="Pix Payment" v-show="!collapsed" />
+      <img src="../assets/image/pix-payment-logo.png" alt="Pix" v-show="collapsed" class="logo-icon-only" />
     </div>
 
     <!-- 动态渲染菜单 -->
@@ -11,6 +11,8 @@
       class="simple-menu"
       :default-active="currentRoute.path"
       mode="vertical"
+      :collapse="collapsed"
+      :collapse-transition="false"
       router
       @open="handleOpen"
       @close="handleClose"
@@ -23,7 +25,7 @@
               <component :is="item.icon"></component>
             </el-icon>
           </div>
-          <span class="menu-text">{{ item.title }}</span>
+          <template #title><span class="menu-text">{{ item.title }}</span></template>
         </el-menu-item>
 
         <!-- 有子菜单的菜单项 -->
@@ -45,800 +47,318 @@
           </el-menu-item>
         </el-sub-menu>
       </template>
-
     </el-menu>
-
-    <!-- 用户信息区域 -->
-    <div class="user-info-container">
-      <el-dropdown @command="handleUserCommand">
-        <div class="user-info">
-          <div class="user-avatar" v-if=" isGroupLogin && userStore.roleName==='管理员'">管理</div>
-          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='运营'">运营</div>
-          <div class="user-avatar" v-else-if=" isGroupLogin && userStore.roleName==='财务'">财务</div> 
-          <div class="user-avatar" v-else style="background-color: #ff4949;">商户</div> 
-
-          <div class="user-details">
-            <div class="user-name">{{ userStore.merchantId || userStore.userInfo?.username }}</div>
-            <el-tooltip :content="userStore.groupUserInfo?.email" placement="bottom" :show-after="300">
-              <div class="user-account" v-if="isGroupLogin">{{ userStore.groupUserInfo?.email }}</div>
-            </el-tooltip>
-          </div>
-          <div class="user-dropdown-icon">
-            <el-icon><Switch /></el-icon>
-          </div>
-        </div>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item command="account" v-if="isGroupLogin">切换账户</el-dropdown-item>
-            <el-dropdown-item command="logout">退出</el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
-      
-    </div>
   </div>
-
-    <!-- 多用户选择 -->
-    <el-dialog
-      :z-index="1001"
-      top="10vh"
-      width="500px"
-      v-model="dialogValue1"
-      :close-on-click-modal="false"
-      append-to-body
-      custom-class="account-dialog"
-      :show-close="false"
-    >
-      <div class="dialog-close" @click="dialogValue1 = false,searchKey = ''">×</div>
-      <div class="dialog-header">
-        <div class="logo-container">
-          <img
-            src="../assets/image/logo.png"
-            alt="Logo"
-            class="dialog-logo"
-          />
-        </div>
-        <div class="dialog-title">Selecione a conta</div>
-        <div class="dialog-title">
-          <el-select
-            v-model="searchKey"
-            filterable
-            placeholder="请选择"
-            clearable
-          >
-            <el-option
-              v-for="item in accounts"
-              :key="item.id"
-              :label="item.id"
-              :value="item.id"
-            >
-            </el-option>
-          </el-select>
-        </div>
-      </div>
-      <div class="account-list">
-        <div
-          v-for="(account, index) in filteredAccounts"
-          :key="index"
-          class="account-item"
-          :class="{ 'current-account': account.id === userStore.currentMerchantCode }"
-          @click="confirmBind(account)"
-        >
-          <div class="left-column">
-            <div class="account-id">
-              {{ account.id }}
-              <el-tag v-if="account.id === userStore.currentMerchantCode " type="info" size="small">当前</el-tag>
-            </div>
-            <el-tooltip :content="account.type" placement="left">
-              <div class="account-type">{{ account.type }}</div>
-            </el-tooltip>
-          </div>
-          <div class="right-column">
-            <!-- <div class="account-company"><span>余额：</span>{{ account.balance || ' ' }}</div> -->
-             <!-- // 修改后 -->
-<div class="account-company"><span>余额：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
-            <div class="account-number">创建时间：{{ account.createdOn }}</div>
-          </div>
-        </div>
-      </div>
-    </el-dialog>
 </template>
+
 <script setup>
-  // 导入必要的图标组件
-  import { HomeFilled, Search, Operation, FolderOpened, ArrowDown, Switch } from '@element-plus/icons-vue'
-  import { ref, computed, onMounted } from 'vue'
-  import { useRoute } from 'vue-router'
-  import router from '../router/index.js'
-  import useUserStore from '../stores/user.js'
-  import { ElMessage,ElMessageBox } from 'element-plus'
-  import { http } from "@/api";
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import router from '../router/index.js'
+import useUserStore from '../stores/user.js'
 
-  
-  // 获取当前路由
-  const currentRoute = useRoute()
-  
-  // 获取用户store
-  const userStore = useUserStore()
-  
-  // 弹窗状态
-  const dialogValue1 = ref(false)
-  
-  // 搜索关键词
-  const searchKey = ref('')
-  
-  // 账户列表
-  const accounts = ref([])
+const props = defineProps({
+  collapsed: { type: Boolean, default: false },
+})
 
-  // 获取用户列表（集团用户的商户列表）
- const getUserList = async () => {
-  try {
-    const res = await http.getGroupMerchants();
-    if (res.code === 200) {
-      const filteredMerchants = res.data.filter(m => !m.code?.startsWith('G'));
-      accounts.value = filteredMerchants.map(m => ({
-        id: m.code,
-        code: m.code,
-        siteUrl: m.siteUrl || '',
-        type: m.qq || '未配置网站',
-        balance: m.balance || '0.00',
-        createdOn: formatDateTime(m.createdOn) || '',
-      }));
-    } else {
-      accounts.value = [];
-    }
-  } catch (error) {
-    console.error('获取商户列表失败:', error);
-    accounts.value = [];
-  }
+const currentRoute = useRoute()
+const userStore = useUserStore()
+const { t, te } = useI18n()
+
+// 菜单标题：优先取 i18n（menu.<name>），缺失时回退路由中文 title
+const menuTitle = (route) => {
+  const key = `menu.${route.name}`
+  return te(key) ? t(key) : route.title
 }
 
-const formatDateTime = (dateStr) => {
-  if (!dateStr) return '';
-  // 如果是字符串，先转换为 Date 对象
-  const date = new Date(dateStr);
-  if (isNaN(date.getTime())) return dateStr;
-  
-  const pad = (n) => String(n).padStart(2, '0');
-  const year = date.getFullYear();
-  const month = pad(date.getMonth() + 1);
-  const day = pad(date.getDate());
-  const hours = pad(date.getHours());
-  const minutes = pad(date.getMinutes());
-  const seconds = pad(date.getSeconds());
-  
-  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-};
-// 计算属性
-const isGroupLogin = computed(() => {
-  return !!userStore.groupToken && (userStore.merchants?.length || 0) > 0;
-});
+// 从路由配置中动态获取菜单数据
+const getMenuItemsFromRoutes = () => {
+  const mainLayoutRoute = router.options.routes.find(route => route.path === '/')
+  if (!mainLayoutRoute || !mainLayoutRoute.children) return []
 
-const roleTagType = computed(() => {
-  switch (userStore.roleCode) {
-    case "admin": return "danger";
-    case "finance": return "warning";
-    case "operator": return "info";
-    default: return "";
-  }
-});
-// 组件挂载时初始化账户列表
-onMounted(() => {
-  // 如果是集团用户，获取商户列表
-  if (userStore.groupToken) {
-    getUserList();
-  }
-});
-
-  
-  // 过滤后的账户列表
-  const filteredAccounts = computed(() => {
-    const keyword = (searchKey.value || '').trim().toLowerCase()
-    if (!keyword) {
-      return accounts.value
+  const menuItems = mainLayoutRoute.children.map(route => {
+    const menuItem = {
+      path: route.path === '' ? '/' : `/${route.path}`,
+      name: route.name,
+      title: menuTitle(route),
+      icon: route.icon,
+      roles: route.meta?.roles,
+      meta: route.meta,
     }
-    return accounts.value.filter(
-      (account) =>
-        (account.id || '').toLowerCase().includes(keyword) ||
-        (account.company || '').toLowerCase().includes(keyword) ||
-        (account.accountNumber || '').toLowerCase().includes(keyword)
-    )
+    if (route.children && route.children.length > 0) {
+      menuItem.children = route.children.map(childRoute => ({
+        path: `${menuItem.path}/${childRoute.path}`,
+        name: childRoute.name,
+        title: menuTitle(childRoute),
+        roles: childRoute.meta?.roles,
+        meta: childRoute.meta,
+      }))
+    }
+    return menuItem
   })
+  return filterMenuByPermission(menuItems)
+}
 
+const getUserRole = () => {
+  const roleCode = userStore.roleCode
+  if (!roleCode) return 'merchant'
+  return roleCode || 'merchant'
+}
 
-  // admin 管理员角色    
-  // merchant 商户角色    
-  // operator 操作员    
-  // finance 财务角色    
+const hasPermission = (roles) => {
+  if (!roles || roles.length === 0) return true
+  return roles.includes(getUserRole())
+}
 
+const hasCurrencyPermission = (meta) => {
+  if (!meta || !meta.showForCurrency) return true
+  return userStore.merchantInfo?.currency === meta.showForCurrency
+}
 
-  // 获取当前用户角色
-  const getUserRole = () => {
-    const roleCode = userStore.roleCode
-    console.log(roleCode);
-    
-    if (!roleCode) return 'merchant'
-    return roleCode || 'merchant'
-  }
-  
-  // 检查用户是否有权限访问菜单项
-  const hasPermission = (roles) => {
-    if (!roles || roles.length === 0) return true
-    const userRole = getUserRole()
-    return roles.includes(userRole)
-  }
-
-  // 检查菜单项是否满足币种条件
-  const hasCurrencyPermission = (meta) => {
-    if (!meta || !meta.showForCurrency) return true
-    const userCurrency = userStore.merchantInfo?.currency
-    return userCurrency === meta.showForCurrency
-  }
-  
-  // 过滤菜单项，只保留用户有权限访问的
-  const filterMenuByPermission = (menuItems) => {
-    return menuItems.filter(item => {
-      // 检查当前菜单项是否有权限
-      if (!hasPermission(item.roles)) {
-        return false
+const filterMenuByPermission = (menuItems) => {
+  return menuItems.filter(item => {
+    if (!hasPermission(item.roles)) return false
+    if (!hasCurrencyPermission(item.meta)) return false
+    if (item.children && item.children.length > 0) {
+      const filteredChildren = item.children.filter(child =>
+        hasPermission(child.roles) && hasCurrencyPermission(child.meta)
+      )
+      if (filteredChildren.length > 0) {
+        item.children = filteredChildren
+        return true
       }
-      
-      // 检查币种条件
-      if (!hasCurrencyPermission(item.meta)) {
-        return false
-      }
-      
-      // 如果有子菜单，过滤子菜单
-      if (item.children && item.children.length > 0) {
-        const filteredChildren = item.children.filter(child => {
-          return hasPermission(child.roles) && hasCurrencyPermission(child.meta)
-        })
-        if (filteredChildren.length > 0) {
-          item.children = filteredChildren
-          return true
-        }
-        return false
-      }
-      
-      return true
-    })
-  }
-  
-  // 从路由配置中动态获取菜单数据
-  const getMenuItemsFromRoutes = () => {
-    const mainLayoutRoute = router.options.routes.find(route => route.path === '/')
-    if (!mainLayoutRoute || !mainLayoutRoute.children) {
-      return []
+      return false
     }
-    
-    // 处理菜单数据，确保格式正确
-    const menuItems = mainLayoutRoute.children.map(route => {
-      // 创建基础菜单项
-      const menuItem = {
-        path: route.path === '' ? '/' : `/${route.path}`,
-        name: route.name,
-        title: route.title,
-        icon: route.icon,
-        roles: route.meta?.roles,
-        meta: route.meta
-      }
-      
-      // 如果有子菜单，处理子菜单
-      if (route.children && route.children.length > 0) {
-        menuItem.children = route.children.map(childRoute => ({
-          path: `${menuItem.path}/${childRoute.path}`,
-          name: childRoute.name,
-          title: childRoute.title,
-          roles: childRoute.meta?.roles,
-          meta: childRoute.meta
-        }))
-      }
-      
-      return menuItem
-    })
-    
-    // 根据用户权限过滤菜单
-    return filterMenuByPermission(menuItems)
-  }
-  
-  // 调用函数获取菜单数据
-  const menuItems = getMenuItemsFromRoutes()
+    return true
+  })
+}
 
+const menuItems = getMenuItemsFromRoutes()
 
-// 定义 handleOpen 方法
-const handleOpen = (key, keyPath) => {
-  console.log("Menu aberto:", key, keyPath);
-  // 你可以在这里添加打开菜单的逻辑
-};
-// 定义 handleClose 方法
-const handleClose = (key, keyPath) => {
-  console.log("Menu fechado:", key, keyPath);
-  // 你可以在这里添加关闭菜单的逻辑
-};
-
-// 处理用户下拉菜单命令
-const handleUserCommand = async (command) => {
-  if (command === 'account') {
-    // 显示账户选择弹窗
-    dialogValue1.value = true;
-      getUserList();
-    console.log('Dados da Conta clicked');
-  } else if (command === 'logout') {
-    ElMessageBox.confirm(
-      '确定要退出登录吗?',
-      '退出确认',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning'
-      }
-    ).then(async () => {
-      try {
-        await userStore.logout();
-        ElMessage.success('退出登录成功');
-        
-        const fallbackTimer = setTimeout(() => {
-          window.location.href = '/Login?t=' + Date.now();
-        }, 1500);
-        
-        await router.replace({
-          path: '/Login',
-          query: { t: Date.now() }
-        });
-        
-        clearTimeout(fallbackTimer);
-      } catch (error) {
-        console.error('退出登录失败:', error);
-        window.location.href = '/Login';
-      }
-    }).catch(() => {
-      // 用户取消退出
-    });
-  }
-};
-
-// 确认绑定账户
-
-function confirmBind(account) {
-  if (account) {
-    const merchantCode = account.code || account.id;
-    
-    if (merchantCode === userStore.currentMerchantCode) {
-      ElMessage.info('当前已是该账户');
-      return;
-    }
-    
-    ElMessageBox.confirm(
-      `确定切换到商户 ${merchantCode} 吗?`,
-      '切换商户',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'info'
-      }
-    ).then(async () => {
-      try {
-        await userStore.selectMerchant(merchantCode);
-        ElMessage.success(`已切换到商户 ${merchantCode}`);
-        window.location.reload();
-      } catch (err) {
-        ElMessage.error('切换失败');
-      }
-    }).catch(() => {
-      // 用户取消操作
-    });
-    
-    dialogValue1.value = false;
-  }
-};
+const handleOpen = (key, keyPath) => {}
+const handleClose = (key, keyPath) => {}
 </script>
 
 <style lang="scss" scoped>
 @use "../styles/index.scss" as *;
+
 .side-menu {
-  width: 230px;
+  width: 250px;
   height: 100vh;
-  // background: black;
-  /* border-right: 1px solid #e0e0e0; */
   display: flex;
   flex-direction: column;
-  // font-family: Arial, sans-serif;
- font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-  font-weight: 700;
+  font-family: var(--font-body, "Sora", "PingFang SC", "Microsoft YaHei", sans-serif);
+  background-color: var(--color-sidebar, #ffffff);
+  border-right: 1px solid var(--color-border-soft, #ececef);
+  transition: width 0.25s ease;
+  overflow: hidden;
 }
+
+// 折叠态：64px 宽，只显示图标
+.side-menu.is-collapsed {
+  width: 64px;
+}
+
 .menu-header {
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  padding: 1rem;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--color-border-soft, #ececef);
+  flex-shrink: 0;
 }
 
 .menu-header img {
-  width: 180px;
-  height: 50px;
+  height: 36px;
+  width: auto;
+  max-width: 100%;
+  object-fit: contain;
 }
 
-.menu-header p {
-  font-size: 12px;
-  // font-weight: 700;
-  color: #db0011;
+// 折叠态：只显示方形图标 logo
+.logo-icon-only {
+  width: 32px !important;
+  height: 32px !important;
+  border-radius: 8px;
 }
 
 .simple-menu {
   border-right: none;
   flex: 1;
   overflow-y: auto;
-  background-color: #f5f7fa;
+  background-color: transparent;
 }
 
-/* 设置菜单背景色 */
 :deep(.el-menu) {
-  background: $background-color !important;
+  background: var(--color-sidebar, var(--color-surface, #ffffff)) !important;
 }
 
-/* 默认样式 */
 :deep(.el-menu-item),
 :deep(.el-sub-menu__title) {
-  // color: #606266; /* 黑灰色 */
   background-color: transparent;
   position: relative;
-  // padding-left: 20px !important;
-  padding-right: 20px !important;
-  height: 50px; /* 调整菜单项高度 */
-  line-height: 50px; /* 垂直居中 */
-  font-size: 14px; /* 调整字体大小 */
-  font-weight: 300;
-  margin: 2px 10px; /* 调整菜单项间距 */
-  transition: all 0.3s ease;
+  padding-right: 16px !important;
+  height: 40px;
+  line-height: 40px;
+  font-size: 13px;
+  font-weight: 500;
+  margin: 2px 14px;
+  border-radius: 10px;
+  color: var(--text-regular, #52525b);
+  transition: all 0.2s ease;
+  overflow: hidden;
 }
 
-/* 父菜单选中效果 - 半圆 (仅当父菜单本身被选中时生效，子菜单选中时不会触发) */
-/* 由于父菜单使用数字索引，而子菜单使用路由路径，所以子菜单选中时父菜单不会被激活 */
+:deep(.el-menu-item:hover),
+:deep(.el-sub-menu__title:hover) {
+  background-color: var(--color-hover, #ececef);
+  color: var(--text-primary, #18181b);
+}
+
+:deep(.el-menu-item.is-active),
 :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
-  color: #db0011; /* 黑色字体 */
-  background-color: #ffffff; /* 白色背景 */
-  border-radius: 24px; /* 右边半圆 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  color: var(--brand-primary, #16a34a);
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.1));
+  font-weight: 600;
+  box-shadow: none;
 }
-// -hover 效果
+
+:deep(.el-menu-item.is-active)::before,
+:deep(.el-sub-menu.is-active > .el-sub-menu__title)::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 20px;
+  background-color: var(--brand-primary, #16a34a);
+  border-radius: 0 2px 2px 0;
+}
+
+:deep(.el-menu-item.is-active:hover),
 :deep(.el-sub-menu.is-active > .el-sub-menu__title:hover) {
-  color: #db0011; /* 黑色字体 */
-  background-color: #ffffff; /* 白色背景 */
-  border-radius: 24px; /* 右边半圆 */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.12));
 }
-
-/* 单级菜单选中效果 - 半圆 */
-:deep(.el-menu-item.is-active) {
-  color: #db0011; /* 黑色字体 */
-  background-color: #ffffff; /* 白色背景 */
-  border-radius: 24px; /* 右边半圆 */
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* 阴影 */
-}
-
-// -hover 效果
-/* 单级菜单选中效果 - 半圆 */    
-:deep(.el-menu-item:hover) {
-  color: #db0011; /* 黑色字体 */
-  background-color: #ffffff; /* 白色背景 */
-  border-radius: 24px; /* 右边半圆 */
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* 阴影 */
-}
-
-/* 单级菜单选中时没有前面的点 */
-:deep(.el-menu-item.is-active:before) {
-  display: none;
-}
-
-
-
 
 .sub-menu-text {
   margin-left: 0.75rem;
-  font-size: 13px; /* 调整子菜单字体大小 */
+  font-size: 13px;
 }
 
-/* 调整子菜单的内边距和间距 */
 :deep(.el-sub-menu__children) {
-  padding: 5px 0;
+  padding: 4px 0;
 }
 
 :deep(.el-sub-menu__children .el-menu-item) {
-  padding-left: 40px !important; /* 子菜单缩进 */
-  margin: 1px 15px; /* 子菜单间距 */
-  height: 45px; /* 子菜单高度 */
-  line-height: 45px; /* 子菜单垂直居中 */
+  padding-left: 46px !important;
+  margin: 2px 14px;
+  height: 40px;
+  line-height: 40px;
+  font-size: 13px;
+  border-radius: 8px;
 }
 
 :deep(.is-opened .el-menu--inline .el-menu-item.is-active) {
-  // color: #606266 !important; /* 保持黑灰色字体 */
-  background-color: transparent !important; /* 完全透明背景 */
-  border-radius: 0 !important; /* 没有任何圆角或半圆 */
-  box-shadow: none !important; /* 没有阴影 */
-  margin: 1px 15px !important; /* 保持与普通子菜单相同的边距 */
-  padding: 0 20px 0 40px !important; /* 保持与普通子菜单相同的内边距 */
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.1)) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+  margin: 2px 14px !important;
+  padding: 0 16px 0 46px !important;
 }
 
-/* 子菜单选中时前面的点 */
 :deep(.is-opened .el-menu--inline .el-menu-item.is-active:before) {
-  display: block;
-  content: "";
-  position: absolute;
-  left: 30px;
-  top: 50%;
-  transform: translateY(-50%);
+  left: 26px;
   width: 6px;
   height: 6px;
-  background-color: #db0011; /* 主题色点 */
-  border-radius: 50%; /* 圆形 */
-  z-index: 1;
+  border-radius: 50%;
+  background-color: var(--brand-primary, #16a34a);
 }
-
 
 .fast-icon-wrapper {
-  width: 35px;
-  height: 35px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-}
-.menu-text{
-  margin-left: 10px;
+  margin-right: 10px;
+  border-radius: 8px;
+  background-color: var(--color-hover, #f3f4f6);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-:deep(.el-menu-item.is-active) {
-  .fast-icon-wrapper {
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
+// 激活态图标：品牌色软底（NTX 风格，不刺眼）
+:deep(.el-menu-item.is-active) .fast-icon-wrapper,
+:deep(.el-sub-menu.is-active > .el-sub-menu__title) .fast-icon-wrapper {
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.12));
+  color: var(--brand-primary, #16a34a);
+}
+
+// ==================== 折叠态专用样式 ====================
+.side-menu.is-collapsed {
+  // 菜单项：去掉外边距，内容居中
+  :deep(.el-menu-item),
+  :deep(.el-sub-menu__title) {
+    margin: 4px 8px !important;
+    padding: 0 !important;
     justify-content: center;
-    border-radius: 50%;
-    background-color: #db0011;
+    border-radius: 10px;
   }
-  
-  .fast-icon {
-    color: #f0f0f0 !important;
-    font-weight: 900;
+
+  // EP 的 tooltip trigger 有默认 padding 0 20px，会把图标推偏
+  :deep(.el-menu-tooltip__trigger) {
+    padding: 0 !important;
+    justify-content: center;
   }
-.el-icon{
-    margin-right: 0 !important;
+
+  // 去掉左侧激活条（空间不够）
+  :deep(.el-menu-item.is-active)::before,
+  :deep(.el-sub-menu.is-active > .el-sub-menu__title)::before {
+    display: none;
+  }
+
+  // 子菜单项不显示（collapse 模式下由 tooltip 处理）
+  :deep(.el-sub-menu__children) {
+    display: none;
+  }
+
+  // 隐藏菜单文字（el-menu collapse 已处理，这里兜底）
+  .menu-text,
+  .sub-menu-text {
+    display: none;
   }
 }
-// .fast-icon{
-//   // color: #db0011 !important;
-// }
 
+// 折叠态：图标容器居中，无右边距
+.side-menu.is-collapsed .fast-icon-wrapper {
+  margin-right: 0;
+}
+
+.fast-icon {
+  font-size: 16px;
+  color: var(--text-secondary, #6b7280);
+  transition: all 0.2s ease;
+}
+
+.menu-text {
+  margin-left: 0;
+}
+
+:deep(.el-menu-item.is-active),
 :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
- .fast-icon-wrapper {
-    width: 35px;
-    height: 35px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    background-color: #db0011;
+  .fast-icon-wrapper {
+    background-color: var(--brand-primary, #16a34a);
   }
-  
   .fast-icon {
-    color: #f0f0f0 !important;
-    font-weight: 900;
-  }
-.el-icon{
-    margin-right: 0 !important;
+    color: var(--text-inverse, #ffffff) !important;
   }
 }
 
-/* 用户信息区域样式 */
-.user-info-container {
-  padding: 0px 15px;
-  text-align: center;
-  border-top: 1px solid #e0e0e0;
-}
-
-:deep(.el-dropdown:focus),
-:deep(.el-dropdown:focus-visible),
-:deep(.el-dropdown-item:focus),
-:deep(.el-dropdown-item:focus-visible) {
-  outline: none;
-  box-shadow: none;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  padding: 10px;
-  border-radius: 12px;
-  outline: none;
-  box-shadow: none;
-}
-
-.user-dropdown-icon {
-  margin-left: 10px;
-  color: #666;
-  transition: transform 0.3s ease;
-}
-
-.user-info:hover .user-dropdown-icon {
-  transform: rotate(180deg);
-  color: #db0011;
-}
-
-// .user-info:hover {
-//   background-color: rgba(175, 76, 76, 0.1);
-// }
-
-.user-avatar {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background-color: #db0011;
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
-  margin-right: 15px;
-}
-
-.user-details {
-  flex: 1;
-  min-width: 0;
-  max-width: 100px;
-  overflow: hidden;
-}
-
-.user-name {
-  font-weight: bold;
-  color: #333;
-  font-size: 14px;
-  margin-bottom: 3px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-company {
-  color: #666;
-  font-size: 13px;
-  margin-bottom: 2px;
-}
-
-.user-account {
-  color: #999;
-  font-size: 12px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* 下拉菜单样式 */
-:deep(.el-dropdown-menu) {
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-:deep(.el-dropdown-item) {
-  padding: 10px 20px;
-  font-size: 14px;
-}
-
-:deep(.el-dropdown-item:hover) {
-  background-color: rgba(76, 175, 80, 0.1);
-  color: #af4c4c;
-}
-
-/* 账户选择弹窗样式 */
-.account-dialog {
-  border-radius: 16px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border: none;
-  padding-bottom: 20px;
-}
-
-.dialog-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0;
-  margin-bottom: 20px;
-}
-
-.logo-container {
-  display: flex;
-  justify-content: center;
-  margin-bottom: 12px;
-}
-
-.dialog-logo {
-  width: 120px;
-  border-radius: 8px;
-}
-
-.dialog-title {
-  font-size: 16px;
-  color: #666;
-  font-weight: 500;
-  text-align: center;
-}
-
-.account-list {
-  padding: 0;
-  margin: 0;
-  max-height: 220px; /* 大约3个账户的高度 */
-  overflow-y: auto; /* 超出部分滚动 */
-}
-
-.account-item {
-  display: flex;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid #e8e8e8;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-
-  &:hover {
-    background-color: #f9f9f9;
-  }
-}
-
-.left-column,
-.right-column {
-  display: flex;
-  flex-direction: column;
-}
-
-.account-id {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.account-type {
-  width: 90%;
-  font-size: 14px;
-  color: #888;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.account-company {
-  font-size: 16px;
-  font-weight: bold;
-  color: #333;
-}
-
-.account-number {
-  font-size: 14px;
-  color: #888;
-}
-
-.dialog-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 30px;
-  cursor: pointer;
-  color: #999;
-}
-
-:deep(.el-dialog__body) {
-  padding: 0 20px;
-}
-
-:deep(.el-dialog__footer) {
-  padding: 0;
-  padding-right: 40px;
-  padding-bottom: 20px;
-}
-
-.balance-value {
-  // color: #67c23a;  // Element Plus 绿色主题色
-  font-weight: 600;
+:deep(.el-icon) {
+  margin-right: 0 !important;
 }
 </style>

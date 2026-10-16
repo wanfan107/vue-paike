@@ -1,95 +1,111 @@
-<template>
+﻿<template>
   <div class="login-page">
-    <a href="/manual/merchant.html" class="manual-link">📖 集团商户后台操作文档</a>
-    <div class="login-container">
-      <div class="login-header">
-        <div class="login-logo">
-          <img
-            style="width: 170px"
-            src="@/assets/image/logo.png"
-            alt="Univepay Logo"
-          />
-          <div class="login-subtitle">Finance</div>
+    <!-- 左侧品牌展示区 -->
+    <div class="login-brand">
+      <div class="brand-glow"></div>
+      <div class="brand-content">
+        <img
+          class="brand-logo"
+          src="@/assets/image/pix-payment-logo-lockup.png"
+          alt="Pix Payment Logo"
+        />
+        <div class="brand-tagline">
+          <h1 class="brand-title">{{ t('login.brandTitle') }}</h1>
+          <p class="brand-desc">{{ t('login.brandDesc') }}</p>
+        </div>
+        <div class="brand-features">
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('login.feature1') }}</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('login.feature2') }}</span>
+          </div>
+          <div class="feature-item">
+            <span class="feature-dot"></span>
+            <span>{{ t('login.feature3') }}</span>
+          </div>
         </div>
       </div>
-      <div class="login-form">
-        <el-form
-          ref="loginFormRef"
-          label-position="top"
-          :model="loginForm"
-          @keyup.enter.native="checkHuman"
-          @submit.prevent
-          :rules="rules"
-        >
-          <el-form-item label="Account" prop="username">
-            <el-input
-              ref="userInput"
-              v-model="loginForm.username"
-              size="default"
-              type="text"
-              placeholder="邮箱账户或商户号"
-              @change="handleUsernameChange"
-              clearable
-             autocomplete="username/current-password"
-             name="login_user_account"
-              @input="handleInput('username')"
-            ></el-input>
-          </el-form-item>
-          <el-form-item label="PassWord" prop="password">
-            <el-input
-              v-model="loginForm.password"
-              size="default"
-              type="password"
-              show-password
-              placeholder="密码"
-              autocomplete="current-password"
-              name="login_user_pwd"
-               @input="handleInput('password')"
-            ></el-input>
-            
-                        
-          </el-form-item>
-          <!-- 验证邮箱是否已验证的密码输入框 -->
-          <el-form-item label="Email Verification Code" prop="EmailCode" v-if="EmailVerifyshow">
-            <el-input
-              v-model="loginForm.EmailCode"
-              size="default"
-              placeholder="该账户新设备首次登录,请输入邮箱验证码"
-              @input="handleInput('EmailCode')"
-            >
-              <template #append>
-                <button
-                  class="email-code-btn"
-                  :disabled="emailCountdown > 0 || !!loginForm.EmailCode"
-                  @click="sendEmailCode"
-                  size="default"
-                >
-                  {{ emailCountdown > 0 ? `${emailCountdown}秒后重发` : '获取验证码' }}
-                </button>
-              </template>
-            </el-input>
-          </el-form-item>
+      <div class="brand-footer">PIX © 2026</div>
+    </div>
 
-          <!-- AWS WAF 验证码弹窗已全局挂载在 App.vue，由拦截器统一驱动 -->
+    <!-- 右侧表单区 -->
+    <div class="login-main">
+      <a href="/manual/merchant.html" class="manual-link">📖 {{ t('login.manualDoc') }}</a>
+      <div class="login-form-wrap">
+        <div class="form-header">
+          <h2 class="form-title">{{ t('login.welcome') }}</h2>
+          <p class="form-subtitle">{{ t('login.subtitle') }}</p>
+        </div>
+        <div class="login-form">
+          <el-form
+            ref="loginFormRef"
+            label-position="top"
+            :model="loginForm"
+            @keyup.enter.native="checkHuman"
+            @submit.prevent
+            :rules="rules"
+          >
+            <el-form-item :label="t('login.username')" prop="username">
+              <el-input
+                ref="userInput"
+                v-model="loginForm.username"
+                size="default"
+                type="text"
+                :placeholder="t('login.usernamePlaceholder')"
+                @change="handleUsernameChange"
+                clearable
+               autocomplete="username/current-password"
+               name="login_user_account"
+                @input="handleInput('username')"
+              ></el-input>
+            </el-form-item>
+            <el-form-item :label="t('login.password')" prop="password">
+              <el-input
+                v-model="loginForm.password"
+                size="default"
+                type="password"
+                show-password
+                :placeholder="t('login.passwordPlaceholder')"
+                autocomplete="current-password"
+                name="login_user_pwd"
+                 @input="handleInput('password')"
+              ></el-input>
+            </el-form-item>
+            <!-- 验证邮箱是否已验证的密码输入框 -->
+            <el-form-item :label="t('login.emailCodeLabel')" prop="EmailCode" v-if="EmailVerifyshow">
+              <el-input
+                v-model="loginForm.EmailCode"
+                size="default"
+                :placeholder="t('login.emailCodePlaceholder')"
+                @input="handleInput('EmailCode')"
+              >
+                <template #append>
+                  <button
+                    class="email-code-btn"
+                    :disabled="emailCountdown > 0 || !!loginForm.EmailCode"
+                    @click="sendEmailCode"
+                    size="default"
+                  >
+                    {{ emailCountdown > 0 ? t('login.resendCode', { n: emailCountdown }) : t('login.getCode') }}
+                  </button>
+                </template>
+              </el-input>
+            </el-form-item>
 
-          <!-- <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-            <el-link type="primary" @click="showForgotPasswordDialog = true">忘记密码？</el-link>
-          </div> -->
-          <el-form-item style="margin-top: 10px">
-            <el-button
-              style="width: 100%"
-              type="primary"
-              size="default"
-              :loading="isLoading"
-              @click="checkHuman"
-              >登录</el-button
-            >
-          </el-form-item>
-        </el-form>
-      </div>
-      <div class="css-zg4aas">
-        <div class="css-1s7xaob">
-          <p class="chakra-text css-i8munm">Univepay Finance © 2026</p>
+            <el-form-item style="margin-top: 8px">
+              <el-button
+                style="width: 100%"
+                type="primary"
+                size="default"
+                :loading="isLoading"
+                @click="checkHuman"
+                >{{ t('login.loginBtn') }}</el-button
+              >
+            </el-form-item>
+          </el-form>
         </div>
       </div>
     </div>
@@ -98,7 +114,7 @@
       :z-index="1002"
       top="10vh"
       width="600px"
-      title="绑定MFA2验证码"
+      :title="t('login.mfaBindTitle')"
       v-model="dialogValue"
       :close-on-click-modal="false"
       custom-class="account-dialog"
@@ -109,7 +125,7 @@
     <div class="dialog-close"  @click="closeDialog">×</div>
       <div style="display: flex; flex-direction: column; align-items: center">
         <el-image :src="qrcode" style="width: 200px; height: 200px"></el-image>
-        <div style="margin: 10px 0">扫码绑定MFA2验证码确保登录</div>
+        <div style="margin: 10px 0">{{ t('login.mfaBindDesc') }}</div>
         <div style="text-align: center">
           <!-- MFA2验证码输入框 -->
             <div class="code-inputs">
@@ -147,12 +163,12 @@
       <div class="dialog-header">
         <div class="logo-container">
           <img
-            src="../../assets/image/logo.png"
+            src="../../assets/image/pix-payment-logo.png"
             alt="Logo"
             class="dialog-logo"
           />
         </div>
-        <div class="dialog-title1">请输入MFA2身份验证码</div>
+        <div class="dialog-title1">{{ t('login.mfaVerifyTitle') }}</div>
         <div class="dialog-title1">
           <div class="verification-code-container">
             <div class="code-inputs">
@@ -174,7 +190,7 @@
       <!-- 登录动画 -->
       <div class="login-animation" v-if="loading">
         <div class="loading-spinner"></div>
-        <div class="loading-text">正在登录...</div>
+        <div class="loading-text">{{ t('login.loginLoading') }}</div>
       </div>
     </el-dialog>
 
@@ -197,7 +213,7 @@
       <div class="dialog-header">
         <div class="logo-container">
           <img
-            src="../../assets/image/logo.png"
+            src="../../assets/image/pix-payment-logo.png"
             alt="Logo"
             class="dialog-logo"
           />
@@ -306,12 +322,15 @@
 <script setup>
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
 import FingerprintJS, { sources as fpSources, loadSources } from '@fingerprintjs/fingerprintjs';
 import { useVisitorData } from '@fingerprint/vue';
 import { http } from '@/api';
 import md5 from 'js-md5';
+
+const { t } = useI18n();
 
 
 // 组件注册
@@ -1264,137 +1283,211 @@ async function confirmBind(account) {
 // }
 </script>
 <style scoped lang="scss">
-  :deep(.login-form .el-input__inner) {
-      height: 44px;
-      border-radius: 4px;
-      font-size: 14px;
-      padding: 0 15px;
-      border-radius: 24px;
-    }
+// ============================================================
+// 登录页 —— 高端分屏布局
+// 左侧：深绿渐变品牌展示区   右侧：纯白表单区
+// ============================================================
 .login-page {
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  // padding: 2rem;
-  background: #f7fafc;
   font-feature-settings: "kern";
+  background: var(--color-bg, #ffffff);
 }
 
-.login-container {
+// ---------- 左侧品牌展示区 ----------
+.login-brand {
+  flex: 0 0 45%;
   position: relative;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
+  padding: 56px 48px;
+  background: linear-gradient(160deg, #0f3d2e 0%, #16a34a 55%, #22c55e 100%);
+  overflow: hidden;
+  color: var(--text-inverse, #ffffff);
+}
+// 装饰光晕
+.brand-glow {
+  position: absolute;
+  top: -30%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 70%);
+  pointer-events: none;
+}
+.brand-glow::after {
+  content: "";
+  position: absolute;
+  bottom: -40%;
+  left: -30%;
+  width: 500px;
+  height: 500px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.4), transparent 70%);
+}
+.brand-content {
+  position: relative;
+  z-index: 1;
+  margin-top: 8vh;
+}
+.brand-logo {
+  width: 220px;
+  height: auto;
+  margin-bottom: 48px;
+}
+.brand-title {
+  font-size: 36px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 16px;
+  line-height: 1.2;
+}
+.brand-desc {
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.85;
+  max-width: 380px;
+  margin-bottom: 48px;
+}
+.brand-features {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+.feature-item {
+  display: flex;
   align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  opacity: 0.92;
+}
+.feature-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #86efac;
+  box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.25);
+}
+.brand-footer {
+  position: relative;
+  z-index: 1;
+  font-size: 13px;
+  opacity: 0.7;
+  letter-spacing: 0.02em;
+}
+
+// ---------- 右侧表单区 ----------
+.login-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  position: relative;
+  background: var(--color-bg, #fafaf9);
+}
+.manual-link {
+  position: absolute;
+  top: 24px;
+  right: 32px;
+  font-size: 13px;
+  color: var(--text-secondary, #6b7280);
+  text-decoration: none;
+  transition: color 0.2s ease;
+  &:hover { color: var(--brand-primary, #16a34a); }
+}
+.login-form-wrap {
   width: 100%;
-  max-width: 480px;
-  margin-top: -70px;
+  max-width: 400px;
+}
+.form-header {
+  margin-bottom: 36px;
+}
+.form-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+.form-subtitle {
+  font-size: 15px;
+  color: var(--text-secondary, #6b7280);
 }
 
-.login-header {
-  margin-bottom: 18px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: -15px;
-}
-
-.login-logo {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 20px;
-}
-
-.login-subtitle {
-  margin-top: 10px;
-  font-size: 12px;
-  // font-weight: 500;
-}
-
-/* 验证码输入样式 */
-.verification-code-container {
+.login-form {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 20px 0;
+
+  .el-form-item {
+    margin-bottom: 24px;
+  }
+
+  .el-form-item__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    padding-bottom: 6px;
+  }
+
+  .el-input {
+    width: 100%;
+
+    .el-input__inner {
+      height: 48px;
+      font-size: 15px;
+      padding: 0 16px;
+    }
+  }
+
+  .el-button {
+    height: 48px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    letter-spacing: 0.02em;
+  }
 }
 
+// ---------- 验证码输入 ----------
 .code-inputs {
   display: flex;
   gap: 10px;
   margin-bottom: 10px;
 }
-
 .code-input {
   width: 50px;
   height: 50px;
-  border: 1px solid #e6dcdc;
-  border-radius: 5px;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
   font-size: 24px;
   font-weight: 600;
   text-align: center;
   transition: all 0.3s ease;
   outline: none;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
 
   &:focus {
-    border-color: #db0011;
-    box-shadow: 0 0 0 2px rgba(255, 64, 64, 0.2);
+    border-color: var(--brand-primary, #16a34a);
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
     transform: translateY(-1px);
   }
-
-  &:hover {
-    border-color: #ffc6c6;
-  }
+  &:hover { border-color: #d1d5db; }
 }
 
-.code-hint {
-  font-size: 12px;
-  color: #909399;
-  margin-top: 10px;
-  text-align: center;
-}
-
-.login-form {
-  width: 100%;
-  background-color: #ffffff;
-  padding: 30px;
-  border-radius: 24px;
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  box-sizing: border-box;
-
-  .el-form-item {
-    margin-bottom: 20px;
-  }
-
-  .el-input {
-    width: 100%;
-    border-radius: 50%;
-
-    .el-input__inner {
-      height: 44px;
-      border-radius: 4px;
-      font-size: 14px;
-      padding: 0 15px;
-      border-radius: 24px;
-    }
-  }
-
-  .el-button {
-    height: 44px;
-    font-size: 16px;
-    font-weight: 500;
-    border-radius: 24px;
-  }
+// ---------- 响应式：窄屏隐藏品牌区 ----------
+@media (max-width: 900px) {
+  .login-brand { display: none; }
+  .login-main { flex: 1; padding: 24px; }
 }
 
 /* 内容区域 */
 .account-dialog {
   border-radius: 16px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: var(--color-surface, #ffffff);
+  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
   border: none;
   padding-bottom: 20px;
 }
@@ -1445,7 +1538,7 @@ async function confirmBind(account) {
   width: 40px;
   height: 40px;
   border: 4px solid rgba(0, 0, 0, 0.1);
-  border-left-color: #db0011;
+  border-left-color: var(--brand-primary, #16a34a);
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 15px;
@@ -1492,12 +1585,12 @@ async function confirmBind(account) {
   display: flex;
   justify-content: space-between;
   padding: 16px 20px;
-  border-bottom: 1px solid #e8e8e8;
+  border-bottom: 1px solid var(--color-divider, #e8e8e8);
   cursor: pointer;
   transition: background-color 0.2s ease;
 
   &:hover {
-    background-color: #f9f9f9;
+    background-color: var(--color-hover, #f9f9f9);
   }
 }
 
@@ -1510,7 +1603,7 @@ async function confirmBind(account) {
 .account-id {
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary, #333);
 }
 
 .account-type {
@@ -1607,7 +1700,7 @@ async function confirmBind(account) {
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
   -webkit-text-fill-color: #000;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -1620,25 +1713,25 @@ async function confirmBind(account) {
 
 
 :deep(.email-code-btn) {
-  background-color: #db0011 !important;   /* 主题红色背景 */
-  border-color: #db0011 !important;       /* 主题红色边框 */
-  color: #fff !important;                  /* 白色文字 */
+  background-color: var(--brand-primary, #16a34a) !important;
+  border-color: var(--brand-primary, #16a34a) !important;
+  color: var(--text-inverse, #fff) !important;
   width: 100%;
   height: 100%;
   padding: 0 15px;
-  border-radius: 0 24px 24px 0;           /* 左边直角，右边圆角，和输入框对齐 */
-  margin-left: -1px;                       /* 消除和输入框的缝隙 */
+  border-radius: 0 10px 10px 0;
+  margin-left: -1px;
   transition: all 0.2s ease;
 
   &:hover:not(:disabled) {
-    background-color: #b8000d !important;  /* hover 深一点的红 */
-    border-color: #b8000d !important;
+    background-color: var(--brand-primary-hover, #15803d) !important;
+    border-color: var(--brand-primary-hover, #15803d) !important;
     opacity: 0.9;
   }
 
   &:disabled {
-    background-color: #f56c6c !important;  /* 禁用时浅红 */
-    border-color: #f56c6c !important;
+    background-color: #86efac !important;
+    border-color: #86efac !important;
     opacity: 0.6;
     cursor: not-allowed;
   }

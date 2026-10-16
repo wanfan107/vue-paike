@@ -1,4 +1,4 @@
-<!-- AWS WAF CAPTCHA 全局弹窗（由 axios 拦截器在收到 WAF 405 时驱动） -->
+﻿<!-- AWS WAF CAPTCHA 全局弹窗（由 axios 拦截器在收到 WAF 405 时驱动） -->
 <template>
   <el-dialog
     v-model="visible"
@@ -138,7 +138,7 @@ onBeforeUnmount(() => {
 }
 
 .captcha-tip {
-  color: #999;
+  color: var(--text-faint, #999);
   font-size: 12px;
   margin-top: 10px;
 }

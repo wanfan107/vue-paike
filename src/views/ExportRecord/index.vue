@@ -1,86 +1,74 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
-            <!-- 通知卡片 -->
-        <el-card class="notification-card">
-          <div class="notification-content">
-            <i class="el-icon-info-circle notification-icon"></i>
-            <span>导出的文件生成后保留三天，三天后会自动删除。</span>
-          </div>
-        </el-card>
+    <main>
+      <!-- 通知卡片 -->
+      <el-card class="notification-card">
+        <div class="notification-content">
+          <i class="el-icon-info-circle notification-icon"></i>
+          <span>导出的文件生成后保留三天，三天后会自动删除。</span>
+        </div>
+      </el-card>
 
-        <div class="table-layout">
-
-            <div class="table-handle">
-              <el-button
-                type="primary"
-                :icon="Refresh"
-                @click="onSearch"
-                :loading="loading"
-              ></el-button>
-  
-            </div>
-            <div class="table-box">
-                
-                 <el-table
-                border
-                v-loading="loading"
-                max-height="600px"
-                :data="tableData"
-                element-loading-spinner="el-icon-loading"
-                element-loading-background="rgba(255, 255, 255, 0.8)"
-                @selection-change="onSelect"
-              >
-                <el-table-column
-                  align="center"
-                  v-for="item in columns"
-                  :key="item.prop"
-                  :prop="item.prop"
-                  :label="item.label"
+      <div class="table-layout">
+        <div class="table-handle">
+          <el-button
+            :icon="Refresh"
+            @click="onSearch"
+            :loading="loading"
+          >刷新</el-button>
+        </div>
+        <div class="table-panel">
+          <el-table
+            stripe
+            v-loading="loading"
+            max-height="600px"
+            :data="tableData"
+            element-loading-spinner="el-icon-loading"
+            element-loading-background="var(--el-mask-color, rgba(255, 255, 255, 0.8))"
+            @selection-change="onSelect"
+          >
+            <el-table-column
+              v-for="item in columns"
+              :key="item.prop"
+              :prop="item.prop"
+              :label="item.label"
+              :align="item.align || 'center'"
+            >
+              <template #default="scope">
+                <StatusPill
+                  v-if="item.prop === 'status'"
+                  :type="getStatusType(scope.row.status)"
+                  :text="getStatusText(scope.row.status)"
+                />
+                <el-button
+                  v-else-if="item.prop === 'fileurl'"
+                  type="primary"
+                  size="small"
+                  :disabled="!scope.row.fileurl || !isValidUrl(scope.row.fileurl)"
+                  @click="handleDownload(scope.row)"
                 >
-                  <template #default="scope">
-                    <span v-if="item.type === 'select'">
-                      <!-- 如果等于-的话改成 -->
-                      {{ scope.row.status == '-' ? '排队中' : item.mapping[scope.row[item.prop]] }}
-                    </span>
-             
-                    <span v-else-if="item.prop !== 'fileurl'">{{
-                      scope.row[item.prop]
-                    }}</span>
-                    <el-button
-                      v-else
-                      type="primary"
-                      size="small"
-                      :disabled="!scope.row.fileurl || !isValidUrl(scope.row.fileurl)"
-                      @click="handleDownload(scope.row)"
-                    >
-                      下载
-                    </el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-
-       
-            </div>
-            <div class="page-box">
-              <el-pagination
-                background
-                :current-page="pageNo"
-                :page-sizes="pageSizes"
-                :page-size="pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="totalSize"
-                @size-change="changePageSize"
-                @current-change="changePageNo"
-              />
-            </div>
-     
+                  下载
+                </el-button>
+                <span v-else>{{ scope.row[item.prop] }}</span>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <div class="page-box">
+          <el-pagination
+            background
+            :current-page="pageNo"
+            :page-sizes="pageSizes"
+            :page-size="pageSize"
+            layout="total, sizes, prev, pager, next, jumper"
+            :total="totalSize"
+            @size-change="changePageSize"
+            @current-change="changePageNo"
+          />
         </div>
       </div>
     </main>
@@ -93,6 +81,7 @@ import { Refresh } from "@element-plus/icons-vue";
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import { ElMessage } from 'element-plus';
+import StatusPill from "@/components/StatusPill.vue";
 // 导出记录
 const props = defineProps({
   title: {
@@ -134,19 +123,26 @@ const searchParams = reactive({
 // 表格列配置
 const columns = reactive([
   // 文件名、类型、状态
-  { label: "文件名", prop: "fileName" },
-  { label: "类型", prop: "type" },
-  {
-    label: "状态",
-    prop: "status",
-    isTag: true,
-    tagType: "success",
-    mapping: { 0: "生成中", 1: "生成成功", 2: "生成失败" },
-  },
-  { label: "创建人", prop: "creatorName" },
-  { label: "创建时间", prop: "createdon" },
-  { label: "操作", prop: "fileurl" },
+  { label: "文件名", prop: "fileName", align: "left" },
+  { label: "类型", prop: "type", align: "center" },
+  { label: "状态", prop: "status", align: "center" },
+  { label: "创建人", prop: "creatorName", align: "center" },
+  { label: "创建时间", prop: "createdon", align: "center" },
+  { label: "操作", prop: "fileurl", align: "center" },
 ]);
+
+// 状态列文案映射（0→生成中 / 1→生成成功 / 2→生成失败 / '-'→排队中）
+const STATUS_TEXT = { 0: "生成中", 1: "生成成功", 2: "生成失败" };
+const getStatusText = (status) => {
+  if (status === "-") return "排队中";
+  return STATUS_TEXT[status] ?? status;
+};
+const getStatusType = (status) => {
+  const s = Number(status);
+  if (s === 1) return "success";
+  if (s === 2) return "danger";
+  return "neutral";
+};
 
 // 验证URL是否有效
 const isValidUrl = (string) => {
@@ -259,96 +255,6 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    color-scheme: light;
-    font-feature-settings: "kern";
-    font-family: "Geist Sans", sans-serif;
-    line-height: 1.5;
-    overflow-wrap: break-word;
-    margin: 0px;
-    box-sizing: content-box;
-    height: 0px;
-    overflow: visible;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-image: initial;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.balance-info {
-  font-weight: 500;
-  color: $primary-color;
-}
-
-.notification-icon {
-  font-size: $font-size-large;
-  cursor: pointer;
-  position: relative;
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  // padding: $spacing-xl;
-  border-radius: $border-radius-md;
-  // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-xl;
-  color: #666;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: $spacing-lg;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 $spacing-sm 0;
-  font-size: $font-size-xl;
-  color: $text-color;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: $font-size-base;
-}
-.search-container {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 12px;
-  margin-bottom: $spacing-lg;
-  input{
-    border-radius: 24px !important;
-  }
-}
-
 /* 表格布局 */
 .table-layout {
   width: 100%;
@@ -360,7 +266,7 @@ onBeforeUnmount(() => {
   justify-content: flex-end;
 }
 
-.table-box {
+.table-panel {
   margin-bottom: 15px;
 }
 
@@ -383,6 +289,7 @@ onBeforeUnmount(() => {
   padding: 0 !important;
   margin: 0 !important;
 }
+
 .notification-card {
   margin-bottom: $spacing-lg;
   border-left: 4px solid $primary-color;
@@ -393,11 +300,13 @@ onBeforeUnmount(() => {
   align-items: center;
   gap: $spacing-sm;
   font-weight: 500;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .notification-icon {
   font-size: $font-size-large;
   color: $primary-color;
+  cursor: pointer;
+  position: relative;
 }
 </style>

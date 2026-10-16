@@ -124,16 +124,16 @@ onMounted(() => {
 
 .project-card {
   transition: all 0.3s ease;
-  border-radius: 10px;
-  border: 1px solid #eaeefb;
-  background: #f9fafc;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  border-radius: 14px;
+  border: 1px solid var(--color-border-soft);
+  background: var(--color-elevated, #fff);
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 2px 8px rgba(16, 24, 40, 0.06);
   overflow: hidden;
 }
 
 .project-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 12px 20px 0 rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.08) !important;
 }
 
 .project-card-header {
@@ -146,7 +146,7 @@ onMounted(() => {
 .project-name {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
 }
 
 .project-icon {
@@ -161,7 +161,7 @@ onMounted(() => {
 
 .project-icon i {
   font-size: 28px;
-  color: #fff;
+  color: var(--text-inverse, #fff);
   object-fit: cover;
 }
 
@@ -188,39 +188,16 @@ onMounted(() => {
 
 .currency {
   font-size: 18px;
-  color: #666;
+  color: var(--text-secondary);
   margin-right: 5px;
 }
 
 .amount-value {
   font-size: 32px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary);
   letter-spacing: -1px;
-}
-
-.project-stats {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.stat-label {
-  font-size: 14px;
-  color: #666;
-}
-
-.stat-value {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
+  font-variant-numeric: tabular-nums;
 }
 
 /* 响应式设计 */

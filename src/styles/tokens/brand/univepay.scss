@@ -1,0 +1,48 @@
+// ============================================================
+// Brand Tokens —— UnivePay 品牌专属
+// ★ 换皮时只改这一个文件 + 替换 assets/brands/univepay/ 下的资源
+// ============================================================
+@use '../base.scss' as *;
+
+// ---------- 品牌主色（绿色系：金融安全/成功/资金） ----------
+$brand-primary:        #16a34a;
+$brand-primary-hover:  #15803d;
+$brand-primary-active: #166534;
+$brand-primary-light:  #dcfce7;
+$brand-primary-soft:   rgba(22, 163, 74, 0.1);  // 激活态浅底
+$brand-primary-glow:   rgba(22, 163, 74, 0.2);  // 光晕
+
+// ---------- 品牌字体 ----------
+$font-display: 'Sora', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+$font-body:    'Sora', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+$font-mono:    'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+
+// ---------- 表面色（对齐 NTX：中性浅灰） ----------
+$color-bg:        #f7f7f8;   // 内容区底色
+$color-surface:   #ffffff;   // 卡片/面板底
+$color-sidebar:   #ffffff;   // 侧栏底
+$color-topbar:    #ffffff;   // 顶栏底
+$color-elevated:  #f4f4f5;   // 浅填充（禁用/未选 tab）
+$color-hover:     #ececef;   // hover 中性底
+$color-overlay:   rgba(20, 21, 26, 0.45); // 弹窗遮罩
+
+// ---------- 文字色（zinc 语义阶） ----------
+$color-text-primary:   #18181b;  // foreground
+$color-text-regular:   #52525b;  // muted
+$color-text-secondary: #71717a;  // subtle
+$color-text-faint:     #a1a1aa;  // faint
+$color-text-inverse:   #ffffff;
+
+// ---------- 边框/分隔 ----------
+$color-border:  #dcdce0;  // 标准边框
+$color-border-soft: #ececef; // 弱分隔（行分隔线）
+$color-divider: #ececef;
+
+// ---------- 侧栏激活态（C 方向：黑色胶囊） ----------
+$nav-active-bg:   #16181d;
+$nav-active-text: #ffffff;
+$nav-active-shadow: 0 4px 14px rgba(20, 21, 26, 0.18);
+
+// ---------- 品牌配置（与 src/config/brand.js 保持一致） ----------
+$brand-name:     'PIX';
+$brand-subtitle: 'FINANCE · v1.2';

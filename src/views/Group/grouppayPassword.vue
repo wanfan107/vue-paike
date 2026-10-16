@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="pay-password-container">
     <el-card class="pay-password-card">
       <div class="card-header">
@@ -463,7 +463,7 @@ watch(
 :deep(.password-strength-box) {
   width: 25%;
   height: 5px;
-  background-color: #e4e7ed;
+  background-color: var(--color-border-soft, #e4e7ed);
   border-radius: 5px;
   margin-left: 5px;
 }

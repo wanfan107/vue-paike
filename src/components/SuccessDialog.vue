@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <el-dialog
     v-model="dialogVisible"
     :title="title"
@@ -92,6 +92,6 @@ const handleConfirm = () => {
 
 .success-desc {
   font-size: 14px;
-  color: #666;
+  color: var(--text-faint, #666);
 }
 </style>

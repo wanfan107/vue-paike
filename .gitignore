@@ -35,3 +35,10 @@ dist.zip
 
 # Vitest
 __screenshots__/
+
+# Trae AI
+.trae/
+
+# Env secrets
+.env.*
+!.env.example

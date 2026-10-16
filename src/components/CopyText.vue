@@ -113,16 +113,16 @@ const fallbackCopy = (text, success, fail) => {
   align-items: center;
   gap: 6px;
   padding: 4px 6px;
-  border-radius: 4px;
-  
+  border-radius: var(--radius-xs);
+
   &:hover {
-    background-color: rgba(64, 158, 255, 0.06);
+    background-color: var(--color-hover);
   }
 }
 
 .copy-text {
   font-size: 13px;
-  color: #303133;
+  color: var(--text-primary);
   font-family: monospace;
   word-break: break-all;
   max-width: v-bind(maxWidth);
@@ -133,7 +133,7 @@ const fallbackCopy = (text, success, fail) => {
   cursor: pointer;
   transition: opacity 0.2s ease, color 0.2s ease, transform 0.15s ease;
   font-size: 14px;
-  color: #909399;
+  color: var(--text-faint);
   flex-shrink: 0;
   width: 22px;
   height: 22px;
@@ -142,13 +142,13 @@ const fallbackCopy = (text, success, fail) => {
   justify-content: center;
   
   &:hover {
-    color: #409EFF;
+    color: var(--brand-primary);
     transform: scale(1.1);
   }
   
   &.is-copied {
     opacity: 1;
-    color: #67c23a;
+    color: var(--color-receive);
     animation: copySuccess 0.3s ease;
   }
   

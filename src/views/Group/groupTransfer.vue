@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -127,7 +127,7 @@
     v-model="ruleForm.code"
     placeholder="'请输入MFA2验证码'"
   ></el-input>
-  <div style="font-size:12px;color:#67c23a;margin-top:4px">输入正确后10分钟内无需输入</div>
+  <div style="font-size:12px;color:var(--brand-primary, #67c23a);margin-top:4px">输入正确后10分钟内无需输入</div>
 </el-form-item>
                 
                 <!-- 备注 -->
@@ -157,7 +157,7 @@
           
           <!-- 转账记录 -->
           <div class="transfer-history">
-              <h3 style="color: #000000;">转账记录</h3>
+              <h3 style="color: var(--text-primary, #000000);">转账记录</h3>
             <div class="history-header">
             
             <el-form :inline="true">
@@ -582,7 +582,7 @@ onUnmounted(() => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #ffffff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -592,7 +592,7 @@ onUnmounted(() => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -632,14 +632,14 @@ onUnmounted(() => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, white);
   border-radius: $border-radius-md;
 }
 
 .empty-state {
   text-align: center;
   padding: $spacing-xl;
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .empty-icon {
@@ -651,7 +651,7 @@ onUnmounted(() => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {
@@ -680,7 +680,7 @@ onUnmounted(() => {
   align-items: center;
   gap: $spacing-sm;
   font-weight: 500;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .notification-icon {
@@ -691,7 +691,7 @@ onUnmounted(() => {
 .form-card {
   margin-bottom: $spacing-lg;
   border-radius: $border-radius-md;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.08));
 }
 
 .account-info {
@@ -701,10 +701,10 @@ onUnmounted(() => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--color-border-soft, #ebeef5);
 }
 
 .balance-value {
@@ -722,13 +722,13 @@ onUnmounted(() => {
   align-items: center;
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--color-border-soft, #ebeef5);
 }
 
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
@@ -763,7 +763,7 @@ onUnmounted(() => {
 
 :v-deep(.el-form-item__label) {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary, #333);
   font-size: 14px;
 }
 
@@ -802,7 +802,7 @@ onUnmounted(() => {
 :v-deep(.el-form-item__label[for=""]) {
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary, #333);
   margin-bottom: 8px;
   display: block;
 }
@@ -818,12 +818,12 @@ onUnmounted(() => {
 .dialog-icon {
   margin-bottom: 20px;
   font-size: 48px;
-  color: #f56c6c;
+  color: var(--color-danger, #f56c6c);
 }
 
 .dialog-message {
   font-size: 16px;
-  color: #333;
+  color: var(--text-primary, #333);
   text-align: center;
   line-height: 1.5;
 }
@@ -901,8 +901,8 @@ onUnmounted(() => {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  -webkit-text-fill-color: #000;
-  background-color: #fff !important;
+  -webkit-text-fill-color: var(--text-primary, #000);
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -910,7 +910,7 @@ onUnmounted(() => {
 /* 横线分隔符 */
 .divider {
   height: 1px;
-  background-color: #e0e0e0;
+  background-color: var(--color-divider, #e0e0e0);
   margin: 32px 0;
 }
 
@@ -927,28 +927,28 @@ onUnmounted(() => {
       margin: 0;
       font-size: 16px;
       font-weight: 600;
-      color: #333;
+      color: var(--text-primary, #333);
     }
-    
+
 
   }
-  
+
   .el-table {
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    
+    box-shadow: var(--shadow-md, 0 2px 8px rgba(0, 0, 0, 0.05));
+
     .el-table__header-wrapper th {
-      background-color: #f8f9fa;
+      background-color: var(--color-hover, #f8f9fa);
       font-weight: 600;
-      color: #495057;
+      color: var(--text-primary, #495057);
     }
-    
+
     .el-table__row {
       transition: background-color 0.3s ease;
-      
+
       &:hover {
-        background-color: #f8f9fa;
+        background-color: var(--color-hover, #f8f9fa);
       }
     }
   }

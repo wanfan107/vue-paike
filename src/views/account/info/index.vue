@@ -1,19 +1,25 @@
 <template>
-  <div class="account-info-container">
-    <el-card class="account-card" shadow="hover">
-      <div class="card-header">
-        <div class="header-title">商户信息</div>
+  <div class="app-page">
+    <header class="app-page-header">
+      <h1>商户信息</h1>
+    </header>
+
+    <main>
+      <div class="form-panel">
+        <div class="panel-header">
+          <div class="panel-title">商户信息</div>
+        </div>
+        <div class="form-container">
+          <SubmitForm
+            :footer="false"
+            :footer1="true"
+            :form-list="formList"
+            :rule-form="ruleForm"
+            @save="submit"
+          />
+        </div>
       </div>
-      <div class="form-container">
-        <SubmitForm
-          :footer="false"
-          :footer1="true"
-          :form-list="formList"
-          :rule-form="ruleForm"
-          @save="submit"
-        ></SubmitForm>
-      </div>
-    </el-card>
+    </main>
   </div>
 </template>
 
@@ -61,7 +67,6 @@ const ruleForm = ref({
 watch(
   () => userStore.merchantInfo,
   (val) => {
-    console.log(val);
     if (val) {
       ruleForm.value.id = val.id;
       ruleForm.value.email = val.email;
@@ -74,149 +79,90 @@ const submit = () => {};
 </script>
 
 <style scoped lang="scss">
-.account-info-container {
-  min-height: calc(100vh - 200px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 20px;
-}
+@use "../../../styles/variables.scss" as *;
 
-.account-card {
-  width: 100%;
+.form-panel {
   max-width: 550px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  margin: 0 auto;
+  background: var(--color-elevated);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-  background: white;
-
-  &:hover {
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
-    transform: translateY(-5px);
-  }
 }
 
-.card-header {
+.panel-header {
   padding: 24px;
   text-align: center;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.header-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin-bottom: 8px;
-  letter-spacing: 0.5px;
-}
-
-.header-subtitle {
-  font-size: 14px;
-  opacity: 0.9;
-  font-weight: 400;
+.panel-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .form-container {
-  padding: 32px 40px 40px;
+  padding: 24px;
 }
 
-:v-deep .el-form-item {
-  margin-bottom: 28px;
-  transition: all 0.3s ease;
+:deep(.el-form-item) {
+  margin-bottom: 20px;
 }
 
-:v-deep .el-form-item:last-child {
-  margin-bottom: 0;
-}
-
-:v-deep .el-form-item__label {
-  font-weight: 600;
-  color: #2c3e50;
+:deep(.el-form-item__label) {
+  font-weight: 500;
+  color: var(--text-primary);
   font-size: 14px;
-  padding-bottom: 8px;
-  display: block;
 }
 
-:v-deep .el-input {
-  width: 100%;
+:deep(.el-input__inner) {
+  height: 40px;
+  border-radius: 6px;
+  border: 1px solid var(--color-border-soft);
+  transition: all 0.3s;
+  font-size: 14px;
 }
 
-:v-deep .el-input__inner {
-  height: 48px;
-  padding: 0 16px;
-  font-size: 15px;
-  border-radius: 10px;
-  border: 2px solid #e1e8ed;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background-color: #fafbfc;
-  color: #2c3e50;
-
-  &:focus {
-    border-color: #4facfe;
-    box-shadow: 0 0 0 4px rgba(79, 172, 254, 0.15);
-    background-color: white;
-  }
-}
-
-:v-deep .el-input.is-disabled .el-input__inner {
-  background-color: #f8f9fa;
-  border-color: #e9ecef;
-  color: #6c757d;
+:deep(.el-input.is-disabled .el-input__inner) {
+  background-color: var(--color-bg-soft);
+  border-color: var(--color-border-soft);
+  color: var(--text-secondary);
   cursor: default;
 }
 
-:v-deep .el-switch {
+:deep(.el-switch) {
   margin-top: 8px;
 }
 
-:v-deep .el-switch__input.is-checked + .el-switch__core {
-  background-color: #4facfe;
-  border-color: #4facfe;
+:deep(.el-switch__input.is-checked + .el-switch__core) {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
 }
 
-:v-deep .el-switch__core {
+:deep(.el-switch__core) {
   border-radius: 15px;
   width: 50px;
   height: 30px;
 }
 
-:v-deep .el-switch__core::after {
+:deep(.el-switch__core::after) {
   width: 26px;
   height: 26px;
   border-radius: 50%;
 }
 
-:v-deep .el-switch__input.is-checked + .el-switch__core::after {
+:deep(.el-switch__input.is-checked + .el-switch__core::after) {
   margin-left: -28px;
 }
 
-:v-deep .el-divider--horizontal {
-  margin: 0;
-  background-color: #e9ecef;
-}
-
-.loading-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 200px;
-}
-
 @media (max-width: 768px) {
-  .account-info-container {
-    padding: 20px;
-  }
-
-  .account-card {
+  .form-panel {
     max-width: 100%;
-    margin: 0;
   }
 
   .form-container {
-    padding: 24px 28px 32px;
-  }
-
-  :v-deep .el-form-item {
-    margin-bottom: 24px;
+    padding: 16px;
   }
 }
 </style>

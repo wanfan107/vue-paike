@@ -1,171 +1,160 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
-        <!-- 搜索和筛选区域 -->
-        <div class="search-container">
-          <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="订单时间">
-              <el-date-picker
-                v-model="searchForm.time"
-                type="daterange"
-                unlink-panels
-                :shortcuts="shortcuts"
-                :disabled-date="disabledDate"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
-                value-format="YYYY-MM-DD"
-                format="YYYY-MM-DD"
-              />
-            </el-form-item>
+    <main>
+      <!-- 搜索和筛选区域 -->
+      <div class="search-panel">
+        <el-form :inline="false" :model="searchForm" class="search-form">
+          <el-form-item label="订单时间">
+            <el-date-picker
+              v-model="searchForm.time"
+              type="daterange"
+              unlink-panels
+              :disabled-date="disabledDate"
+              range-separator="至"
+              start-placeholder="开始日期"
+              end-placeholder="结束日期"
+              value-format="YYYY-MM-DD"
+              format="YYYY-MM-DD"
+            />
+          </el-form-item>
 
-            <el-form-item>
-              <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">搜索</el-button>
-              <el-button :icon="Refresh" @click="clearSearch" :loading="loading">刷新</el-button>
-            </el-form-item>
-          </el-form>
-        </div>
-
-        <!-- 曲线商户筛选（独立区域） -->
-        <div class="merchant-filter-bar">
-          <span class="filter-label">曲线商户筛选</span>
-          <div class="merchant-select-wrapper">
-            <el-select
-              v-model="selectedMerchants"
-              multiple
-              collapse-tags
-              collapse-tags-tooltip
-              placeholder="选择商户（默认仅展示集团）"
-              style="width: 250px;"
-              size="small"
-              @change="updateCharts"
-            >
-              <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
-            </el-select>
-            <div class="select-buttons">
-              <el-button size="small" @click="selectAll">全选</el-button>
-              <el-button size="small" @click="selectInverse">反选</el-button>
-            </div>
-          </div>
-        </div>
-
-
-
-        <!-- 图表区域 -->
-        <div class="fade">
-          <div v-if="show === true && tableData.length > 0" class="chart-container">
-            <div class="charts-wrapper">
-              <div class="chart-item balance-chart">
-                <div ref="balanceChartRef" style="width: 100%; height: 400px"></div>
-              </div>
-              <div class="chart-item line-chart">
-                <div class="chart-header">
-                  <el-select v-model="paymentFilter" size="small" style="width: 100px;" @change="updateCharts">
-                    <el-option label="收款" value="payin" />
-                    <el-option label="付款" value="payout" />
-                  </el-select>
-                </div>
-                <div ref="lineChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
-              </div>
-            </div>
-          </div>
-          <div v-else-if="show === true && tableData.length === 0" class="empty-chart-state">
-            <el-empty description="暂无数据" />
-          </div>
-        </div>
-
-        <!-- 表格内容区域 -->
-        <div class="table-container">
-          <el-skeleton :loading="loading" :count="5" animated>
-            <template #default>
-              <el-table
-                ref="table"
-                max-height="800"
-                :data="tableData"
-                v-loading="loading"
-                element-loading-spinner="el-icon-loading"
-                element-loading-background="rgba(255, 255, 255, 0.8)"
-                row-key="OrderDate"
-                @expand-change="onExpandChange"
-                @row-click="onRowClick"
-                :expand-row-keys="expandRowKeys"
-                style="cursor: pointer;"
+          <el-form-item label="曲线商户">
+            <div class="merchant-filter-inline">
+              <el-select
+                v-model="selectedMerchants"
+                multiple
+                collapse-tags
+                collapse-tags-tooltip
+                placeholder="选择商户（默认仅展示集团）"
+                style="width: 250px;"
+                @change="updateCharts"
               >
-                <el-table-column type="expand">
-                  <template #default="scope">
-                    <div class="expand-content">
-                      <el-table
-                        :data="scope.row.merchantItems || []"
-                        :summary-method="getMerchantSummaries"
-                        show-summary
-                        :sum-text="'集团汇总'"
-                        border
-                        max-height="300"
-                        style="width: 100%; margin-top: 10px"
-                        size="small"
-                        class="expand-table"
-                      >
-                        <el-table-column prop="code" label="商户号" align="center" />
-                        <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
-                        <el-table-column prop="SuccessAmountPayin" label="收款总额" align="center" />
-                        <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
-                        <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
-                          <template #default="scope">
-                            {{ toPercent(scope.row.SuccessRateCountPayin) }}
-                          </template>
-                        </el-table-column>
-                        <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
-                        <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
-                        <el-table-column prop="SuccessFeePayout" label="付款手续费" align="center" />
-                        <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
-                          <template #default="scope">
-                            {{ toPercent(scope.row.SuccessRateCountPayout) }}
-                          </template>
-                        </el-table-column>
-                      </el-table>
-                    </div>
-                    <div class="expand-charts-container">
-                      <div class="expand-chart-item">
-                        <div :ref="el => setChartRef(el, scope.row, 'collection')" style="width: 100%; height: 200px"></div>
-                      </div>
-                      <div class="expand-chart-item">
-                        <div :ref="el => setChartRef(el, scope.row, 'payment')" style="width: 100%; height: 200px"></div>
-                      </div>
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable>
-                  <template #default="scope">
-                    {{ formatDate(scope.row.OrderDate) }}
-                  </template>
-                </el-table-column>
-                <el-table-column
-                  min-width="140px"
-                  align="center"
-                  v-for="item in columns"
-                  :key="item.prop"
-                  :prop="item.prop"
-                >
-                  <template #header>
-                    <span>{{ item.label }}</span>
-                    <el-tooltip v-if="item.tooltip" :content="item.tooltip" placement="top">
-                      <span style="margin-left: 5px;"><el-icon><QuestionFilled /></el-icon></span>
-                    </el-tooltip>
-                  </template>
-                  <template #default="scope">
-                    <span>{{ formatNumber(scope.row[item.prop]) }}</span>
-                  </template>
-                </el-table-column>
-              </el-table>
-            </template>
-          </el-skeleton>
+                <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
+              </el-select>
+              <el-button @click="selectAll">全选</el-button>
+              <el-button @click="selectInverse">反选</el-button>
+            </div>
+          </el-form-item>
+
+          <el-form-item class="search-actions">
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">搜索</el-button>
+            <el-button :icon="Refresh" @click="clearSearch" :loading="loading">刷新</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- 图表区域 -->
+      <div class="fade">
+        <div v-if="show === true && tableData.length > 0" class="chart-container">
+          <div class="charts-wrapper">
+            <div class="chart-item balance-chart">
+              <div ref="balanceChartRef" style="width: 100%; height: 400px"></div>
+            </div>
+            <div class="chart-item line-chart">
+              <div class="chart-header">
+                <el-select v-model="paymentFilter" size="small" style="width: 100px;" @change="updateCharts">
+                  <el-option label="收款" value="payin" />
+                  <el-option label="付款" value="payout" />
+                </el-select>
+              </div>
+              <div ref="lineChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
+            </div>
+          </div>
         </div>
+        <div v-else-if="show === true && tableData.length === 0" class="empty-chart-state">
+          <el-empty description="暂无数据" />
+        </div>
+      </div>
+
+      <!-- 表格内容区域 -->
+      <div class="table-panel">
+        <el-skeleton :loading="loading" :count="5" animated>
+          <template #default>
+            <el-table
+              ref="table"
+              max-height="800"
+              :data="tableData"
+              v-loading="loading"
+              element-loading-spinner="el-icon-loading"
+              element-loading-background="rgba(255, 255, 255, 0.8)"
+              row-key="OrderDate"
+              @expand-change="onExpandChange"
+              @row-click="onRowClick"
+              :expand-row-keys="expandRowKeys"
+              style="cursor: pointer;"
+            >
+              <el-table-column type="expand">
+                <template #default="scope">
+                  <div class="expand-content">
+                    <el-table
+                      :data="scope.row.merchantItems || []"
+                      :summary-method="getMerchantSummaries"
+                      show-summary
+                      :sum-text="'集团汇总'"
+                      border
+                      max-height="300"
+                      style="width: 100%; margin-top: 10px"
+                      size="small"
+                      class="expand-table"
+                    >
+                      <el-table-column prop="code" label="商户号" align="center" />
+                      <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
+                      <el-table-column prop="SuccessAmountPayin" label="收款总额" align="center" />
+                      <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
+                      <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
+                        <template #default="scope">
+                          {{ toPercent(scope.row.SuccessRateCountPayin) }}
+                        </template>
+                      </el-table-column>
+                      <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
+                      <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
+                      <el-table-column prop="SuccessFeePayout" label="付款手续费" align="center" />
+                      <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
+                        <template #default="scope">
+                          {{ toPercent(scope.row.SuccessRateCountPayout) }}
+                        </template>
+                      </el-table-column>
+                    </el-table>
+                  </div>
+                  <div class="expand-charts-container">
+                    <div class="expand-chart-item">
+                      <div :ref="el => setChartRef(el, scope.row, 'collection')" style="width: 100%; height: 200px"></div>
+                    </div>
+                    <div class="expand-chart-item">
+                      <div :ref="el => setChartRef(el, scope.row, 'payment')" style="width: 100%; height: 200px"></div>
+                    </div>
+                  </div>
+                </template>
+              </el-table-column>
+              <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable>
+                <template #default="scope">
+                  {{ formatDate(scope.row.OrderDate) }}
+                </template>
+              </el-table-column>
+              <el-table-column
+                min-width="140px"
+                align="center"
+                v-for="item in columns"
+                :key="item.prop"
+                :prop="item.prop"
+              >
+                <template #header>
+                  <span>{{ item.label }}</span>
+                  <el-tooltip v-if="item.tooltip" :content="item.tooltip" placement="top">
+                    <span style="margin-left: 5px;"><el-icon><QuestionFilled /></el-icon></span>
+                  </el-tooltip>
+                </template>
+                <template #default="scope">
+                  <span>{{ formatNumber(scope.row[item.prop]) }}</span>
+                </template>
+              </el-table-column>
+            </el-table>
+          </template>
+        </el-skeleton>
       </div>
     </main>
   </div>
@@ -178,19 +167,33 @@ import { ElMessage } from "element-plus";
 import * as echarts from 'echarts';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
-import { 
-  getNow, 
-  getToday, 
-  getYesterday, 
-  formatDate as formatBrazilDate, 
-  getDateRange, 
-  getLastMonth,
-  disabledFutureDate,
-  getTimezone 
+import {
+  getDateRange,
+  disabledFutureDate
 } from "@/utils/brazilTime";
 import { formatCurrency, getCurrencySymbol, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
+
+// 从设计 tokens 读取 CSS 变量（ECharts 画布无法解析 var(...)，必须取值）
+const cssVar = (name, fallback) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+// 折线面积渐变：token 色自上而下淡出
+const hexToRgba = (hex, alpha) => {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const areaGradient = (color, alpha = 0.3) =>
+  new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color: hexToRgba(color, alpha) },
+    { offset: 1, color: hexToRgba(color, 0) },
+  ]);
+
 const currency = computed(() => userStore.merchantInfo?.currency);
 
 const props = defineProps({
@@ -223,30 +226,6 @@ const columns = reactive([
   { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
   { prop: "CurrentDayEndBalance", label: "期末余额" },
 ]);
-
-// 快捷日期（根据币种选择时区）
-const shortcuts = [
-  { text: '今天', value: () => { 
-    const today = dayjs().tz(getTimezone(currency.value));
-    return [today.format('YYYY-MM-DD'), today.format('YYYY-MM-DD')]; 
-  }},
-  { text: '昨天', value: () => { 
-    const yesterday = getYesterday(currency.value);
-    return [yesterday.format('YYYY-MM-DD'), yesterday.format('YYYY-MM-DD')]; 
-  }},
-  { text: '近7天', value: () => { 
-    const range = getDateRange(7, currency.value);
-    return [range.start, range.end]; 
-  }},
-  { text: '近30天', value: () => { 
-    const range = getDateRange(30, currency.value);
-    return [range.start, range.end]; 
-  }},
-  { text: '上月', value: () => { 
-    const range = getLastMonth(currency.value);
-    return [range.start, range.end]; 
-  }},
-];
 
 // 禁用日期函数，只能选择到昨天（根据币种选择时区）
 const disabledDate = (time) => {
@@ -290,18 +269,9 @@ const lineChartOption = computed(() => {
       smooth: true,
       symbol: "circle",
       symbolSize: 4,
-      lineStyle: { width: 2, color: "#48bb78" },
-      itemStyle: { color: "#48bb78" },
-      areaStyle: {
-        color: {
-          type: "linear",
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
-            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
-          ],
-        },
-      },
+      lineStyle: { width: 2, color: cssVar('--color-receive', '#16a34a') },
+      itemStyle: { color: cssVar('--color-receive', '#16a34a') },
+      areaStyle: { color: areaGradient(cssVar('--color-receive', '#16a34a')) },
     });
   }
 
@@ -313,18 +283,9 @@ const lineChartOption = computed(() => {
       smooth: true,
       symbol: "circle",
       symbolSize: 4,
-      lineStyle: { width: 2, color: "#db0011" },
-      itemStyle: { color: "#db0011" },
-      areaStyle: {
-        color: {
-          type: "linear",
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: "rgba(219, 0, 17, 0.3)" },
-            { offset: 1, color: "rgba(219, 0, 17, 0.05)" },
-          ],
-        },
-      },
+      lineStyle: { width: 2, color: cssVar('--color-send', '#f56c6c') },
+      itemStyle: { color: cssVar('--color-send', '#f56c6c') },
+      areaStyle: { color: areaGradient(cssVar('--color-send', '#f56c6c')) },
     });
   }
 
@@ -386,7 +347,7 @@ const lineChartOption = computed(() => {
       text: "收款金额与付款金额趋势",
       left: '0%',
       top: '0%',
-      textStyle: { fontSize: 14, color: '#666' },
+      textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
     },
     tooltip: {
       trigger: "axis",
@@ -433,23 +394,23 @@ const lineChartOption = computed(() => {
       type: "category",
       data: dates,
       boundaryGap: true,
-      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      axisLine: { lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       splitLine: { show: false },
-      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
-      axisLabel: { color: "#666", align: "center", fontSize: 12, margin: 15 },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisLabel: { color: cssVar('--text-secondary', '#606266'), align: "center", fontSize: 12, margin: 15 },
     },
     yAxis: {
       type: "value",
       name: "金额",
-      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
-      axisTick: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 12,
         formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
-      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
-      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+      splitLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed'), type: "dashed" } },
+      nameTextStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12, padding: [0, 30, 0, 0] },
     },
     series,
   };
@@ -467,18 +428,9 @@ const balanceChartOption = computed(() => {
       smooth: true,
       symbol: "circle",
       symbolSize: 4,
-      lineStyle: { width: 2, color: "#48bb78" },
-      itemStyle: { color: "#48bb78" },
-      areaStyle: {
-        color: {
-          type: "linear",
-          x: 0, y: 0, x2: 0, y2: 1,
-          colorStops: [
-            { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
-            { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
-          ],
-        },
-      },
+      lineStyle: { width: 2, color: cssVar('--brand-primary', '#16a34a') },
+      itemStyle: { color: cssVar('--brand-primary', '#16a34a') },
+      areaStyle: { color: areaGradient(cssVar('--brand-primary', '#16a34a')) },
     },
   ];
   let colorIdx = 0;
@@ -514,7 +466,7 @@ const balanceChartOption = computed(() => {
       text: "期初余额趋势",
       left: '0%',
       top: '0%',
-      textStyle: { fontSize: 14, color: '#666' },
+      textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
     },
     tooltip: {
       trigger: "axis",
@@ -561,23 +513,23 @@ const balanceChartOption = computed(() => {
       type: "category",
       data: dates,
       boundaryGap: true,
-      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      axisLine: { lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       splitLine: { show: false },
-      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
-      axisLabel: { color: "#666", align: "center", fontSize: 12, margin: 15 },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisLabel: { color: cssVar('--text-secondary', '#606266'), align: "center", fontSize: 12, margin: 15 },
     },
     yAxis: {
       type: "value",
       name: "余额",
-      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
-      axisTick: { show: true, lineStyle: { color: "#d8d8d8" } },
+      axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 12,
         formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
-      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
-      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+      splitLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed'), type: "dashed" } },
+      nameTextStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12, padding: [0, 30, 0, 0] },
     },
     series,
   };
@@ -918,7 +870,7 @@ const getCollectionPieChart = (row) => {
       itemStyle: {
         color: colors[3],
         borderRadius: 8,
-        borderColor: '#fff',
+        borderColor: cssVar('--color-surface', '#fff'),
         borderWidth: 2
       }
     });
@@ -929,7 +881,7 @@ const getCollectionPieChart = (row) => {
       item.itemStyle = {
         color: colors[index % colors.length],
         borderRadius: 8,
-        borderColor: '#fff',
+        borderColor: cssVar('--color-surface', '#fff'),
         borderWidth: 2
       };
     }
@@ -938,7 +890,7 @@ const getCollectionPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户收款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: "各商户收款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -964,7 +916,7 @@ const getCollectionPieChart = (row) => {
       orient: "horizontal",
       bottom: "5%",
       data: data.map(item => item.name),
-      textStyle: { color: "#666", fontSize: 12 },
+      textStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12 },
       itemGap: 15
     },
     series: [{
@@ -974,8 +926,8 @@ const getCollectionPieChart = (row) => {
       center: ["50%", "50%"],
       data: data,
       avoidLabelOverlap: true,
-      itemStyle: { borderRadius: 10, borderColor: "#fff", borderWidth: 3 },
-      label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: "#333", fontSize: 11, fontWeight: 500 },
+      itemStyle: { borderRadius: 10, borderColor: cssVar('--color-surface', '#fff'), borderWidth: 3 },
+      label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: cssVar('--text-primary', '#303133'), fontSize: 11, fontWeight: 500 },
       labelLine: { show: true, length: 15, length2: 10, smooth: true },
       emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } }
     }],
@@ -1027,7 +979,7 @@ const getPaymentPieChart = (row) => {
       itemStyle: {
         color: colors[3],
         borderRadius: 8,
-        borderColor: '#fff',
+        borderColor: cssVar('--color-surface', '#fff'),
         borderWidth: 2
       }
     });
@@ -1038,7 +990,7 @@ const getPaymentPieChart = (row) => {
       item.itemStyle = {
         color: colors[index % colors.length],
         borderRadius: 8,
-        borderColor: '#fff',
+        borderColor: cssVar('--color-surface', '#fff'),
         borderWidth: 2
       };
     }
@@ -1047,7 +999,7 @@ const getPaymentPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户付款总额占比", left: "center", textStyle: { color: "#333", fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: "各商户付款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -1073,7 +1025,7 @@ const getPaymentPieChart = (row) => {
       orient: "horizontal",
       bottom: "5%",
       data: data.map(item => item.name),
-      textStyle: { color: "#666", fontSize: 12 },
+      textStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12 },
       itemGap: 15
     },
     series: [{
@@ -1083,8 +1035,8 @@ const getPaymentPieChart = (row) => {
       center: ["50%", "50%"],
       data: data,
       avoidLabelOverlap: true,
-      itemStyle: { borderRadius: 10, borderColor: "#fff", borderWidth: 3 },
-      label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: "#333", fontSize: 11, fontWeight: 500 },
+      itemStyle: { borderRadius: 10, borderColor: cssVar('--color-surface', '#fff'), borderWidth: 3 },
+      label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: cssVar('--text-primary', '#303133'), fontSize: 11, fontWeight: 500 },
       labelLine: { show: true, length: 15, length2: 10, smooth: true },
       emphasis: { label: { show: true, fontSize: 14, fontWeight: "bold" } }
     }],
@@ -1103,7 +1055,11 @@ const selectInverse = () => {
   updateCharts();
 };
 
+// 主题切换：重读 cssVar 重绘图表
+const onThemeChange = () => updateCharts();
+
 onMounted(async () => {
+  window.addEventListener('app-theme-change', onThemeChange);
   // 默认近7天（根据币种选择时区）
   const range = getDateRange(7, currency.value);
   searchForm.time = [range.start, range.end];
@@ -1124,6 +1080,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('app-theme-change', onThemeChange);
   window.removeEventListener('resize', handleResize);
   if (lineChart) { lineChart.dispose(); lineChart = null; }
   if (balanceChart) { balanceChart.dispose(); balanceChart = null; }
@@ -1145,82 +1102,13 @@ watch([lineChartOption, balanceChartOption], () => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: 100%;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 { margin: 0; font-size: $font-size-xl; color: $text-color; }
-  hr {
-    margin: 0px;
-    height: 0px;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: 0 $spacing-xl;
-  border-radius: $border-radius-md;
-}
-
-.search-container {
-  margin-bottom: $spacing-lg;
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-
-    ::deep(.el-form-item) {
-      margin-bottom: $spacing-sm;
-    }
-  }
-}
-
-.merchant-filter-bar {
+.merchant-filter-inline {
   display: flex;
   align-items: center;
-  gap: $spacing-md;
-  padding: $spacing-md $spacing-lg;
-  background-color: #f5f7fa;
-  border-radius: $border-radius-md;
-  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
 
-  .filter-label {
-    font-size: $font-size-base;
-    color: $text-color-secondary;
-    font-weight: 500;
-    white-space: nowrap;
-  }
-
-  .merchant-select-wrapper {
-    display: flex;
-    align-items: center;
-    gap: $spacing-sm;
-
-    .select-buttons {
-      display: flex;
-      flex-direction: row;
-      gap: $spacing-xs;
-
-      ::deep(.el-button) {
-        padding: 4px 12px;
-        font-size: $font-size-small;
-      }
-    }
+  :deep(.el-button) {
+    margin-left: 0;
   }
 }
 
@@ -1228,11 +1116,12 @@ watch([lineChartOption, balanceChartOption], () => {
 .chart-container {
   display: flex;
   flex-direction: column;
+  margin-top: 24px;
   margin-bottom: $spacing-lg;
   gap: $spacing-md;
   
   .chart-item {
-    background-color: #fff;
+    background-color: var(--color-surface, #fff);
     border-radius: $border-radius-md;
     padding: $spacing-md;
     box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
@@ -1263,13 +1152,9 @@ watch([lineChartOption, balanceChartOption], () => {
   padding: 40px;
 }
 
-.table-container {
-  margin-top: $spacing-lg;
-}
-
 .expand-content {
   padding: 10px 20px;
-  background: #fafafa;
+  background: var(--color-hover);
 }
 
 .expand-charts-container {
@@ -1279,7 +1164,7 @@ watch([lineChartOption, balanceChartOption], () => {
 
   .expand-chart-item {
     flex: 1;
-    background-color: #fafafa;
+    background-color: var(--color-hover);
     border-radius: 8px;
     padding: 10px;
     box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.05);

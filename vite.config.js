@@ -2,13 +2,22 @@ import { fileURLToPath, URL } from 'node:url'
 import { createSvgIconsPlugin } from 'vite-plugin-svg-icons'
 import path from 'path'
 
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueDevTools from 'vite-plugin-vue-devtools'
 import terser from '@rollup/plugin-terser'
 
+// 多品牌构建：根据 VITE_BRAND 切换品牌资源目录与 tokens
+// 用法：VITE_BRAND=univepay npm run build  或  npm run build:univepay
+const brand = process.env.VITE_BRAND || 'univepay'
+
 // https://vite.dev/config/
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // 加载对应模式的环境变量
+  const env = loadEnv(mode, process.cwd(), '')
+  const activeBrand = env.VITE_BRAND || brand
+
+  return {
   server: {
     hmr: true,
     host: "0.0.0.0", // 允许外部访问
@@ -45,7 +54,11 @@ export default defineConfig({
   ],
   resolve: {
     alias: {
-      '@': fileURLToPath(new URL('./src', import.meta.url))
+      '@': fileURLToPath(new URL('./src', import.meta.url)),
+      // 品牌资源别名：指向对应品牌的资源目录（logo/icon/缺省图等）
+      '@brand': fileURLToPath(new URL(`./src/assets/brands/${activeBrand}`, import.meta.url)),
+      // 品牌 tokens 别名：指向对应品牌的 SCSS 变量文件
+      'brand-tokens': fileURLToPath(new URL(`./src/styles/tokens/brand/${activeBrand}.scss`, import.meta.url)),
     },
   },
   build: {
@@ -59,4 +72,5 @@ export default defineConfig({
       },
     },
   },
+  }
 })

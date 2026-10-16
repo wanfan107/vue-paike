@@ -1,12 +1,10 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 通知卡片 -->
         <el-card class="notification-card">
           <div class="notification-content">
@@ -20,23 +18,28 @@
           <!-- 账户信息描述 -->
           <div class="account-info">
             <h3 class="section-title">账户信息</h3>
-            <el-descriptions border>
-              <el-descriptions-item label="可用余额" :span="1">
-                <span class="balance-value">({{ detail.balance }})</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="待结算余额" :span="1">
-                <span class="balance-value">({{ detail.unsettledBalance }})</span>
-              </el-descriptions-item>
-              <el-descriptions-item label="方式" :span="1">
-                商户确认/人工审核
-              </el-descriptions-item>
-              <el-descriptions-item label="周期" :span="1">
-                {{ detail.type }}
-              </el-descriptions-item>
-              <el-descriptions-item label="汇率" :span="2">
-                {{ detail.rate }}
-              </el-descriptions-item>
-            </el-descriptions>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>可用余额</dt>
+                <dd><span class="balance-value">({{ detail.balance }})</span></dd>
+              </div>
+              <div class="detail-row">
+                <dt>待结算余额</dt>
+                <dd><span class="balance-value">({{ detail.unsettledBalance }})</span></dd>
+              </div>
+              <div class="detail-row">
+                <dt>方式</dt>
+                <dd>商户确认/人工审核</dd>
+              </div>
+              <div class="detail-row">
+                <dt>周期</dt>
+                <dd>{{ detail.type }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>汇率</dt>
+                <dd class="is-amount">{{ detail.rate }}</dd>
+              </div>
+            </dl>
           </div>
 
           <!-- 表单区域 -->
@@ -206,7 +209,6 @@
           </div> -->
         
         <!-- </el-card> -->
-      </div>
     </main>
 
 
@@ -529,11 +531,11 @@ const submit = () => {
       if (ok) {
 ElMessageBox.alert(
   `<div style="text-align: center; padding: 8px;">
-    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">申请已提交</div>
-    <div style="font-size: 14px; color: #606266; line-height: 1.8;">
+    <div style="font-size: 18px; font-weight: bold; color: var(--brand-primary, #67C23A); margin-bottom: 10px;">申请已提交</div>
+    <div style="font-size: 14px; color: var(--text-secondary, #606266); line-height: 1.8;">
       ${bizNo ? `<div>单号：<span style="font-family: monospace;">${bizNo}</span></div>` : ''}
       <div>请完成 Telegram 商户群双人确认，后续进入 OP / Manager 双审</div>
-      <div style="color: #909399; font-size: 12px; margin-top: 6px;">审批通过后才会执行扣款与转U</div>
+      <div style="color: var(--text-faint, #909399); font-size: 12px; margin-top: 6px;">审批通过后才会执行扣款与转U</div>
     </div>
   </div>`,
   '提U审批申请',
@@ -639,92 +641,10 @@ const reset = () => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    color-scheme: light;
-    font-feature-settings: "kern";
-    font-family: "Geist Sans", sans-serif;
-    line-height: 1.5;
-    overflow-wrap: break-word;
-    margin: 0px;
-    box-sizing: content-box;
-    height: 0px;
-    overflow: visible;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-image: initial;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.balance-info {
-  font-weight: 500;
-  color: $primary-color;
-}
-
 .notification-icon {
   font-size: $font-size-large;
   cursor: pointer;
   position: relative;
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  border-radius: $border-radius-md;
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-xl;
-  color: #666;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: $spacing-lg;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 $spacing-sm 0;
-  font-size: $font-size-xl;
-  color: $text-color;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: $font-size-base;
-}
-.search-container {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 12px;
-  margin-bottom: $spacing-lg;
-  input{
-    border-radius: 24px !important;
-  }
 }
 
 /* 新增样式 */
@@ -738,7 +658,7 @@ const reset = () => {
   align-items: center;
   gap: $spacing-sm;
   font-weight: 500;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .notification-icon {
@@ -746,27 +666,53 @@ const reset = () => {
   color: $primary-color;
 }
 
-.form-card {
-  margin-bottom: $spacing-lg;
-  border-radius: $border-radius-md;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
 .account-info {
   margin-bottom: $spacing-xl;
+
+  .detail-list {
+    margin: 0;
+  }
+
+  .detail-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px 0;
+
+    dt {
+      flex: 0 0 84px;
+      font-size: 13px;
+      line-height: 22px;
+      color: var(--text-secondary);
+    }
+
+    dd {
+      flex: 1;
+      min-width: 0;
+      margin: 0;
+      font-size: 13px;
+      line-height: 22px;
+      color: var(--text-primary);
+      word-break: break-all;
+    }
+
+    .is-amount {
+      font-variant-numeric: tabular-nums;
+    }
+  }
 }
 
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
 .balance-value {
-  color: $primary-color;
+  color: var(--brand-primary);
   font-weight: 600;
 }
 
@@ -780,13 +726,13 @@ const reset = () => {
   align-items: center;
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
@@ -800,70 +746,10 @@ const reset = () => {
 }
 
 /* 弹窗样式 */
-.wallet-form {
-  padding: $spacing-sm 0;
-}
-
-.code-input-container {
-  display: flex;
-  gap: $spacing-md;
-  align-items: center;
-}
-
 .dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: $spacing-md;
-}
-
-:v-deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-:v-deep(.el-form-item__label) {
-  font-weight: 500;
-  color: #333;
-  font-size: 14px;
-}
-
-:v-deep(.el-input__inner),
-:v-deep(.el-textarea__inner) {
-  height: 40px;
-  border-radius: 6px;
-  border: 0px;
-  transition: all 0.3s;
-  font-size: 14px;
-}
-
-:v-deep(.el-textarea__inner) {
-  height: auto;
-  min-height: 80px;
-}
-
-
-
-:v-deep(.el-button--primary) {
-  // background-color: #409eff;
-  // border-color: #409eff;
-  // border-radius: 6px;
-  padding: 10px 20px;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-:v-deep(.el-button) {
-  padding: 10px 20px;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-/* 针对标题样式的优化 */
-:v-deep(.el-form-item__label[for=""]) {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
 }
 
 /* 弹窗样式 */
@@ -877,12 +763,12 @@ const reset = () => {
 .dialog-icon {
   margin-bottom: 20px;
   font-size: 48px;
-  color: #f56c6c;
+  color: var(--color-send);
 }
 
 .dialog-message {
   font-size: 16px;
-  color: #333;
+  color: var(--text-primary);
   text-align: center;
   line-height: 1.5;
 }
@@ -893,116 +779,13 @@ const reset = () => {
   width: 100%;
 }
 
-/* 横线分隔符 */
-.divider {
-  height: 1px;
-  background-color: #e0e0e0;
-  margin: 32px 0;
-}
-
-/* 转账记录样式 */
-.transfer-history {
-  
-  .history-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: $spacing-lg;
-    
-    h3 {
-      margin: 0;
-      font-size: 16px;
-      font-weight: 600;
-      color: #333;
-    }
-    
-    .history-controls {
-      display: flex;
-      gap: $spacing-md;
-      align-items: center;
-      
-      .el-date-picker {
-        width: 300px;
-      }
-      
-      .el-button {
-        padding: 8px 16px;
-        border-radius: 8px;
-      }
-    }
-  }
-  
-  .el-table {
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-    
-    .el-table__header-wrapper th {
-      background-color: #f8f9fa;
-      font-weight: 600;
-      color: #495057;
-    }
-    
-    .el-table__row {
-      transition: background-color 0.3s ease;
-      
-      &:hover {
-        background-color: #f8f9fa;
-      }
-    }
-  }
-  
-  .history-empty {
-    padding: 32px;
-    text-align: center;
-  }
-}
-
-/* 响应式设计 - 转账记录 */
-@media (max-width: 768px) {
-  .transfer-history {
-    .history-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: $spacing-md;
-      
-      .history-controls {
-        width: 100%;
-        flex-direction: column;
-        align-items: stretch;
-        
-        .el-date-picker {
-          width: 100%;
-        }
-        
-        .el-button {
-          width: 100%;
-        }
-      }
-    }
-    
-    .el-table {
-      font-size: 13px;
-      
-      .el-table__header-wrapper th {
-        font-size: 12px;
-        padding: 8px;
-      }
-      
-      .el-table__body-wrapper td {
-        padding: 10px 8px;
-      }
-    }
-  }
-}
-
 
 :deep(.el-input__inner:-webkit-autofill),
 :deep(.el-input__inner:-webkit-autofill:hover),
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }

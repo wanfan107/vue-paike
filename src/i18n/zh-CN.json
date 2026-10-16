@@ -1,0 +1,89 @@
+{
+  "common": {
+    "confirm": "确认",
+    "cancel": "取消",
+    "submit": "提交",
+    "reset": "重置",
+    "search": "搜索",
+    "refresh": "刷新",
+    "export": "导出",
+    "detail": "详情",
+    "edit": "编辑",
+    "delete": "删除",
+    "save": "保存",
+    "back": "返回",
+    "loading": "加载中...",
+    "noData": "暂无数据",
+    "success": "操作成功",
+    "failed": "操作失败",
+    "selectPlaceholder": "请选择",
+    "inputPlaceholder": "请输入",
+    "total": "共",
+    "items": "条",
+    "selected": "已选择",
+    "batchAction": "批量操作",
+    "cancelSelect": "取消选择"
+  },
+  "nav": {
+    "home": "首页",
+    "orderQuery": "订单查询",
+    "capitalFlow": "资金流水",
+    "receiptOrder": "收款订单",
+    "paymentOrder": "付款订单",
+    "withdrawOrder": "下发订单",
+    "payoutReview": "大额审核",
+    "statistics": "统计报表",
+    "realtime": "即时统计",
+    "dailyReport": "每日报表",
+    "monthlyReport": "每月报表",
+    "groupStatistics": "集团统计报表",
+    "exportRecord": "导出记录",
+    "groupManage": "集团账户管理",
+    "finance": "财务管理",
+    "rateInquiry": "商户费率",
+    "apiDoc": "接口文档",
+    "appSettings": "应用设置"
+  },
+  "home": {
+    "title": "首页",
+    "availableBalance": "可用余额",
+    "initialAmount": "期初金额",
+    "dailyReceipt": "当日收款",
+    "dailyPayment": "当日付款",
+    "quickAccess": "快捷访问",
+    "recentTransactions": "最新交易"
+  },
+  "order": {
+    "merchantOrderNo": "商户订单号",
+    "platformOrderNo": "平台订单号",
+    "orderAmount": "订单金额",
+    "actualAmount": "入账金额",
+    "balanceAfter": "变后余额",
+    "orderTime": "订单时间",
+    "status": "状态",
+    "notify": "通知",
+    "notifyYes": "已通知",
+    "notifyNo": "未通知",
+    "reissue": "补发",
+    "retry": "重试",
+    "batchReissue": "批量补发回调",
+    "searchForm": {
+      "orderTime": "订单时间",
+      "status": "状态",
+      "allStatus": "全部状态"
+    }
+  },
+  "status": {
+    "success": "成功",
+    "pending": "处理中",
+    "failed": "失败"
+  },
+  "user": {
+    "logout": "退出",
+    "switchAccount": "切换账户",
+    "merchant": "商户",
+    "admin": "管理员",
+    "operator": "运营",
+    "finance": "财务"
+  }
+}

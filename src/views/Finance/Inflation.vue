@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -381,7 +381,7 @@ onMounted(() => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -391,7 +391,7 @@ onMounted(() => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -431,14 +431,14 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   border-radius: $border-radius-md;
 }
 
 .empty-state {
   text-align: center;
   padding: $spacing-xl;
-  color: #666;
+  color: var(--text-faint, #666);
 }
 
 .empty-icon {
@@ -450,7 +450,7 @@ onMounted(() => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {
@@ -479,7 +479,7 @@ onMounted(() => {
   align-items: center;
   gap: $spacing-sm;
   font-weight: 500;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .notification-icon {
@@ -500,7 +500,7 @@ onMounted(() => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
   border-bottom: 1px solid #ebeef5;
@@ -527,7 +527,7 @@ onMounted(() => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
@@ -657,12 +657,12 @@ onMounted(() => {
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   padding: 10px;
-  background-color: white;
+  background-color: var(--color-surface, #fff);
 }
 
 .qr-code-tip {
   font-size: 14px;
-  color: #666;
+  color: var(--text-faint, #666);
   text-align: center;
   line-height: 1.5;
 }

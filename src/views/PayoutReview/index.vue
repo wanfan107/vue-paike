@@ -1,14 +1,12 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 搜索和筛选区域 -->
-        <div class="search-container">
+        <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
             <el-form-item label="时间窗口">
               <el-select v-model="searchForm.hours" style="width: 130px">
@@ -43,7 +41,7 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item class="search-actions">
               <el-button type="primary" :icon="Search" :loading="loading" @click="handleSearch">
                 搜索
               </el-button>
@@ -55,7 +53,7 @@
         </div>
 
         <!-- 批量操作栏（表格上方） -->
-        <div class="batch-bar">
+        <div v-if="selectedRows.length" class="batch-bar">
           <span class="batch-info">
             已选 <b>{{ selectedRows.length }}</b> 笔
           </span>
@@ -81,7 +79,7 @@
         </div>
 
         <!-- 表格内容区域 -->
-        <div class="table-container">
+        <div class="table-panel">
           <el-table
             v-loading="loading"
             :data="tableData"
@@ -91,31 +89,32 @@
             <el-table-column type="selection" width="45" align="center" />
             <el-table-column label="类型" width="100" align="center">
               <template #default="{ row }">
-                <el-tag :type="row.reviewType === 'RiskHold' ? 'danger' : 'warning'">
-                  {{ row.reviewTypeText }}
-                </el-tag>
+                <StatusPill
+                  :type="row.reviewType === 'RiskHold' ? 'danger' : 'warning'"
+                  :text="row.reviewTypeText"
+                />
               </template>
             </el-table-column>
             <el-table-column prop="merchant" label="商户号" width="100" align="center" />
-            <el-table-column label="商户单号" min-width="220" align="center">
+            <el-table-column label="商户单号" min-width="220" align="left">
               <template #default="{ row }">
                 <CopyText :text="row.merchantOrder" title="点击复制商户单号" />
               </template>
             </el-table-column>
-            <el-table-column label="系统单号" min-width="220" align="center">
+            <el-table-column label="系统单号" min-width="220" align="left">
               <template #default="{ row }">
                 <CopyText :text="row.serialNo" title="点击复制系统单号" />
               </template>
             </el-table-column>
-            <el-table-column label="金额" width="120" align="center">
+            <el-table-column label="金额" width="120" align="right">
               <template #default="{ row }">
                 {{ formatAmount(row.amount) }}
               </template>
             </el-table-column>
-            <el-table-column prop="bankCardNo" label="出款账号" min-width="140" align="center" />
-            <el-table-column prop="bankAccount" label="户名" min-width="120" align="center" />
+            <el-table-column prop="bankCardNo" label="出款账号" min-width="140" align="left" />
+            <el-table-column prop="bankAccount" label="户名" min-width="120" align="left" />
             <el-table-column prop="currency" label="币种" width="70" align="center" />
-            <el-table-column label="风控详情" min-width="200" align="center">
+            <el-table-column label="风控详情" min-width="200" align="left">
               <template #default="{ row }">
                 <div v-if="row.reviewType === 'RiskHold'" class="risk-detail">
                   <div class="risk-label">{{ row.riskTypeLabel || '风控暂停' }}</div>
@@ -135,7 +134,7 @@
               </template>
             </el-table-column>
             <el-table-column prop="createdOn" label="申请时间" width="160" align="center" />
-            <el-table-column label="备注" min-width="120" align="center">
+            <el-table-column label="备注" min-width="120" align="left">
               <template #default="{ row }">
                 {{ row.memo || '-' }}
               </template>
@@ -177,7 +176,6 @@
             @current-change="handleCurrentChange"
           />
         </div>
-      </div>
     </main>
   </div>
 </template>
@@ -189,6 +187,7 @@ import { Search, Refresh } from '@element-plus/icons-vue';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
 import CopyText from '@/components/CopyText.vue';
+import StatusPill from '@/components/StatusPill.vue';
 
 const title = '大额出款审核';
 const userStore = useUserStore();
@@ -386,56 +385,6 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 0px;
-    box-sizing: content-box;
-    height: 0px;
-    overflow: visible;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: $spacing-xl;
-  border-radius: $border-radius-md;
-}
-
-.search-container {
-  margin-bottom: $spacing-lg;
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-
-    :deep(.el-form-item) {
-      margin-bottom: $spacing-sm;
-    }
-  }
-}
-
 // 批量操作栏：位于搜索区与表格之间
 .batch-bar {
   display: flex;
@@ -443,12 +392,12 @@ onMounted(() => {
   gap: $spacing-sm;
   margin-bottom: $spacing-md;
   padding: 8px 12px;
-  background-color: #f8f9fa;
+  background-color: var(--color-hover);
   border-radius: $border-radius-md;
 
   .batch-info {
     font-size: 14px;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
 
     b {
       color: $primary-color;
@@ -457,7 +406,7 @@ onMounted(() => {
 
   .batch-tip {
     font-size: 12px;
-    color: $text-color-secondary;
+    color: var(--text-primary, #18181b)-secondary;
     margin-left: auto;
   }
 }
@@ -472,20 +421,8 @@ onMounted(() => {
 
   .risk-line {
     font-size: 12px;
-    color: $text-color-secondary;
+    color: var(--text-primary, #18181b)-secondary;
     word-break: break-all;
-  }
-}
-
-:deep(.el-table) {
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-
-  .el-table__header-wrapper th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #495057;
   }
 }
 

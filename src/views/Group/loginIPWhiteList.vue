@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -434,7 +434,7 @@ onMounted(() => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #ffffff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -444,7 +444,7 @@ onMounted(() => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -484,16 +484,16 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, white);
   padding: $spacing-xl;
   border-radius: $border-radius-md;
 }
 
 .whitelist-form {
   padding: $spacing-lg;
-  background-color: #fafafa;
+  background-color: var(--color-hover, #fafafa);
   border-radius: $border-radius-md;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border-soft, #e8e8e8);
 
   :deep(.el-form-item) {
     margin-bottom: $spacing-lg;
@@ -519,16 +519,16 @@ onMounted(() => {
 }
 
 .section-block {
-  background-color: white;
+  background-color: var(--color-surface, white);
   border-radius: $border-radius-md;
   padding: $spacing-lg;
   margin-bottom: $spacing-lg;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border-soft, #e8e8e8);
 
   .section-title {
     font-size: 14px;
     font-weight: 600;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
     margin-bottom: $spacing-md;
     padding-bottom: $spacing-sm;
     border-bottom: 2px solid $primary-color;
@@ -538,14 +538,14 @@ onMounted(() => {
 .query-section {
   margin-top: $spacing-xl;
   padding: $spacing-lg;
-  background-color: #fafafa;
+  background-color: var(--color-hover, #fafafa);
   border-radius: $border-radius-md;
-  border: 1px solid #e8e8e8;
+  border: 1px solid var(--color-border-soft, #e8e8e8);
 
   .section-title {
     font-size: 14px;
     font-weight: 600;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
     margin-bottom: $spacing-lg;
     padding-bottom: $spacing-sm;
     border-bottom: 2px solid $primary-color;
@@ -558,7 +558,7 @@ onMounted(() => {
     gap: $spacing-md;
     margin-bottom: $spacing-lg;
     padding: $spacing-md;
-    background-color: white;
+    background-color: var(--color-surface, white);
     border-radius: $border-radius-md;
 
     :deep(.el-form-item) {

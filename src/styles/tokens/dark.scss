@@ -1,0 +1,132 @@
+// ============================================================
+// Dark Tokens —— 暗色主题（html.dark 生效）
+// 参考 NTX 黑夜模式：深墨绿黑底、卡片浮层亮一档、品牌绿提亮
+// 注意：
+// 1. 必须在 EP dark css-vars（main.js 引入）之后加载，保证 --el-* 覆盖生效
+// 2. EP 的 light-3/5/7/8 阶不能用 CSS mix()，此处用预计算好的字面量
+// ============================================================
+
+/* 品牌绿在暗色下提亮 */
+$dark-primary: #22c55e;
+$dark-bg: #0a0f0d;
+$dark-surface: #101613;
+$dark-elevated: #161d19;
+
+html.dark {
+  // ---------- 品牌色（提亮） ----------
+  --brand-primary: #{$dark-primary};
+  --brand-primary-hover: #4ade80;
+  --brand-primary-active: #16a34a;
+  --brand-primary-light: rgba(34, 197, 94, 0.16);
+  --brand-primary-soft: rgba(34, 197, 94, 0.15);
+  --brand-primary-glow: rgba(34, 197, 94, 0.35);
+
+  // ---------- 表面色（NTX 三层递进，更绿的墨绿调） ----------
+  --color-bg: #{$dark-bg};              // 最底层（body）
+  --color-surface: #{$dark-surface};    // 普通卡片/搜索面板
+  --color-sidebar: #0e1411;             // 侧栏：介于 bg 和 surface 之间
+  --color-topbar: #{$dark-elevated};    // 顶栏：比 surface 亮一档，层级区分
+  --color-elevated: #{$dark-elevated};  // 弹窗/抽屉/下拉
+  --color-hover: #1c2420;
+  --color-overlay: rgba(0, 0, 0, 0.7);
+  --color-border-glow: rgba(255, 255, 255, 0.06); // NTX 风格微光边框（卡片/浮层区分层）
+
+  // ---------- 文字 ----------
+  --text-primary: #f3f4f6;
+  --text-regular: #d1d5db;
+  --text-secondary: #9ca3af;
+  --text-faint: #6b7280;
+  --text-inverse: #0a0f0d;
+
+  // ---------- 边框/分隔 ----------
+  --color-border: #273230;
+  --color-border-soft: #1f2926;
+  --color-divider: #1a231f;
+
+  // ---------- 阴影（暗色下用更深阴影 + 微光边框替代） ----------
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-xl: 0 24px 64px rgba(0, 0, 0, 0.6);
+
+  // ---------- 功能色（暗色下提亮、浅底改半透明） ----------
+  --color-success: #34d399;
+  --color-success-bg: rgba(52, 211, 153, 0.12);
+  --color-warning: #fbbf24;
+  --color-warning-bg: rgba(251, 191, 36, 0.12);
+  --color-danger: #f87171;
+  --color-danger-bg: rgba(248, 113, 113, 0.12);
+  --color-info: #60a5fa;
+  --color-info-bg: rgba(96, 165, 250, 0.12);
+
+  // ---------- 状态语义色 ----------
+  --color-receive-bg: rgba(34, 197, 94, 0.14);
+  --color-send-bg: rgba(248, 113, 113, 0.14);
+  --color-status-warn-bg: rgba(245, 158, 11, 0.14);
+  --color-status-info-bg: rgba(59, 130, 246, 0.14);
+  --color-status-neutral-bg: rgba(113, 113, 122, 0.16);
+
+  // ============================================================
+  // Element Plus 变量（与 components.scss 的 :root 映射保持同构，
+  // 选择器同为 html.dark，加载顺序靠后即覆盖 EP 官方 dark 默认值）
+  // ============================================================
+
+  // 主色阶梯（预计算：mix($dark-surface, $dark-primary, N%)）
+  --el-color-primary: #{$dark-primary};
+  --el-color-primary-light-3: #35b06b;
+  --el-color-primary-light-5: #2a9b57;
+  --el-color-primary-light-7: #1f7f46;
+  --el-color-primary-light-8: #1a6f3c;
+  --el-color-primary-light-9: #16311f;
+  --el-color-primary-dark-2: #4ade80;
+
+  // 功能色
+  --el-color-success: #34d399;
+  --el-color-warning: #fbbf24;
+  --el-color-danger: #f87171;
+  --el-color-info: #60a5fa;
+  --el-color-success-light-9: rgba(52, 211, 153, 0.12);
+  --el-color-warning-light-9: rgba(251, 191, 36, 0.12);
+  --el-color-danger-light-9: rgba(248, 113, 113, 0.12);
+  --el-color-info-light-9: rgba(96, 165, 250, 0.12);
+
+  // 文字
+  --el-text-color-primary: var(--text-primary);
+  --el-text-color-regular: var(--text-regular);
+  --el-text-color-secondary: var(--text-secondary);
+  --el-text-color-placeholder: var(--text-faint);
+
+  // 背景/边框
+  --el-bg-color: var(--color-surface);
+  --el-bg-color-page: var(--color-bg);
+  --el-bg-color-overlay: var(--color-elevated);
+  --el-fill-color: var(--color-hover);
+  --el-fill-color-light: var(--color-hover);
+  --el-fill-color-blank: var(--color-surface);
+  --el-border-color: var(--color-border);
+  --el-border-color-light: var(--color-divider);
+  --el-border-color-lighter: var(--color-divider);
+
+  // 表格（NTX 风格：表头比 surface 亮一档，行 hover 柔和）
+  --el-table-bg-color: var(--color-surface);
+  --el-table-tr-bg-color: var(--color-surface);
+  --el-table-header-bg-color: var(--color-elevated);
+  --el-table-row-hover-bg-color: var(--color-hover);
+  --el-table-border-color: var(--color-divider);
+  --el-table-header-text-color: var(--text-primary);
+
+  // 输入框
+  --el-input-bg-color: var(--color-elevated);
+  --el-input-border-color: var(--color-border);
+  --el-input-hover-border-color: var(--brand-primary);
+  --el-input-focus-border-color: var(--brand-primary);
+
+  // 下拉/弹窗容器
+  --el-popper-bg-color: var(--color-elevated);
+  --el-popper-border-color: var(--color-border);
+
+  // 分页器
+  --el-pagination-bg-color: var(--color-hover);
+  --el-pagination-text-color: var(--text-regular);
+}

@@ -1,21 +1,18 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 搜索和筛选区域 -->
-        <div class="search-container">
+        <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
             <el-form-item label="订单时间">
               <el-date-picker
                 v-model="searchForm.time"
                 type="monthrange"
                 unlink-panels
-                :shortcuts="shortcuts"
                 :disabled-date="disabledDate"
                 range-separator="至"
                 start-placeholder="开始日期"
@@ -23,7 +20,7 @@
               />
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item class="search-actions">
               <el-button
                 type="primary"
                 :icon="Search"
@@ -69,7 +66,7 @@
         </div>
 
         <!-- 表格内容区域 -->
-        <div class="table-container">
+        <div class="table-panel">
           <!-- 骨架屏 -->
           <el-skeleton :loading="loading" :count="5" animated>
             <template #default>
@@ -208,7 +205,6 @@
             @current-change="handleCurrentChange"
           />
         </div>
-      </div>
     </main>
   </div>
 </template>
@@ -218,21 +214,32 @@ import { Search, Refresh, Download } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, onUnmounted, computed, watch, nextTick } from "vue";
 import { useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
 import useUserStore from "@/stores/user";
 import * as echarts from 'echarts';
 import { http } from "@/api";
-import { 
-  getMonthRange, 
-  getLastMonth, 
-  getThisYearToLastMonth,
-  disabledCurrentMonth,
-  getTimezone 
-} from "@/utils/brazilTime";
+import { getMonthRange, getThisYearToLastMonth, disabledCurrentMonth } from "@/utils/brazilTime";
 import { formatCurrency, formatCurrencyWithUnit } from '@/utils/currency';
 
 const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
+
+const cssVar = (name, fallback) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+// 折线面积渐变：token 色自上而下淡出
+const hexToRgba = (hex, alpha) => {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const areaGradient = (color, alpha = 0.3) =>
+  new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color: hexToRgba(color, alpha) },
+    { offset: 1, color: hexToRgba(color, 0) },
+  ]);
 
 // 月报表
 const props = defineProps({
@@ -336,7 +343,7 @@ const realTimeChart = computed(() => {
       top: '0%',
       textStyle: {
         fontSize: 14,
-        color: '#666'
+        color: cssVar('--text-secondary','#606266')
       }
     },
     tooltip: {
@@ -353,7 +360,7 @@ const realTimeChart = computed(() => {
       data: ["收款金额", "付款金额"],
       top: "5%",
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary','#606266'),
         fontSize: 13,
       },
     },
@@ -370,7 +377,7 @@ const realTimeChart = computed(() => {
       boundaryGap: true,
       axisLine: {
         lineStyle: {
-          color: "#d8d8d8",
+          color: cssVar('--color-border-soft','#e4e7ed'),
         },
       },
       splitLine: {
@@ -383,11 +390,11 @@ const realTimeChart = computed(() => {
         show: true,
         alignWithLabel: true,
         lineStyle: {
-          color: "#d8d8d8",
+          color: cssVar('--color-border-soft','#e4e7ed'),
         },
       },
       axisLabel: {
-        color: "#666",
+        color: cssVar('--text-secondary','#606266'),
         align: "center",
         fontSize: 12,
         margin: 15,
@@ -399,24 +406,24 @@ const realTimeChart = computed(() => {
       axisLine: {
         show: true,
         lineStyle: {
-          color: "#d8d8d8",
+          color: cssVar('--color-border-soft','#e4e7ed'),
         },
       },
       axisTick: {
         show: true,
         lineStyle: {
-          color: "#d8d8d8",
+          color: cssVar('--color-border-soft','#e4e7ed'),
         },
       },
       axisLabel: {
-        color: "#666",
+        color: cssVar('--text-secondary','#606266'),
         fontSize: 12,
         formatter: (value) => formatCurrencyWithUnit(value, currency.value),
       },
       splitLine: {
         show: true,
         lineStyle: {
-          color: "#f0f0f0",
+          color: cssVar('--color-border-soft','#e4e7ed'),
           type: "dashed",
         },
       },
@@ -430,30 +437,14 @@ const realTimeChart = computed(() => {
         symbol: "circle",
         symbolSize: 4,
         lineStyle: {
-          color: "#48bb78",
+          color: cssVar('--color-receive', '#16a34a'),
           width: 2,
         },
         itemStyle: {
-          color: "#48bb78",
+          color: cssVar('--color-receive', '#16a34a'),
         },
         areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              {
-                offset: 0,
-                color: "rgba(72, 187, 120, 0.3)",
-              },
-              {
-                offset: 1,
-                color: "rgba(72, 187, 120, 0.05)",
-              },
-            ],
-          },
+          color: areaGradient(cssVar('--color-receive', '#16a34a')),
         },
       },
       {
@@ -464,30 +455,14 @@ const realTimeChart = computed(() => {
         symbol: "circle",
         symbolSize: 4,
         lineStyle: {
-          color: "#db0011",
+          color: cssVar('--color-send', '#f56c6c'),
           width: 2,
         },
         itemStyle: {
-          color: "#db0011",
+          color: cssVar('--color-send', '#f56c6c'),
         },
         areaStyle: {
-          color: {
-            type: "linear",
-            x: 0,
-            y: 0,
-            x2: 0,
-            y2: 1,
-            colorStops: [
-              {
-                offset: 0,
-                color: "rgba(219, 0, 17, 0.3)",
-              },
-              {
-                offset: 1,
-                color: "rgba(219, 0, 17, 0.05)",
-              },
-            ],
-          },
+          color: areaGradient(cssVar('--color-send', '#f56c6c')),
         },
       },
     ],
@@ -505,7 +480,7 @@ const balanceChartOption = computed(() => {
       top: '0%',
       textStyle: {
         fontSize: 14,
-        color: '#666'
+        color: cssVar('--text-secondary','#606266')
       }
     },
     tooltip: {
@@ -533,19 +508,19 @@ const balanceChartOption = computed(() => {
       boundaryGap: true,
       axisLine: {
         lineStyle: {
-          color: '#d8d8d8'
+          color: cssVar('--color-border-soft','#e4e7ed')
         }
       },
       axisTick: {
         show: true,
         alignWithLabel: true,
         lineStyle: {
-          color: '#d8d8d8'
+          color: cssVar('--color-border-soft','#e4e7ed')
         }
       },
       axisLabel: {
         fontSize: 12,
-        color: '#666',
+        color: cssVar('--text-secondary','#606266'),
         margin: 15,
       }
     },
@@ -556,18 +531,18 @@ const balanceChartOption = computed(() => {
       axisLine: {
         show: true,
         lineStyle: {
-          color: '#d8d8d8'
+          color: cssVar('--color-border-soft','#e4e7ed')
         }
       },
       axisTick: {
         show: true,
         lineStyle: {
-          color: '#d8d8d8'
+          color: cssVar('--color-border-soft','#e4e7ed')
         }
       },
       axisLabel: {
         fontSize: 12,
-        color: '#666',
+        color: cssVar('--text-secondary','#606266'),
         formatter: (value) => {
           if (value >= 100000000) {
             return 'R$' + (value / 100000000).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '亿';
@@ -580,7 +555,7 @@ const balanceChartOption = computed(() => {
       splitLine: {
         show: true,
         lineStyle: {
-          color: '#f0f0f0',
+          color: cssVar('--color-border-soft','#e4e7ed'),
           type: 'dashed'
         }
       }
@@ -591,7 +566,7 @@ const balanceChartOption = computed(() => {
       data: PreviousMonthBalance,
       smooth: true,
       itemStyle: {
-        color: '#48bb78'
+        color: cssVar('--brand-primary', '#16a34a')
       },
       lineStyle: {
         width: 2
@@ -599,23 +574,7 @@ const balanceChartOption = computed(() => {
       symbol: 'circle',
       symbolSize: 4,
       areaStyle: {
-        color: {
-          type: 'linear',
-          x: 0,
-          y: 0,
-          x2: 0,
-          y2: 1,
-          colorStops: [
-            {
-              offset: 0,
-              color: 'rgba(72, 187, 120, 0.3)'
-            },
-            {
-              offset: 1,
-              color: 'rgba(72, 187, 120, 0.05)'
-            }
-          ]
-        }
+        color: areaGradient(cssVar('--brand-primary', '#16a34a'))
       }
     }]
   };
@@ -1057,7 +1016,7 @@ const getCollectionPieChart = (row) => {
       text: "收款金额分布",
       left: "center",
       textStyle: {
-        color: "#333",
+        color: cssVar('--text-primary','#303133'),
         fontSize: 15,
         fontWeight: 600
       },
@@ -1082,7 +1041,7 @@ const getCollectionPieChart = (row) => {
       bottom: "5%",
       data: data.map((item) => item.name),
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary','#606266'),
         fontSize: 12
       },
       itemGap: 15
@@ -1105,7 +1064,7 @@ const getCollectionPieChart = (row) => {
           formatter: function(params) {
             return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
           },
-          color: "#333",
+          color: cssVar('--text-primary','#303133'),
           fontSize: 11,
           fontWeight: 500
         },
@@ -1227,7 +1186,7 @@ const getPaymentPieChart = (row) => {
       text: "付款金额分布",
       left: "center",
       textStyle: {
-        color: "#333",
+        color: cssVar('--text-primary','#303133'),
         fontSize: 15,
         fontWeight: 600
       },
@@ -1252,7 +1211,7 @@ const getPaymentPieChart = (row) => {
       bottom: "5%",
       data: data.map((item) => item.name),
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary','#606266'),
         fontSize: 12
       },
       itemGap: 15
@@ -1275,7 +1234,7 @@ const getPaymentPieChart = (row) => {
           formatter: function(params) {
             return `${params.name}\n${Number(params.percent).toFixed(2)}%`;
           },
-          color: "#333",
+          color: cssVar('--text-primary','#303133'),
           fontSize: 11,
           fontWeight: 500
         },
@@ -1301,54 +1260,6 @@ const getPaymentPieChart = (row) => {
 const disabledDate = (time) => {
   return disabledCurrentMonth(time, currency);
 };
-
-// 将 shortcuts 也定义为 computed，确保响应式（根据币种选择时区）
-const shortcuts = computed(() => [
-  {
-    text: "当月",
-    value: () => {
-      const now = dayjs().tz(getTimezone(currency));
-      const start = new Date(now.startOf('month').format('YYYY-MM-DD'));
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(now.endOf('month').format('YYYY-MM-DD'));
-      end.setHours(23, 59, 59, 999);
-      return [start, end];
-    },
-  },
-  {
-    text: "上月",
-    value: () => {
-      const range = getLastMonth(currency);
-      const start = new Date(range.start);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(range.end);
-      end.setHours(23, 59, 59, 999);
-      return [start, end];
-    },
-  },
-  {
-    text: "3个月",
-    value: () => {
-      const range = getMonthRange(3, currency);
-      const start = new Date(range.start);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(range.end);
-      end.setHours(23, 59, 59, 999);
-      return [start, end];
-    },
-  },
-  {
-    text: "7个月",
-    value: () => {
-      const range = getMonthRange(7, currency);
-      const start = new Date(range.start);
-      start.setHours(0, 0, 0, 0);
-      const end = new Date(range.end);
-      end.setHours(23, 59, 59, 999);
-      return [start, end];
-    },
-  },
-]);
 
 // 设置默认时间范围（最近3个月到当月，根据币种选择时区）
 const setDefaultTime = () => {
@@ -1644,9 +1555,13 @@ const updateMainCharts = () => {
 };
 
 // 初始化数据
+// 主题切换：重读 cssVar 重绘图表
+const onThemeChange = () => updateCharts();
+
 onMounted(async () => {
+  window.addEventListener('app-theme-change', onThemeChange);
   setDefaultTime();
-  
+
   // 等待数据加载完成后再初始化图表
   await handleSearch();
   
@@ -1678,6 +1593,7 @@ watch(show, (newVal) => {
 
 // 组件卸载时清理图表
 onUnmounted(() => {
+  window.removeEventListener('app-theme-change', onThemeChange);
   // 销毁主图表
   if (lineChart && !lineChart.isDisposed()) {
     try {
@@ -1769,89 +1685,13 @@ const onExport = async () => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: 100%;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 0px;
-    height: 0px;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: 0 $spacing-xl;
-  border-radius: $border-radius-md;
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-xl;
-  color: #666;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: $spacing-lg;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 $spacing-sm 0;
-  font-size: $font-size-xl;
-  color: $text-color;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: $font-size-base;
-}
-
-.search-container {
-  margin-bottom: $spacing-lg;
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-
-    :deep(.el-form-item) {
-      margin-bottom: $spacing-sm;
-    }
-  }
-}
-
-.table-container {
-  margin-top: $spacing-lg;
-}
-
 .amount-income {
-  color: #67c23a;
+  color: var(--brand-primary);
   font-weight: 500;
 }
 
 .amount-expense {
-  color: #f56c6c;
+  color: var(--color-send);
   font-weight: 500;
 }
 
@@ -1863,6 +1703,7 @@ const onExport = async () => {
 
 /* 图表区域样式 */
 .chart-container {
+  margin-top: 24px;
   margin-bottom: $spacing-lg;
   
   .charts-wrapper {
@@ -1873,7 +1714,7 @@ const onExport = async () => {
     .chart-item {
       flex: 1;
       height: 100%;
-      background-color: #fff;
+      background-color: var(--color-surface, #fff);
       border-radius: $border-radius-md;
       padding: $spacing-md;
       box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
@@ -1889,7 +1730,7 @@ const onExport = async () => {
   
   .expand-chart-item {
     flex: 1;
-    background-color: #fafafa;
+    background-color: var(--color-hover);
     border-radius: $border-radius-md;
     padding: $spacing-sm;
     box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.05);
@@ -1902,7 +1743,7 @@ const onExport = async () => {
   justify-content: center;
   align-items: center;
   height: 400px;
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: $border-radius-md;
   padding: $spacing-md;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
@@ -1915,19 +1756,6 @@ const onExport = async () => {
 }
 
 
-
-// 表格样式
-:deep(.el-table) {
-  .el-table__header th {
-    background-color: #fafafa;
-    color: #606266;
-    font-weight: 500;
-  }
-
-  .el-table__row {
-    transition: background-color 0.3s;
-  }
-}
 
 // 响应式设计
 @media (max-width: 1200px) {
@@ -1951,11 +1779,11 @@ const onExport = async () => {
 }
 
 @media (max-width: 768px) {
-  .table-container {
+  .table-panel {
     overflow-x: auto;
   }
 
-  .search-container {
+  .search-panel {
     .search-form {
       flex-direction: column;
     }
@@ -1982,53 +1810,12 @@ const onExport = async () => {
     }
   }
 
-  .page-container {
-    margin: $spacing-sm;
-    border-radius: $border-radius-sm;
-  }
-
-  .page-header {
-    padding: $spacing-md;
-  }
-
-  .page-content {
-    padding: $spacing-md;
-  }
-
-  .content-wrapper {
-    padding: 0 $spacing-md;
-  }
-  
   .chart-item {
     padding: $spacing-sm;
   }
   
   .chart-item .el-empty {
     padding: $spacing-md 0;
-  }
-}
-
-/* 展开行表格样式 */
-:v-deep(.expand-table) {
-  background-color: #fafafa;
-  
-  & th {
-    background-color: #f5f7fa !important;
-    color: #606266;
-    font-weight: 500;
-  }
-  
-  & td {
-    background-color: #fafafa;
-    border-color: #ebeef5;
-  }
-  
-  & .el-table__body tr:hover > td {
-    background-color: #f0f2f5 !important;
-  }
-  
-  & .el-table__footer-wrapper {
-    background-color: #f5f7fa;
   }
 }
 

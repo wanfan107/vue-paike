@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -64,7 +64,7 @@ const handleSearch = () => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -74,7 +74,7 @@ const handleSearch = () => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -114,7 +114,7 @@ const handleSearch = () => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   padding: $spacing-xl;
   border-radius: $border-radius-md;
   // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -123,7 +123,7 @@ const handleSearch = () => {
 .empty-state {
   text-align: center;
   padding: $spacing-xl;
-  color: #666;
+  color: var(--text-faint, #666);
 }
 
 .empty-icon {
@@ -135,7 +135,7 @@ const handleSearch = () => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {

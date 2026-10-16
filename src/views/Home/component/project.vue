@@ -232,95 +232,76 @@ onMounted(() => {
 }
 
 .project-card {
-  transition: all 0.3s ease;
-  border-radius: 10px;
-  border: none;
-  background: #fff;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  border-radius: 16px;
+  border: 1px solid var(--color-border-soft, #f0f1f3);
+  background: var(--color-surface, #fff);
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
   overflow: hidden;
 }
 
 .project-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 12px 20px 0 rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
 }
 
 .project-card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 15px;
+  margin-bottom: 16px;
 }
 
 .project-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-secondary, #6b7280);
 }
 
 .project-icon {
   width: 40px;
   height: 40px;
-  border-radius: 8px;
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
 }
 
-.project-icon i {
-  font-size: 28px;
-  color: #fff;
-  object-fit: cover;
-}
-
-/* 不同卡片的图标背景色 */
-.project-card0 .project-icon {
-  background-color: #fff;
-}
-
-.project-card2 .project-icon {
-  background-color: #f56565;
-}
-
+// 统一品牌绿色调图标背景
+.project-card0 .project-icon,
 .project-card1 .project-icon {
-  background-color: #48bb78;
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.1));
+  color: var(--brand-primary, #16a34a);
 }
-.project-card0 .project-icon i {
-  color: #a5dc3d;
+.project-card2 .project-icon {
+  background-color: var(--color-send-bg, rgba(239, 68, 68, 0.1));
+  color: var(--color-danger, #ef4444);
 }
 
-.project-card3 .project-icon {
-  background-color: #63b3ed;
-}
-.project-card3 .project-icon i {
-  color: #fff;
+.project-icon :deep(.el-icon) {
+  font-size: 20px;
 }
 
 .project-amount {
   display: flex;
   align-items: baseline;
-  margin-bottom: 20px;
-}
-
-.currency {
-  font-size: 18px;
-  color: #666;
-  margin-right: 5px;
+  margin-bottom: 16px;
 }
 
 .amount-value {
-  // font-size: 32px;
-  font-weight: bold;
-  color: #333;
-  letter-spacing: -1px;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text-primary, #111827);
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
 }
 
 .project-stats {
-  background-color: #f8f9fa;
-  padding: 15px;
-  border-radius: 8px;
-  margin-top: 10px;
+  background-color: var(--color-hover, #f8f9fb);
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-top: 4px;
 }
 
 .stat-item {
@@ -330,24 +311,24 @@ onMounted(() => {
 }
 
 .stat-label {
-  font-size: 14px;
-  color: #666;
+  font-size: 13px;
+  color: var(--text-faint, #9ca3af);
 }
 
 .stat-value {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-regular, #374151);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 响应式设计 */
 @media only screen and (max-width: 767px) {
   .project-card {
-    margin-bottom: 15px;
+    margin-bottom: 12px;
   }
-
   .amount-value {
-    font-size: 28px;
+    font-size: 24px;
   }
 }
 </style>

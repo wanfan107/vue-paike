@@ -1,21 +1,26 @@
 <template>
-  <div class="config-container">
-    <el-card class="config-card">
-      <div class="card-header">
-        <div class="header-title">账户配置</div>
-        <div class="header-subtitle">管理您的账户接口和安全设置</div>
-      </div>
-      <div class="form-container">
-        <SubmitForm
-          :formStyle="{}"
-          :form-list="formList"
-          :rule-form="ruleForm"
-          :loading="loading"
-          :footer="false"
-          :footer2="false"
-          @save="submit"
-          @close="close"
-        >
+  <div class="app-page">
+    <header class="app-page-header">
+      <h1>账户配置</h1>
+    </header>
+
+    <main>
+      <div class="form-panel">
+        <div class="panel-header">
+          <div class="panel-title">账户配置</div>
+          <div class="panel-subtitle">管理您的账户接口和安全设置</div>
+        </div>
+        <div class="form-container">
+          <SubmitForm
+            :formStyle="{}"
+            :form-list="formList"
+            :rule-form="ruleForm"
+            :loading="loading"
+            :footer="false"
+            :footer2="false"
+            @save="submit"
+            @close="close"
+          >
           <!-- <template #secretKey> -->
             <!--          默认掩藏，提示输入MFA2验证码查看 -->
             <!-- <div
@@ -48,8 +53,9 @@
             </div> -->
           <!-- </template> -->
         </SubmitForm>
+        </div>
       </div>
-    </el-card>
+    </main>
   </div>
 </template>
 <script setup>
@@ -170,116 +176,72 @@ const close = () => {
 };
 </script>
 <style scoped lang="scss">
-.config-container {
-  display: flex;
-  justify-content: center;
-  flex-direction: column;
-  align-items: center;
-  min-height: calc(100vh - 200px);
-  padding: 20px;
-}
+@use "../../../styles/variables.scss" as *;
 
-.config-card {
-  width: 100%;
+.form-panel {
   max-width: 900px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  margin: 0 auto;
+  background: var(--color-elevated);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-
-  &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
 }
 
-.card-header {
-//  display: flex;
-//   justify-content: center;
-//   flex-direction: column;
-//   align-items: center;
-  background-color: #f8f9fa;
+.panel-header {
   padding: 24px;
   text-align: center;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.header-title {
-  font-size: 20px;
+.panel-title {
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
-.header-subtitle {
+.panel-subtitle {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .form-container {
   padding: 24px;
 }
 
-:v-deep(.el-form-item)  {
+:deep(.el-form-item) {
   margin-bottom: 20px;
 }
 
-:v-deep(.el-form-item__label)  {
+:deep(.el-form-item__label) {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
-:v-deep(.el-input__inner),
-:v-deep(.el-textarea__inner) {
+:deep(.el-input__inner),
+:deep(.el-textarea__inner) {
   height: 40px;
   border-radius: 6px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border-soft);
   transition: all 0.3s;
   font-size: 14px;
 }
 
-:v-deep(.el-textarea__inner) {
+:deep(.el-textarea__inner) {
   height: auto;
   min-height: 80px;
 }
 
-
-
-:v-deep(.el-button--primary) {
-  // background-color: #409eff;
-  // border-color: #409eff;
-  // border-radius: 6px;
+:deep(.el-button) {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.3s;
-}
-
-
-
-:v-deep(.el-button) {
-  padding: 10px 20px;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-/* 针对标题样式的优化 */
-:v-deep(.el-form-item__label[for=""]) {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
 }
 
 /* 适配移动端 */
 @media (max-width: 768px) {
-  .config-container {
-    padding: 10px;
-    min-height: calc(100vh - 150px);
-  }
-
-  .config-card {
+  .form-panel {
     max-width: 100%;
   }
 
@@ -287,11 +249,11 @@ const close = () => {
     padding: 16px;
   }
 
-  .card-header {
+  .panel-header {
     padding: 16px;
   }
 
-  .header-title {
+  .panel-title {
     font-size: 18px;
   }
 }

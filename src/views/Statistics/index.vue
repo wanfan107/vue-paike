@@ -1,17 +1,13 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
     </header>
 
-    <main class="page-content">
-      <div>
-        <hr>
-      </div>
-      <div class="content-wrapper">
-        <div class="table-layout">
+    <main>
+      <div class="table-layout">
           <div class="table_time">
-            <div class="time-controls" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-bottom: 10px;">
+            <div class="time-controls">
               <!-- 日期时间选择器 -->
               <el-date-picker
                 v-model="selectedTime"
@@ -20,16 +16,12 @@
                 format="YYYY-MM-DD HH:mm:ss"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 :show-now="false"
-                style="width: 180px; border-radius: 4px;"
-                size="small"
                 @change="getdata"
               />
               <!-- 时间范围下拉 -->
               <el-select
                 v-model="timeRange"
                 placeholder="选择时间范围"
-                style="width: 180px; border-radius: 4px;"
-                size="small"
                 @change="getdata"
               >
                 <el-option label="近5分钟" value="5" />
@@ -45,7 +37,7 @@
                 <template #reference><el-icon><WarningFilled /></el-icon></template>
               </el-popover>
               <el-tooltip class="item" effect="dark" content="刷新数据" placement="bottom">
-                <el-button circle :icon="Refresh" style="margin-right: 20px;" @click.stop="getdata()"></el-button>
+                <el-button :icon="Refresh" @click.stop="getdata()">刷新</el-button>
               </el-tooltip>
             </div>
           </div>
@@ -58,7 +50,6 @@
             <div ref="chartContainer" style="width: 100%; height: 600px;"></div>
           </div>
         </div>
-      </div>
     </main>
   </div>
 </template>
@@ -75,6 +66,24 @@ import { formatCurrency } from '@/utils/currency';
 
 const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
+
+const cssVar = (name, fallback) =>
+  getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+
+// 折线面积渐变：token 色自上而下淡出
+const hexToRgba = (hex, alpha) => {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+};
+
+const areaGradient = (color, alpha = 0.3) =>
+  new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+    { offset: 0, color: hexToRgba(color, alpha) },
+    { offset: 1, color: hexToRgba(color, 0) },
+  ]);
 
 // 银行页面
 const props = defineProps({
@@ -151,8 +160,10 @@ const chartData = ref({
   collectionCounts: []
 });
 
-// 图表配置
+// 图表配置（themeTick：主题切换时自增，令 computed 重新读取 cssVar）
+const themeTick = ref(0);
 const realTimeChart = computed(() => {
+  void themeTick.value;
   const { dates, collectionSuccessRates, collectionAmounts, collectionCounts } = chartData.value;
 
   return {
@@ -161,7 +172,7 @@ const realTimeChart = computed(() => {
       left: "center",
       top: 20,
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 16,
       },
     },
@@ -180,7 +191,7 @@ const realTimeChart = computed(() => {
       data: ["收款成功率"],
       bottom: "5%",
       textStyle: {
-        color: "#666",
+        color: cssVar('--text-secondary', '#606266'),
         fontSize: 13,
       },
     },
@@ -195,21 +206,21 @@ const realTimeChart = computed(() => {
       type: "category",
       data: dates,
       boundaryGap: false,
-      axisLine: { lineStyle: { color: "#d8d8d8" } },
+      axisLine: { lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       splitLine: { show: false },
-      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: "#d8d8d8" } },
-      axisLabel: { textStyle: { color: "#666", align: "center" }, fontSize: 10, margin: 15, rotate: 0 },
+      axisTick: { show: true, alignWithLabel: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      axisLabel: { textStyle: { color: cssVar('--text-secondary', '#606266'), align: "center" }, fontSize: 10, margin: 15, rotate: 0 },
     },
     yAxis: {
       type: "value",
       name: "成功率 (%)",
       min: 70,
       max: 100,
-      axisLine: { show: true, lineStyle: { color: "#d8d8d8" } },
-      splitLine: { show: true, lineStyle: { color: "#f0f0f0", type: "dashed" } },
-      axisLabel: { color: "#666", formatter: "{value}%", fontSize: 12 },
+      axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
+      splitLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed'), type: "dashed" } },
+      axisLabel: { color: cssVar('--text-secondary', '#606266'), formatter: "{value}%", fontSize: 12 },
       axisTick: { show: false },
-      nameTextStyle: { color: "#666", fontSize: 12, padding: [0, 30, 0, 0] },
+      nameTextStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12, padding: [0, 30, 0, 0] },
     },
     series: [
       {
@@ -220,18 +231,9 @@ const realTimeChart = computed(() => {
         symbolSize: 6,
         smooth: true,
         showSymbol: true,
-        lineStyle: { color: "#48bb78", width: 3 },
-        itemStyle: { color: "#48bb78", borderColor: "#fff", borderWidth: 1 },
-        areaStyle: {
-          color: {
-            type: "linear",
-            x: 0, y: 0, x2: 0, y2: 1,
-            colorStops: [
-              { offset: 0, color: "rgba(72, 187, 120, 0.3)" },
-              { offset: 1, color: "rgba(72, 187, 120, 0.05)" },
-            ],
-          },
-        },
+        lineStyle: { color: cssVar('--brand-primary', '#16a34a'), width: 3 },
+        itemStyle: { color: cssVar('--brand-primary', '#16a34a'), borderColor: "#fff", borderWidth: 1 },
+        areaStyle: { color: areaGradient(cssVar('--brand-primary', '#16a34a')) },
       },
     ],
   };
@@ -352,7 +354,11 @@ watch(realTimeChart, (newOption) => {
   }
 }, { deep: true });
 
+// 主题切换：重读 cssVar 重绘图表
+const onThemeChange = () => { themeTick.value++; };
+
 onMounted(() => {
+  window.addEventListener('app-theme-change', onThemeChange);
   // 设置默认时间为当前时间
   selectedTime.value = formatCurrentTime(userStore.merchantInfo.currency);
   getdata();
@@ -361,6 +367,7 @@ onMounted(() => {
 });
 
 onBeforeUnmount(() => {
+  window.removeEventListener('app-theme-change', onThemeChange);
   // 组件卸载前销毁图表
   destroyChart();
 });
@@ -368,72 +375,18 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-}
+.time-controls {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-bottom: 10px;
+  --el-component-size: 40px;
+  --el-border-radius-base: 6px;
 
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
- 
-}
-
-.balance-info {
-  font-weight: 500;
-  color: $primary-color;
-}
-
-.notification-icon {
-  font-size: $font-size-large;
-  cursor: pointer;
-  position: relative;
-}
-
-
-
-.content-wrapper {
-  background-color: white;
-  padding: $spacing-lg;
-  border-radius: $border-radius-md;
-  // box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
-
-.empty-state {
-  text-align: center;
-  padding: $spacing-xl;
-  color: #666;
-}
-
-.empty-icon {
-  font-size: 4rem;
-  margin-bottom: $spacing-lg;
-  opacity: 0.5;
-}
-
-.empty-state h2 {
-  margin: 0 0 $spacing-sm 0;
-  font-size: $font-size-xl;
-  color: $text-color;
-}
-
-.empty-state p {
-  margin: 0;
-  font-size: $font-size-base;
-}
-.search-container {
-  display: flex; 
-  align-items: center; 
-  justify-content: center; 
-  gap: 12px;
-  margin-bottom: $spacing-lg;
-  input{
-    border-radius: 24px !important;
+  :deep(.el-date-editor),
+  :deep(.el-select) {
+    width: 180px;
   }
 }
 
@@ -474,25 +427,4 @@ onBeforeUnmount(() => {
     overflow: hidden;
   }
 }
-
- hr {
-    text-size-adjust: 100%;
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizelegibility;
-    color-scheme: light;
-    font-feature-settings: "kern";
-    font-family: "Geist Sans", sans-serif;
-    line-height: 1.5;
-    overflow-wrap: break-word;
-    margin: 0px;
-    box-sizing: content-box;
-    height: 0px;
-    overflow: visible;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-image: initial;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
 </style>

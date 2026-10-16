@@ -1,13 +1,11 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
-        <el-card shadow="never">
+    <main>
+        <div class="search-panel">
           <div class="query-form">
             <div class="form-item">
               <div class="form-label">订单号- 集团商户里的 - 01311110522940471237107  /  C94647：- DD006260412101107732508826</div>
@@ -31,18 +29,17 @@
               <el-button @click="onReset">重置</el-button>
             </div>
           </div>
-        </el-card>
+        </div>
 
         <!-- 查询结果 -->
         <template v-if="queryResult">
           <!-- 属于本集团的订单 -->
-          <el-card shadow="never" style="margin-top: 16px;">
-            <template #header>
+          <div class="table-panel" style="margin-top: 16px;">
+            <div class="panel-header">
               <span>查询到的订单（属于本集团）</span>
               <el-tag size="small" style="margin-left: 8px;">{{ queryResult.foundOrders.length }} 条</el-tag>
-            </template>
+            </div>
             <el-table
-              border
               v-loading="loading"
               max-height="500px"
               :data="queryResult.foundOrders"
@@ -50,7 +47,7 @@
               <el-table-column align="center" prop="inputOrderNo" label="输入订单号" width="180"></el-table-column>
               <el-table-column align="center" prop="orderTypeText" label="订单类型" width="80">
                 <template #default="{ row }">
-                  <el-tag :type="orderTypeTag(row.orderType)" size="small">{{ row.orderTypeText }}</el-tag>
+                  <StatusPill :type="orderTypeTag(row.orderType)" :text="row.orderTypeText" />
                 </template>
               </el-table-column>
               <el-table-column align="center" prop="merchant" label="商户号" width="80"></el-table-column>
@@ -68,7 +65,7 @@
               </el-table-column>
               <el-table-column align="center" prop="statusText" label="状态" width="110">
                 <template #default="{ row }">
-                  <el-tag v-if="row.statusText" :type="statusTagType(row)" size="small">{{ row.statusText }}</el-tag>
+                  <StatusPill v-if="row.statusText" :type="statusTagType(row)" :text="row.statusText" />
                   <span v-else>-</span>
                 </template>
               </el-table-column>
@@ -78,14 +75,14 @@
                 </template>
               </el-table-column>
             </el-table>
-          </el-card>
+          </div>
 
           <!-- 不属于本集团的订单 -->
-          <el-card v-if="queryResult.notGroupOrders.length" shadow="never" style="margin-top: 16px;">
-            <template #header>
-              <span style="color: #E6A23C;">订单存在但不属于本集团</span>
+          <div v-if="queryResult.notGroupOrders.length" class="table-panel" style="margin-top: 16px;">
+            <div class="panel-header">
+              <span style="color: var(--color-status-warn);">订单存在但不属于本集团</span>
               <el-tag type="warning" size="small" style="margin-left: 8px;">{{ queryResult.notGroupOrders.length }} 个</el-tag>
-            </template>
+            </div>
             <div class="order-list">
               <el-tag
                 v-for="order in queryResult.notGroupOrders"
@@ -95,14 +92,14 @@
                 style="margin: 4px;"
               >{{ order }}</el-tag>
             </div>
-          </el-card>
+          </div>
 
           <!-- 完全查不到的订单 -->
-          <el-card v-if="queryResult.notFoundOrders.length" shadow="never" style="margin-top: 16px;">
-            <template #header>
-              <span style="color: #F56C6C;">未查询到的订单</span>
+          <div v-if="queryResult.notFoundOrders.length" class="table-panel" style="margin-top: 16px;">
+            <div class="panel-header">
+              <span style="color: var(--color-send);">未查询到的订单</span>
               <el-tag type="danger" size="small" style="margin-left: 8px;">{{ queryResult.notFoundOrders.length }} 个</el-tag>
-            </template>
+            </div>
             <div class="order-list">
               <el-tag
                 v-for="order in queryResult.notFoundOrders"
@@ -112,9 +109,8 @@
                 style="margin: 4px;"
               >{{ order }}</el-tag>
             </div>
-          </el-card>
+          </div>
         </template>
-      </div>
     </main>
   </div>
 </template>
@@ -124,6 +120,7 @@ import { ref } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
+import StatusPill from '@/components/StatusPill.vue';
 
 const props = defineProps({
   title: {
@@ -189,13 +186,13 @@ const onReset = () => {
 
 const orderTypeTag = (type) => {
   const map = { payin: 'success', payout: 'warning', payflow: 'info' };
-  return map[type] || '';
+  return map[type] || 'neutral';
 };
 
 const statusTagType = (row) => {
   const st = row.statusText;
   if (st === '成功已回调' || st === '成功') return 'success';
-  if (st === '成功未回调') return '';
+  if (st === '成功未回调') return 'primary';
   if (st === '进行中') return 'warning';
   if (st === '失败') return 'danger';
   return 'info';
@@ -211,43 +208,24 @@ const formatTime = (val) => {
 </script>
 
 <style scoped lang="scss">
-.page-container {
-  padding: 20px;
-}
-
-.page-header {
-  margin-bottom: 20px;
-  
-  h1 {
-    font-size: 18px;
-    font-weight: 600;
-    color: #303133;
-    margin-bottom: 12px;
-  }
-  
-  hr {
-    border: none;
-    border-top: 1px solid #ebeef5;
-    margin: 0;
-  }
-}
-
-.page-content {
-  .content-wrapper {
-    // 样式已应用
-  }
-}
-
 .query-form {
   .form-label {
     font-size: 14px;
-    color: #606266;
+    color: var(--text-secondary);
     margin-bottom: 8px;
   }
   .form-actions {
     margin-top: 16px;
   }
 }
+
+.panel-header {
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--color-border-soft);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
 .order-list {
   display: flex;
   flex-wrap: wrap;

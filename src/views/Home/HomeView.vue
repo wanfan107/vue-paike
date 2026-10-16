@@ -1,8 +1,8 @@
-<template>
+﻿<template>
   <div class="page-container">
     <div class="page-content-wrapper">
       <header class="page-header">
-        <h1>Univepay | 首 页</h1>
+        <h1>PIX | 首 页</h1>
         <div class="user-actions">
           <div v-if="isBRL" class="balance-display">
             <span class="balance-label">可用余额</span>
@@ -59,7 +59,7 @@
             完整报表
           </el-button> -->
         </div>
-        <section class="recent-transactions" >
+        <section class="table-panel" >
           <el-table
             stripe
             v-loading="loading"
@@ -304,7 +304,7 @@ onMounted(async () => {
 
 .page-container {
   min-height: 100vh;
-  background-color: $background-color;
+  background-color: var(--color-bg, #f7f7f8);
 }
 .page-content-wrapper {
   width: 100%;
@@ -326,7 +326,7 @@ onMounted(async () => {
 .page-header h1 {
   margin: 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .user-actions {
@@ -340,25 +340,25 @@ onMounted(async () => {
   flex-direction: column;
   align-items: flex-end;
   padding-right: $spacing-lg;
-  border-right: 1px solid #e0e0e0;
+  border-right: 1px solid var(--color-border-soft, #e0e0e0);
   
   .balance-label {
     font-size: 12px;
-    color: #999;
+    color: var(--text-faint, #999);
     margin-bottom: 2px;
   }
   
   .balance-amount {
     font-size: 18px;
     font-weight: bold;
-    color: #191919;
+    color: var(--text-primary, #191919);
   }
 }
 // 简洁按钮样式
 .simple-button {
-  border: 1px solid #dcdfe6;
-  color: #606266;
-  background-color: #ffffff;
+  border: 1px solid var(--color-border, #dcdfe6);
+  color: var(--text-regular, #606266);
+  background-color: var(--color-surface, #ffffff);
   border-radius: 50px;
 
   &:hover {
@@ -370,13 +370,7 @@ onMounted(async () => {
   padding: $spacing-lg;
 }
 
-/* 最近交易 */
-.recent-transactions {
-  background-color: white;
-  padding: $spacing-lg;
-  border-radius: $border-radius-md;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-}
+/* 最近交易 - 使用全局 .table-panel 样式 */
 
 .section-header {
   display: flex;
@@ -388,7 +382,7 @@ onMounted(async () => {
   h2 {
     margin: 0;
     font-size: $font-size-large;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
 
   .view-all {

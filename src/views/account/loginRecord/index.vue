@@ -1,40 +1,38 @@
 <template>
-  <div>
-    <SearchForm
-      :search-list="searchList"
-      :search-params="searchParams"
-      @search="onSearch"
-      @reset="onReset"
-    ></SearchForm>
-    <div class="table-layout">
-      <el-card shadow="never">
-        <div class="table-box">
-          <el-table
-            border
-            v-loading="loading"
-            max-height="600px"
-            :data="tableData"
-            element-loading-spinner="el-icon-loading"
-            element-loading-background="rgba(255, 255, 255, 0.8)"
-            @selection-change="onSelect"
-          >
-            <el-table-column
-              align="center"
-              v-for="item in columns"
-              :key="item.prop"
-              :prop="item.prop"
-              :label="item.label"
-            >
-              <template slot-scope="scope">
-                <span v-if="item.type === 'select'">
-                  {{ item.mapping[scope.row[item.prop]] }}
-                </span>
-                <span v-else>{{ scope.row[item.prop] }}</span>
-              </template>
-            </el-table-column>
-          </el-table>
-        </div>
-        <div class="page-box">
+  <div class="app-page">
+    <header class="app-page-header">
+      <h1>登录记录</h1>
+    </header>
+
+    <main>
+      <div class="search-panel">
+        <SearchForm
+          :search-list="searchList"
+          :search-params="searchParams"
+          @search="onSearch"
+          @reset="onReset"
+        />
+      </div>
+
+      <div class="table-panel">
+        <el-table
+          v-loading="loading"
+          max-height="600px"
+          :data="tableData"
+          element-loading-spinner="el-icon-loading"
+          element-loading-background="var(--el-mask-color, rgba(255, 255, 255, 0.8))"
+          @selection-change="onSelect"
+        >
+          <el-table-column
+            align="center"
+            v-for="item in columns"
+            :key="item.prop"
+            :prop="item.prop"
+            :label="item.label"
+          />
+        </el-table>
+
+        <div class="pagination-container">
           <el-pagination
             background
             :current-page="pageNo"
@@ -46,8 +44,8 @@
             @current-change="changePageNo"
           />
         </div>
-      </el-card>
-    </div>
+      </div>
+    </main>
   </div>
 </template>
 <script setup>
@@ -114,7 +112,7 @@ const getList = async () => {
     tableData.value = response.data.list;
     totalSize.value = response.data.total;
   } catch (error) {
-    console.error("获取登录记录失败:", error);
+    // 静默失败
   } finally {
     loading.value = false;
   }
@@ -162,18 +160,25 @@ onMounted(() => {
 </script>
 
 <style scoped lang="scss">
+@use "../../../styles/variables.scss" as *;
+
+.pagination-container {
+  margin-top: $spacing-lg;
+  display: flex;
+  justify-content: center;
+}
+
 /* 隐藏 gutter 列 */
- :v-deep(col[name="gutter"]) {
+:deep(col[name="gutter"]) {
   display: none !important;
   width: 0 !important;
 }
 
 /* 隐藏 gutter th */
-:v-deep(th.gutter) {
+:deep(th.gutter) {
   display: none !important;
   width: 0 !important;
   padding: 0 !important;
   margin: 0 !important;
 }
-
 </style>

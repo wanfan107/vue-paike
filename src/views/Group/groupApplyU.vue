@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -595,8 +595,8 @@ const submit = () => {
       if (res.Success) {
 ElMessageBox.alert(
   `<div style="text-align: center; padding: 8px;">
-    <div style="font-size: 18px; font-weight: bold; color: #67C23A; margin-bottom: 10px;">提交成功</div>
-    <div style="font-size: 14px; color: #909399; line-height: 1.6;">您的申请已提交，请等待审核</div>
+    <div style="font-size: 18px; font-weight: bold; color: var(--color-success, #67c23a); margin-bottom: 10px;">提交成功</div>
+    <div style="font-size: 14px; color: var(--text-secondary, #909399); line-height: 1.6;">您的申请已提交，请等待审核</div>
   </div>`,
   '提示',
   {
@@ -763,7 +763,7 @@ const saveWalletAddress = async () => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -773,7 +773,7 @@ const saveWalletAddress = async () => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -813,7 +813,7 @@ const saveWalletAddress = async () => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   border-radius: $border-radius-md;
 }
 
@@ -832,7 +832,7 @@ const saveWalletAddress = async () => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {
@@ -861,7 +861,7 @@ const saveWalletAddress = async () => {
   align-items: center;
   gap: $spacing-sm;
   font-weight: 500;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .notification-icon {
@@ -882,7 +882,7 @@ const saveWalletAddress = async () => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: $spacing-lg;
   padding-bottom: $spacing-sm;
   border-bottom: 1px solid #ebeef5;
@@ -909,7 +909,7 @@ const saveWalletAddress = async () => {
 .section-title {
   font-size: $font-size-large;
   font-weight: 600;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
   margin-bottom: 0;
   padding-bottom: 0;
   border-bottom: none;
@@ -1027,7 +1027,7 @@ const saveWalletAddress = async () => {
   right: 35px;
   top: 50%;
   transform: translateY(-50%);
-  // color: #67c23a;
+  // color: var(--color-success, #67c23a);
   font-weight: 500;
   font-size: 13px;
   pointer-events: none;
@@ -1045,7 +1045,7 @@ const saveWalletAddress = async () => {
   }
   
   .option-balance {
-    // color: #67c23a;
+    // color: var(--color-success, #67c23a);
     font-weight: 500;
     margin-left: 20px;
   }
@@ -1160,7 +1160,7 @@ const saveWalletAddress = async () => {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -371,7 +371,7 @@ onMounted(() => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
   min-height: 100%;
@@ -382,7 +382,7 @@ onMounted(() => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -411,7 +411,7 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   padding: $spacing-xl;
   border-radius: $border-radius-md;
 }
@@ -512,7 +512,7 @@ onMounted(() => {
 .amount-tips {
   margin-top: 8px;
   font-size: 12px;
-  color: #999;
+  color: var(--text-faint, #999);
 }
 
 // 表单操作按钮
@@ -690,7 +690,7 @@ onMounted(() => {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }

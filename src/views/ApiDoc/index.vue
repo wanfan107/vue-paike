@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>接口文档</h1>
@@ -95,7 +95,7 @@ onMounted(() => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -105,7 +105,7 @@ onMounted(() => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -134,7 +134,7 @@ onMounted(() => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   border-radius: $border-radius-md;
   min-height: 600px;
   overflow: hidden;
@@ -178,12 +178,12 @@ onMounted(() => {
 .fallback-header h2 {
   margin: 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .fallback-body {
   text-align: center;
-  color: $text-color-secondary;
+  color: var(--text-primary, #18181b)-secondary;
 }
 
 .fallback-body p {

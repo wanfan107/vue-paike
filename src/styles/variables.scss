@@ -1,42 +1,47 @@
-// 全局SCSS变量
-// 可以直接在此处修改主题颜色
+// ============================================================
+// 兼容层 —— 旧变量名转发到 tokens
+// 现有页面 @use '../styles/variables.scss' as * 的引用无需改动
+// 新代码请直接引用 tokens 的语义变量（var(--brand-primary) 等）
+// ============================================================
+@use './tokens/base.scss' as *;
+@use 'brand-tokens' as *;
 
-// 主题色变量 - 直接修改这些值即可更改主题颜色
-$primary-color: #db0011; // 主色调 - 品牌红色
-$primary-light: #ff4d4f; // 主色调浅色
-$primary-dark: #b30000; // 主色调深色
-$secondary-color: #2c3e50; // 次要色调 - 深蓝灰色
-$background-color: #f7fafc; // 背景色 - 浅灰色
-$text-color: #212529; // 文本颜色 - 深灰色
-$text-color-secondary: #6c757d; // 次要文本颜色
-$border-color: #dee2e6; // 边框颜色
+// —— 主色（映射到品牌 tokens） ——
+$primary-color: $brand-primary;
+$primary-light: $brand-primary-light;
+$primary-dark:  $brand-primary-active;
+$secondary-color: $neutral-700;
+$background-color: $color-bg;
+$text-color: $color-text-primary;
+$text-color-secondary: $color-text-regular;
+$border-color: $color-border;
 
-// 功能色变量
-$success-color: #52c41a; // 成功色
-$warning-color: #faad14; // 警告色
-$danger-color: #f5222d; // 危险色
-$info-color: #1890ff; // 信息色
+// —— 功能色 ——
+$success-color: $success;
+$warning-color: $warning;
+$danger-color:  $danger;
+$info-color:    $info;
 
-// 字体变量
-$font-family: Arial, sans-serif;
-$font-size-small: 0.875rem;
-$font-size-base: 1rem;
-$font-size-large: 1.25rem;
-$font-size-xl: 1.5rem;
+// —— 字体 ——
+$font-family: $font-body;
+$font-size-small: $font-sm;
+$font-size-base:  $font-base;
+$font-size-large: $font-lg;
+$font-size-xl:    $font-xl;
 
-// 间距变量
-$spacing-xs: 0.25rem;
-$spacing-sm: 0.5rem;
-$spacing-md: 1rem;
-$spacing-lg: 1rem;
-$spacing-xl: 1rem;
+// —— 间距（旧命名映射到新阶梯） ——
+$spacing-xs: $space-1;
+$spacing-sm: $space-2;
+$spacing-md: $space-4;
+$spacing-lg: $space-5;
+$spacing-xl: $space-6;
 
-// 边框变量
-$border-radius-sm: 0.25rem;
-$border-radius-md: 0.5rem;
-$border-radius-lg: 0.75rem;
+// —— 圆角 ——
+$border-radius-sm: $radius-sm;
+$border-radius-md: $radius-md;
+$border-radius-lg: $radius-lg;
 
-// 过渡变量
-$transition-fast: 0.2s ease;
-$transition-base: 0.3s ease;
-$transition-slow: 0.5s ease;
+// —— 过渡 ——
+$transition-fast: $dur-fast $ease-out;
+$transition-base: $dur-base $ease-out;
+$transition-slow: $dur-slow $ease-out;

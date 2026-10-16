@@ -1,12 +1,10 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 搜索区域 -->
         <!-- <div class="search-container">
           <el-form :inline="false" :model="searchForm" class="search-form">
@@ -68,39 +66,38 @@
         </div>
 
         <!-- 商户列表 -->
-        <div class="table-container">
+        <div class="table-panel">
           <el-table :data="merchantList" border style="width: 100%" v-loading="loading">
-            <el-table-column prop="isGroup" label="类型" width="80">
+            <el-table-column prop="isGroup" label="类型" width="80" align="center">
               <template #default="{ row }">
                 <el-tag :type="row.isGroup ? 'warning' : 'danger'" size="small">
                   {{ row.isGroup ? '集团' : '商户' }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="code" label="商户号" min-width="100"></el-table-column>
-            <el-table-column prop="balance" label="余额" min-width="150" align="left">
+            <el-table-column prop="code" label="商户号" min-width="100" align="left"></el-table-column>
+            <el-table-column prop="balance" label="余额" min-width="150" align="right">
               <template #default="{ row }">
                 {{ formatMoney(row.balance) }}
               </template>
             </el-table-column>
-            <el-table-column prop="checkedBalanceTime" label="余额更新时间" width="170">
+            <el-table-column prop="checkedBalanceTime" label="余额更新时间" width="170" align="center">
               <template #default="{ row }">
                 {{ formatDate(row.checkedBalanceTime) }}
               </template>
             </el-table-column>
-            <el-table-column prop="currency" label="币种" width="70"></el-table-column>
-            <el-table-column prop="status" label="商户状态" width="100">
+            <el-table-column prop="currency" label="币种" width="70" align="center"></el-table-column>
+            <el-table-column prop="status" label="商户状态" width="100" align="center">
               <template #default="{ row }">
-                <el-tag :type="statusTagType(row.status)" size="small">
-                  {{ statusText(row.status) }}
-                </el-tag>
+                <StatusPill :type="statusPillType(row.status)" :text="statusText(row.status)" />
               </template>
             </el-table-column>
-            <el-table-column prop="isSuspended" label="挂起" width="70">
+            <el-table-column prop="isSuspended" label="挂起" width="70" align="center">
               <template #default="{ row }">
-                <el-tag :type="row.isSuspended ? 'danger' : 'success'" size="small">
-                  {{ row.isSuspended ? '是' : '否' }}
-                </el-tag>
+                <StatusPill
+                  :type="row.isSuspended ? 'success' : 'neutral'"
+                  :text="row.isSuspended ? '是' : '否'"
+                />
               </template>
             </el-table-column>
             <!-- <el-table-column prop="telegram" label="电报群" min-width="260">
@@ -111,7 +108,7 @@
                 <span v-else>-</span>
               </template>
             </el-table-column> -->
-            <el-table-column prop="telegram" label="网站" min-width="320">
+            <el-table-column prop="telegram" label="网站" min-width="320" align="left">
               <template #default="{ row }">
                 <el-tooltip
                   v-if="editingCode === row.code"
@@ -160,14 +157,13 @@
                 {{ formatMoney(row.creditMax) }}
               </template>
             </el-table-column> -->
-            <el-table-column prop="createdOn" label="商户创建时间" width="170">
+            <el-table-column prop="createdOn" label="商户创建时间" width="170" align="center">
               <template #default="{ row }">
                 {{ formatDate(row.createdOn) }}
               </template>
             </el-table-column>
           </el-table>
         </div>
-      </div>
     </main>
   </div>
 </template>
@@ -179,6 +175,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
 import { formatCurrency } from '@/utils/currency';
+import StatusPill from '@/components/StatusPill.vue';
 
 const userStore = useUserStore();
 const currency = computed(() => userStore.merchantInfo?.currency);
@@ -223,9 +220,9 @@ const statusText = (status) => {
   return statusMap[status] || "未知";
 };
 
-const statusTagType = (status) => {
-  const map = { 0: "info", 1: "default", 2: "danger", 3: "warning", 4: "success" };
-  return map[status];
+const statusPillType = (status) => {
+  const map = { 0: "neutral", 1: "neutral", 2: "danger", 3: "warning", 4: "success" };
+  return map[status] || "neutral";
 };
 
 const formatMoney = (val) => {
@@ -364,53 +361,6 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: 100%;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 0px;
-    height: 0px;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: 0 $spacing-xl;
-  border-radius: $border-radius-md;
-}
-
-.search-container {
-  margin-bottom: $spacing-lg;
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-    :deep(.el-form-item) {
-      margin-bottom: $spacing-sm;
-    }
-  }
-}
-
 .stats-section {
   display: flex;
   gap: $spacing-md;
@@ -422,40 +372,40 @@ onMounted(() => {
   flex: 1;
   min-width: 150px;
   padding: $spacing-md;
-  background-color: #f8f9fa;
+  background-color: var(--color-hover);
   border-radius: $border-radius-sm;
   text-align: center;
-  border-left: 4px solid #909399;
+  border-left: 4px solid var(--text-faint);
 
   &.success {
-    border-left-color: #67c23a;
-    background-color: #f0f9eb;
+    border-left-color: var(--brand-primary);
+    background-color: var(--color-receive-bg, #f0f9eb);
   }
 
   &.danger {
-    border-left-color: #f56c6c;
-    background-color: #fef0f0;
+    border-left-color: var(--color-send);
+    background-color: var(--color-send-bg, #fef0f0);
   }
 
   &.warning {
-    border-left-color: #e6a23c;
-    background-color: #fdf6ec;
+    border-left-color: var(--color-warning, #e6a23c);
+    background-color: var(--color-status-warn-bg, #fdf6ec);
   }
 
   .stat-value {
     font-size: 28px;
     font-weight: 700;
-    color: #303133;
+    color: var(--text-primary);
   }
 
   .stat-label {
     font-size: 13px;
-    color: #909399;
+    color: var(--text-faint);
     margin-top: 4px;
   }
 }
 
-.table-container {
+.table-panel {
   margin-top: $spacing-lg;
 }
 
@@ -470,10 +420,10 @@ onMounted(() => {
   min-height: 32px;
 
   &:hover {
-    background-color: #f5f7fa;
+    background-color: var(--color-hover);
 
     .edit-icon {
-      color: #db0011;
+      color: var(--brand-primary, #16a34a);
     }
   }
 
@@ -482,19 +432,19 @@ onMounted(() => {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    color: #303133;
+    color: var(--text-primary);
     font-size: 14px;
   }
 
   .website-placeholder {
     flex: 1;
-    color: #c0c4cc;
+    color: var(--text-faint);
     font-size: 13px;
     font-style: italic;
   }
 
   .edit-icon {
-    color: #c0c4cc;
+    color: var(--text-faint);
     font-size: 14px;
     transition: color 0.2s ease;
     flex-shrink: 0;
@@ -513,15 +463,15 @@ onMounted(() => {
 
   :deep(.el-input__wrapper) {
     border-radius: 6px;
-    box-shadow: 0 0 0 1px #db0011 inset;
+    box-shadow: 0 0 0 1px var(--brand-primary, #16a34a) inset;
     transition: box-shadow 0.2s ease;
 
     &:hover {
-      box-shadow: 0 0 0 1px #db0011 inset;
+      box-shadow: 0 0 0 1px var(--brand-primary, #16a34a) inset;
     }
 
     &.is-focus {
-      box-shadow: 0 0 0 2px rgba(219, 0, 17, 0.2) inset, 0 0 8px rgba(219, 0, 17, 0.15);
+      box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2) inset, 0 0 8px rgba(22, 163, 74, 0.15);
     }
   }
 
@@ -531,13 +481,13 @@ onMounted(() => {
     line-height: 32px;
 
     &::placeholder {
-      color: #c0c4cc;
+      color: var(--text-faint);
     }
   }
 
   .edit-hint {
     font-size: 11px;
-    color: #a8abb2;
+    color: var(--text-faint, #a8abb2);
     line-height: 1;
     letter-spacing: 0.3px;
   }
@@ -552,31 +502,9 @@ onMounted(() => {
   }
 }
 
-:deep(.el-table) {
-  .el-table__header th {
-    background-color: #fafafa;
-    color: #606266;
-    font-weight: 500;
-  }
-  .el-table__row {
-    transition: background-color 0.3s;
-  }
-}
-
 @media (max-width: 768px) {
-  .table-container {
+  .table-panel {
     overflow-x: auto;
-  }
-  .search-container {
-    .search-form {
-      flex-direction: column;
-    }
-    .el-form-item__label {
-      width: 100%;
-    }
-    .el-form-item__content {
-      width: 100%;
-    }
   }
   .stats-section {
     flex-direction: column;

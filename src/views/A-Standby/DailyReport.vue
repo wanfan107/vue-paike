@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ title }}</h1>
@@ -404,11 +404,11 @@ const realTimeChart = computed(() => {
         symbol: "circle",
         symbolSize: 4,
         lineStyle: {
-          color: "#db0011",
+          color: "var(--brand-primary, #16a34a)",
           width: 2,
         },
         itemStyle: {
-          color: "#db0011",
+          color: "var(--brand-primary, #16a34a)",
         },
         areaStyle: {
           color: {
@@ -420,11 +420,11 @@ const realTimeChart = computed(() => {
             colorStops: [
               {
                 offset: 0,
-                color: "rgba(219, 0, 17, 0.3)",
+                color: "rgba(22, 163, 74, 0.3)",
               },
               {
                 offset: 1,
-                color: "rgba(219, 0, 17, 0.05)",
+                color: "rgba(22, 163, 74, 0.05)",
               },
             ],
           },

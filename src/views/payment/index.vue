@@ -1,70 +1,74 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 搜索和筛选区域 -->
-        <div class="search-container">
+        <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="订单时间">
+            <el-form-item :label="t('order.payment.search.timeLabel')">
               <el-date-picker
                 v-model="searchForm.orderTime"
                 type="datetimerange"
-                :shortcuts="shortcuts"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :range-separator="t('common.to')"
+                :start-placeholder="t('common.startDate')"
+                :end-placeholder="t('common.endDate')"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 @change="onDateRangeChange"
               />
             </el-form-item>
-            <el-form-item label="商户订单号">
+            <el-form-item :label="t('order.payment.search.quickTime')">
+              <FilterTabs
+                v-model="currentTimeRange"
+                :options="timeRangeOptions"
+                @update:model-value="onQuickRange"
+              />
+            </el-form-item>
+            <el-form-item :label="t('order.payment.search.merchantOrderNo')">
               <el-input
                 v-model="searchForm.merchantOrderNo"
-                placeholder="请输入"
+                :placeholder="t('common.enter')"
                 clearable
                 style="width: 155px"
               />
             </el-form-item>
-            <el-form-item label="平台订单号">
+            <el-form-item :label="t('order.payment.search.platformOrderNo')">
               <el-input
                 v-model="searchForm.platformOrderNo"
-                placeholder="请输入"
+                :placeholder="t('common.enter')"
                 clearable
                 style="width: 155px"
               />
             </el-form-item>
 
-            <el-form-item label="出款账户">
+            <el-form-item :label="t('order.payment.search.account')">
               <el-input
                 v-model="searchForm.account"
-                placeholder="请输入"
+                :placeholder="t('common.enter')"
                 clearable
                 style="width: 155px"
               />
             </el-form-item>
-            <el-form-item label="状态">
+            <el-form-item :label="t('order.payment.search.status')">
               <el-select
                 v-model="searchForm.status"
-                placeholder="请选择交易类型"
+                :placeholder="t('order.payment.search.statusPlaceholder')"
                 style="width: 140px"
               >
                 <el-option
-                  v-for="key in Object.keys(mapping)"
-                  :key="key"
-                  :label="key"
-                  :value="mapping[key]"
+                  v-for="item in statusOptions"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
                 />
               </el-select>
             </el-form-item>
-            <el-form-item label="通知">
+            <el-form-item :label="t('order.payment.search.notify')">
               <el-select
                 v-model="searchForm.notifyStatus"
-                placeholder="请选择交易类型"
+                :placeholder="t('common.select')"
                 style="width: 140px"
               >
                 <el-option
@@ -76,48 +80,41 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item>
+            <el-form-item class="search-actions">
               <el-button
                 type="primary"
                 :icon="Search"
                 @click="handleSearch"
                 :loading="loading"
               >
-                搜索
+                {{ t('common.search') }}
               </el-button>
               <el-button
                 :icon="Refresh"
                 @click="clearSearch"
                 :loading="loading"
               >
-                刷新
+                {{ t('common.refresh') }}
               </el-button>
               <el-button
                 :icon="Download"
                 @click="onExport"
-                type="primary"
                 :loading="exportLoading"
               >
-                导出
+                {{ t('common.export') }}
               </el-button>
             </el-form-item>
           </el-form>
         </div>
 
         <!-- 表格内容区域 -->
-        <div class="table-container">
+        <div class="table-panel">
           <!-- 骨架屏 -->
-                <TimeRangeSelector
-                @change="onTimeRangeChange"
-                :timeRangeOptions="timeRangeOptions"
-                :defaultValue="currentTimeRange"
-              />
-              
-              <!-- 批量操作栏 -->
-              <div  class="batch-operation-bar">
-                <span>已选择 {{ selectedRows.length }} 项</span>
+              <!-- 批量操作栏：选中行后出现 -->
+              <div v-if="selectedRows.length" class="batch-operation-bar">
+                <span>{{ t('common.selectedCount', { n: selectedRows.length }) }}</span>
                 <el-button type="primary" size="small" @click="handleBatchExport">
-                  批量补发回调
+                  {{ t('order.payment.batchResend') }}
                 </el-button>
               </div>
               
@@ -133,42 +130,40 @@
                 @row-click="showDetail"
               >
                 <el-table-column type="selection"  width="55" />
-                <el-table-column label="商户单号" width="250" align="center">
+                <el-table-column :label="t('order.payment.table.merchantOrderNo')" width="250" align="left">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.merchantOrderNo" 
-                      title="点击复制订单号"
+                      :title="t('common.copyOrderNo')"
                       :max-width="200"
                     />
                   </template>
                 </el-table-column>
-                <el-table-column label="平台订单号" align="center" width="260">
+                <el-table-column :label="t('order.payment.table.platformOrderNo')" align="left" width="260">
                   <template #default="{ row }">
                     <CopyText 
                       :text="row.platformOrderNo" 
                       :id="'orderno-' + row.platformOrderNo"
-                      title="点击复制平台订单号"
+                      :title="t('common.copyPlatformNo')"
                       :max-width="200"
                     />
                   </template>
                 </el-table-column>
-                <el-table-column prop="orderAmount" label="订单金额" align="center" />
-                <el-table-column prop="expectAmount" label="到账金额" align="center" />
-                <!-- <el-table-column prop="actualAmount" label="实际支付" align="center" /> -->
-                <el-table-column prop="fee" label="手续费" align="center" />
+                <el-table-column prop="orderAmount" :label="t('order.payment.table.orderAmount')" align="right" />
+                <el-table-column prop="expectAmount" :label="t('order.payment.table.expectAmount')" align="right" />
+                <!-- <el-table-column prop="actualAmount" :label="t('order.payment.table.actualAmount')" align="center" /> -->
+                <el-table-column prop="fee" :label="t('order.payment.table.fee')" align="right" />
 
-                <el-table-column prop="status" label="状态" align="center">
+                <el-table-column prop="status" :label="t('order.payment.table.status')" align="center">
                   <template #default="{ row }">
-                    <el-tag :type="row.status === 'PENDING' ? 'warning' : row.status === 'SUCCESS' ? 'success' : 'danger'">
-                      {{  row.status }}
-                    </el-tag>
+                    <StatusPill :status="row.status" />
                   </template>
                 </el-table-column>
-                <el-table-column prop="applyTime" label="申请时间" width="180" align="center" />
-                <el-table-column label="操作" align="center" width="100">
+                <el-table-column prop="applyTime" :label="t('order.payment.table.applyTime')" width="180" align="center" />
+                <el-table-column :label="t('order.payment.table.action')" align="center" width="100">
                   <template #default="{ row }">
-                    <el-button type="primary" size="small" @click.stop="handleCallback(row)" >
-                      补发回调
+                    <el-button type="primary" plain size="small" @click.stop="handleCallback(row)">
+                      {{ t('order.payment.table.resend') }}
                     </el-button>
                   </template>
                 </el-table-column>
@@ -189,57 +184,126 @@
             @current-change="handleCurrentChange"
           />
         </div>
-      </div>
     </main>
 
     <!-- 详情弹窗 -->
     <el-drawer
       v-model="detailVisible"
-      title="订单详情"
+      :title="t('common.orderTitle')"
       direction="rtl"
       size="30%"
       :before-close="closeDetail"
     >
       <div class="detail-content">
         <div v-if="Object.keys(currentRow).length === 0" class="empty-detail">
-          <el-empty description="暂无数据" />
+          <el-empty :description="t('common.noData')" />
         </div>
-        <el-descriptions v-else :column="1" border>
-          <el-descriptions-item label="商户单号">{{ currentRow.merchantOrderNo || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="平台订单号">{{ currentRow.platformOrderNo || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="银行单号">{{ currentRow.bankArea || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="币种">{{ currentRow.currency || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="订单金额">{{ currentRow.orderAmount || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="到账金额">{{ currentRow.expectAmount || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="实际支付">{{ currentRow.actualAmount || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="手续费">{{ currentRow.fee || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="支付类型">{{ currentRow.bank || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="创建IP">{{ currentRow.createdIp || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="客户姓名">{{ currentRow.customerName || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="客户账户">{{ currentRow.customerAccount || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="客户电话">{{ currentRow.customerPhone || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="客户邮箱">{{ currentRow.customerEmail || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="申请时间">{{ currentRow.applyTime || '-' }}</el-descriptions-item>
-          <el-descriptions-item label="风控类型">{{ currentRow.riskype || '-' }}</el-descriptions-item>
-          <!-- <el-descriptions-item label="处理时间">{{ currentRow.handleTime || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="状态">
-            <el-tag :type="currentRow.status === 'PENDING' ? 'warning' : currentRow.status === 'SUCCESS' ? 'success' : 'danger'" v-if="currentRow.status">
-              {{ currentRow.status }}
-            </el-tag>
-            <span v-else>-</span>
-          </el-descriptions-item>
-          <el-descriptions-item label="通知地址">
-            <span class="wrap-text">{{ currentRow.merchantNotifyUrl || '-' }}</span>
-          </el-descriptions-item>
-          <!-- <el-descriptions-item label="回调">{{ currentRow.callback || '-' }}</el-descriptions-item> -->
-           <!-- 可能是备注字段 -->
-          <!-- <el-descriptions-item label="银行流水号">{{ currentRow.info || '-' }}</el-descriptions-item> -->
-          <el-descriptions-item label="凭证" v-if="currentRow.currency === 'BRL'">
-            <el-button type="primary" size="small" @click.stop="handleViewVoucher">
-              查看凭证
-            </el-button>
-          </el-descriptions-item>
-        </el-descriptions>
+        <template v-else>
+          <!-- 订单信息 -->
+          <section class="detail-section">
+            <h3 class="detail-section__title">{{ t('order.payment.detail.orderInfo') }}</h3>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.merchantOrderNo') }}</dt>
+                <dd>
+                  <CopyText
+                    v-if="currentRow.merchantOrderNo"
+                    :text="currentRow.merchantOrderNo"
+                    max-width="240px"
+                    :title="t('common.copyOrderNo')"
+                  />
+                  <span v-else>-</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.platformOrderNo') }}</dt>
+                <dd>
+                  <CopyText
+                    v-if="currentRow.platformOrderNo"
+                    :text="currentRow.platformOrderNo"
+                    :id="'detail-orderno-' + currentRow.platformOrderNo"
+                    max-width="240px"
+                    :title="t('common.copyPlatformNo')"
+                  />
+                  <span v-else>-</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.bankNo') }}</dt>
+                <dd>{{ currentRow.bankArea || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.currency') }}</dt>
+                <dd>{{ currentRow.currency || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.orderAmount') }}</dt>
+                <dd class="is-amount">{{ currentRow.orderAmount || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.expectAmount') }}</dt>
+                <dd class="is-amount">{{ currentRow.expectAmount || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.fee') }}</dt>
+                <dd class="is-amount">{{ currentRow.fee || '-' }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- 客户信息 -->
+          <section class="detail-section">
+            <h3 class="detail-section__title">{{ t('order.payment.detail.customerInfo') }}</h3>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.createIp') }}</dt>
+                <dd>{{ currentRow.createdIp || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.customerName') }}</dt>
+                <dd>{{ currentRow.customerName || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.customerAccount') }}</dt>
+                <dd>{{ currentRow.customerAccount || '-' }}</dd>
+              </div>
+            </dl>
+          </section>
+
+          <!-- 状态与通知 -->
+          <section class="detail-section">
+            <h3 class="detail-section__title">{{ t('order.payment.detail.statusNotify') }}</h3>
+            <dl class="detail-list">
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.applyTime') }}</dt>
+                <dd class="is-amount">{{ currentRow.applyTime || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.riskType') }}</dt>
+                <dd>{{ currentRow.riskype || '-' }}</dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.table.status') }}</dt>
+                <dd>
+                  <StatusPill v-if="currentRow.status" :status="currentRow.status" />
+                  <span v-else>-</span>
+                </dd>
+              </div>
+              <div class="detail-row">
+                <dt>{{ t('order.payment.detail.notifyUrl') }}</dt>
+                <dd>{{ currentRow.merchantNotifyUrl || '-' }}</dd>
+              </div>
+              <div class="detail-row" v-if="currentRow.currency === 'BRL'">
+                <dt>{{ t('order.payment.table.credential') }}</dt>
+                <dd>
+                  <el-button type="primary" size="small" @click.stop="handleViewVoucher">
+                    {{ t('order.payment.table.viewCredential') }}
+                  </el-button>
+                </dd>
+              </div>
+            </dl>
+          </section>
+        </template>
       </div>
     </el-drawer>
 
@@ -250,7 +314,7 @@
       append-to-body
     >
       <div class="voucher-container" id="voucher">
-        <div class="logo"><img src="@/assets/image/logo.png" alt="logo"></div>
+        <div class="logo"><img src="@/assets/image/pix-payment-logo-lockup.png" alt="logo"></div>
         <div class="title"></div>
 
         <div class="form-group first-form">
@@ -333,9 +397,12 @@
 import { Search, Refresh, Download } from "@element-plus/icons-vue";
 import { ref, reactive, onMounted, computed } from "vue";
 import { useRouter } from "vue-router";
+import { useI18n } from "vue-i18n";
 import { ElMessage, ElMessageBox  } from "element-plus";
-import TimeRangeSelector from "@/components/TimeRangeSelector.vue";
+import FilterTabs from "@/components/FilterTabs.vue";
 import CopyText from "@/components/CopyText.vue";
+import StatusPill from "@/components/StatusPill.vue";
+import { getNow } from "@/utils/brazilTime";
 import useUserStore from "@/stores/user";
 import { http } from "@/api";
 import html2canvas from 'html2canvas';  // 下载图片
@@ -359,33 +426,8 @@ const props = defineProps({
   },
 });
 
-const mapping = {
-  ALL: -1,
-  PENDING: 0,
-  SUCCESS: 1,
-  FAILED: 2,
-};
-
-const options = [
-  {
-    label: "ALL",
-    value: -1,
-  },
-  // {
-  //   label: "未通知",
-  //   value: 0,
-  // },
-  {
-    label: "通知成功",
-    value: 1,
-  },
-  {
-    label: "通知失败",
-    value: 2,
-  },
-];
-
-
+// 状态筛选项（值与后端约定一致：-1 全部 / 0 处理中 / 1 成功 / 2 失败）
+// 已移至 useI18n 之后定义
 
 // 搜索表单
 const searchForm = reactive({
@@ -400,11 +442,7 @@ const searchForm = reactive({
         merchantOrderNo: "",
         platformOrderNo: "",
 });
-const timeRangeOptions = [
-  { label: "今天", value: "today" },
-  { label: "3天", value: "3days" },
-  { label: "7天", value: "7days" },
-];
+const timeRangeOptions = []; // 已移至 useI18n 之后定义
 
 // 当前选中的时间范围
 const currentTimeRange = ref('today');
@@ -433,11 +471,62 @@ const tableRef = ref(null);
 // 路由实例
 const router = useRouter();
 
-// 时间范围选择器回调
-const onTimeRangeChange = (data) => {
-  console.log(data);
-  currentTimeRange.value = data.range;
-  searchForm.orderTime = [data.timeRange[0], data.timeRange[1]];
+// i18n
+const { t } = useI18n();
+
+// 状态筛选项
+const statusOptions = [
+  { label: t('order.payment.status.all'), value: -1 },
+  { label: t('order.payment.status.processing'), value: 0 },
+  { label: t('order.payment.status.success'), value: 1 },
+  { label: t('order.payment.status.failed'), value: 2 },
+];
+
+// 通知筛选项
+const options = [
+  { label: t('order.payment.notify.all'), value: -1 },
+  { label: t('order.payment.notify.success'), value: 1 },
+  { label: t('order.payment.notify.failed'), value: 2 },
+];
+
+// 快捷时间选项
+timeRangeOptions.length = 0;
+timeRangeOptions.push(
+  { label: t('order.timeRange.yesterday'), value: "yesterday" },
+  { label: t('order.timeRange.today'), value: "today" },
+  { label: t('order.timeRange.threeDays'), value: "3days" },
+  { label: t('order.timeRange.sevenDays'), value: "7days" },
+);
+
+// 快捷时间药丸回调（昨天 / 今天 / 3天 / 7天，按商户币种时区计算，逻辑与原 TimeRangeSelector 一致）
+const onQuickRange = (range) => {
+  const currency = userStore.merchantInfo?.currency;
+  const now = getNow(currency);
+  let startDate;
+  let endDate;
+
+  if (range === "yesterday") {
+    // 昨天全天：00:00:00 ~ 23:59:59
+    const yesterday = getNow(currency).subtract(1, "day");
+    startDate = yesterday.startOf("day");
+    endDate = yesterday.endOf("day");
+  } else if (range === "today") {
+    startDate = now.startOf("day");
+    endDate = now.endOf("day");
+  } else if (range === "3days") {
+    startDate = getNow(currency).subtract(3, "day").startOf("day");
+    endDate = now.endOf("day");
+  } else if (range === "7days") {
+    startDate = getNow(currency).subtract(7, "day").startOf("day");
+    endDate = now.endOf("day");
+  } else {
+    return;
+  }
+
+  searchForm.orderTime = [
+    startDate.format("YYYY-MM-DD HH:mm:ss"),
+    endDate.format("YYYY-MM-DD HH:mm:ss"),
+  ];
   handleSearch();
 };
 
@@ -487,110 +576,6 @@ const standardtime = computed(() => {
     : 0;
 });
 
-// 将 shortcuts 也定义为 computed，确保响应式
-const shortcuts = computed(() => [
-  {
-    text: "昨天",
-    value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 创建昨天的日期
-      const yesterday = new Date(
-        timestamp - 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-
-      // 设置开始时间（00:00:00.000）
-      const start = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
-      start.setHours(0, 0, 0, 0);
-
-      // 设置结束时间（23:59:59.999）
-      const end = new Date(
-        yesterday.getFullYear(),
-        yesterday.getMonth(),
-        yesterday.getDate(),
-      );
-      end.setHours(23, 59, 59, 999);
-
-      return [start, end];
-    },
-  },
-  {
-    text: "3天",
-    value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 3天前的开始时间
-      const startDate = new Date(
-        timestamp - 3 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
-      start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
-      end.setHours(23, 59, 59, 999);
-
-      return [start, end];
-    },
-  },
-  {
-    text: "7天",
-    value: () => {
-      const timestamp = Date.now();
-      const localDate = new Date(timestamp);
-      const timezoneOffset = localDate.getTimezoneOffset() * 60 * 1000;
-      const standardTimeOffset = userStore.merchantInfo?.standardtime
-        ? +userStore.merchantInfo.standardtime * 60 * 60 * 1000
-        : 0;
-
-      // 7天前的开始时间
-      const startDate = new Date(
-        timestamp - 7 * 24 * 3600 * 1000 + timezoneOffset + standardTimeOffset,
-      );
-      const start = new Date(
-        startDate.getFullYear(),
-        startDate.getMonth(),
-        startDate.getDate(),
-      );
-      start.setHours(0, 0, 0, 0);
-
-      // 当前日期的结束时间
-      const endDate = new Date(timestamp + timezoneOffset + standardTimeOffset);
-      const end = new Date(
-        endDate.getFullYear(),
-        endDate.getMonth(),
-        endDate.getDate(),
-      );
-      end.setHours(23, 59, 59, 999);
-
-      return [start, end];
-    },
-  },
-]);
-
 // 设置默认时间范围（今天）
 const setDefaultTime = () => {
   const now = new Date();
@@ -621,7 +606,7 @@ const clearSearch = () => {
 // 搜索方法
 const handleSearch = async () => {
   if (searchForm.account && (!searchForm.orderTime || !Array.isArray(searchForm.orderTime) || searchForm.orderTime.length < 2)) {
-    ElMessage.warning('单独查询出款账户时必须选择时间范围');
+    ElMessage.warning(t('order.payment.msg.accountNeedTime'));
     return;
   }
   loading.value = true;
@@ -647,10 +632,6 @@ const handleSearch = async () => {
     tableData.value = res.data.list;
     pagination.total = res.data.total;
     
-    // 调试：查看第一条数据的结构
-    if (res.data.list && res.data.list.length > 0) {
-      console.log('第一条数据结构:', JSON.stringify(res.data.list[0], null, 2));
-    }
   }  finally {
     loading.value = false;
   }
@@ -668,10 +649,8 @@ const handleCurrentChange = (val) => {
 
 // 显示详情弹窗
 const showDetail = (row) => {
-  console.log('显示详情弹窗，row数据:', row);
   currentRow.value = row;
   detailVisible.value = true;
-  console.log('currentRow已设置:', currentRow.value);
 };
 
 // 关闭详情弹窗
@@ -683,14 +662,12 @@ const closeDetail = () => {
 // 表格多选处理
 const handleSelectionChange = (selection) => {
   selectedRows.value = selection;
-  console.log('选中的行:', selectedRows);
 };
 
 // 查看凭证
 const handleViewVoucher = () => {
   updateVoucherTime(currentRow.value.time);
   voucherInfo.value = currentRow.value.memo;
-  console.log('凭证信息:', voucherInfo.value);
   showVoucherDialog.value = true;
 };
 
@@ -723,7 +700,7 @@ const downloadVoucher = async () => {
   try {
     const element = document.getElementById('voucher');
     if (!element) {
-      ElMessage.error('未找到凭证元素');
+      ElMessage.error(t('order.payment.msg.voucherNotFound'));
       return;
     }
     
@@ -739,7 +716,7 @@ const downloadVoucher = async () => {
     link.click();
   } catch (error) {
     console.error('下载凭证失败:', error);
-    ElMessage.error('下载凭证失败，请重试');
+    ElMessage.error(t('order.payment.msg.voucherDownloadFailed'));
   }
 };
 
@@ -750,7 +727,7 @@ const downloadVoucher = async () => {
 // 批量回调
 const handleBatchExport = () => {
   if (selectedRows.value.length === 0) {
-    ElMessage.warning('请先选择要补发回调的数据');
+    ElMessage.warning(t('order.payment.msg.batchNeedSelect'));
     return;
   }
   
@@ -816,29 +793,33 @@ const getQueryParams = () => {
 const onExport = async () => {
   try {
     // 确认对话框
-    await ElMessageBox.confirm("确定导出数据吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
-      type: "warning",
-    });
+    await ElMessageBox.confirm(
+      t('common.exportConfirm'),
+      t('common.tip'),
+      {
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
+        type: "warning",
+      }
+    );
 
     exportLoading.value = true;
 
     // 创建导出
     let res = await http.exportPay(getQueryParams());
     if(res.code === 200){
-      ElMessage.success( res.msg||"导出请求已提交，请到导出记录页面查看");
+      ElMessage.success(res.msg || t('common.exportSubmitted'));
           // 跳转到导出记录页面
     router.push({ name: "exportRecord" });
     } else {
-      ElMessage.error( res.msg||"导出失败，请稍后重试");
+      ElMessage.error(res.msg || t('common.exportFailed'));
     }
     
   } catch (error) {
     if (error !== "cancel") {
       // 不是取消操作时才显示错误信息
       console.error("导出失败:", error);
-      ElMessage.error("导出失败，请稍后重试");
+      ElMessage.error(t('common.exportFailed'));
     }
   } finally {
     exportLoading.value = false;
@@ -846,53 +827,13 @@ const onExport = async () => {
 };
 </script>
 
-<style scoped lang="scss"> 
+<style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
-/* 放大表格选择框 */
-:deep(.el-table .el-checkbox) {
-  transform: scale(1.4);
-  margin: 8px;
-}
-
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: 100%;
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 0px;
-    height: 0px;
-    opacity: 0.2;
-    border-width: 0px 0px 1px;
-    border-color: inherit;
-    border-style: solid;
-    width: 100%;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  padding: 0 $spacing-xl;
-  border-radius: $border-radius-md;
-}
 
 .empty-state {
   text-align: center;
   padding: $spacing-xl;
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .empty-icon {
@@ -904,7 +845,7 @@ const onExport = async () => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {
@@ -912,31 +853,13 @@ const onExport = async () => {
   font-size: $font-size-base;
 }
 
-.search-container {
-  margin-bottom: $spacing-lg;
-
-  .search-form {
-    display: flex;
-    flex-wrap: wrap;
-    gap: $spacing-sm;
-
-    :deep(.el-form-item) {
-      margin-bottom: $spacing-sm;
-    }
-  }
-}
-
-.table-container {
-  margin-top: $spacing-lg;
-}
-
 .amount-income {
-  color: #67c23a;
+  color: var(--brand-primary, #67c23a);
   font-weight: 500;
 }
 
 .amount-expense {
-  color: #f56c6c;
+  color: var(--color-danger, #f56c6c);
   font-weight: 500;
 }
 
@@ -946,22 +869,9 @@ const onExport = async () => {
   justify-content: center;
 }
 
-// 表格样式
-:deep(.el-table) {
-  .el-table__header th {
-    background-color: #fafafa;
-    color: #606266;
-    font-weight: 500;
-  }
-
-  .el-table__row {
-    transition: background-color 0.3s;
-    cursor: pointer;
-  }
-  
-  .el-table__row:hover {
-    cursor: pointer;
-  }
+// 行点击打开详情：保留手型指针（表头/配色/行高统一走全局 element-plus-overrides）
+:deep(.el-table__row) {
+  cursor: pointer;
 }
 
 // 批量操作栏样式
@@ -976,15 +886,69 @@ const onExport = async () => {
   
   span {
     font-size: 14px;
-    color: #606266;
+    color: var(--text-secondary, #606266);
     margin-right: 10px;
   }
 }
 
-// 详情弹窗样式
+// 详情抽屉：NTX 风格无框分组列表（浅灰标签 + 深色值，无表格网格）
 .detail-content {
-  padding: 20px;
+  padding: 8px 24px 24px;
   min-height: 400px;
+}
+
+.detail-section {
+  padding: 16px 0;
+
+  & + & {
+    border-top: 1px solid var(--color-border-soft);
+  }
+}
+
+.detail-section__title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+.detail-list {
+  margin: 0;
+}
+
+.detail-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 8px 0;
+
+  dt {
+    flex: 0 0 84px;
+    font-size: 13px;
+    line-height: 22px;
+    color: var(--text-secondary);
+  }
+
+  dd {
+    flex: 1;
+    min-width: 0;
+    margin: 0;
+    font-size: 13px;
+    line-height: 22px;
+    color: var(--text-primary);
+    word-break: break-all;
+  }
+
+  // 金额/时间等宽数字，便于核对
+  .is-amount {
+    font-variant-numeric: tabular-nums;
+  }
+
+  // CopyText 在详情里贴左对齐，保留 hover 底色
+  dd :deep(.copy-cell) {
+    padding-left: 0;
+  }
 }
 
 .empty-detail {
@@ -993,32 +957,17 @@ const onExport = async () => {
   align-items: center;
   height: 300px;
 }
-.wrap-text {
-  display: inline-block;
-  max-width: 250px;
-  word-break: break-all;
-  white-space: normal;
-}
-
-
-:deep(.el-descriptions) {
-  .el-descriptions__label {
-    font-weight: 500;
-    color: #606266;
-  }
-  
-  .el-descriptions__content {
-    color: #303133;
-  }
-}
 
 :deep(.el-drawer) {
+  border-top-left-radius: var(--radius-lg);
+  border-bottom-left-radius: var(--radius-lg);
+
   .el-drawer__header {
     margin-bottom: 0;
-    padding: 20px;
-    border-bottom: 1px solid #e4e7ed;
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--color-border-soft);
   }
-  
+
   .el-drawer__body {
     padding: 0;
   }
@@ -1026,11 +975,11 @@ const onExport = async () => {
 
 // 响应式表格
 @media (max-width: 768px) {
-  .table-container {
+  .table-panel {
     overflow-x: auto;
   }
 
-  .search-container {
+  .search-panel {
     .search-form {
       flex-direction: column;
     }
@@ -1043,14 +992,14 @@ const onExport = async () => {
   }
 }
 
-// 凭证弹窗样式
+// 凭证弹窗样式（html2canvas 截图源：凭证作为导出票证恒为白底，不随主题变化）
 .voucher-container {
   position: relative;
   padding: 30px;
-  background: #fff;
+  background: var(--color-surface, #ffffff);
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+  border: 1px solid var(--color-border-soft, #e0e0e0);
+  box-shadow: var(--shadow-md, 0 2px 10px rgba(0, 0, 0, 0.08));
 }
 
 .logo img{
@@ -1094,7 +1043,7 @@ const onExport = async () => {
 }
 
 .divider {
-  border-bottom: 1px solid #ccc;
+  border-bottom: 1px solid var(--color-divider, #ccc);
   margin-bottom: 10px;
 }
 </style>

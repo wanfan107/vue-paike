@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="editable-select" ref="selectContainer">
     <div class="select-header" :class="{active: dropdownOpen}" @click="toggleDropdown">
       <span class="select-value" :class="{placeholder: !selected}">
@@ -419,19 +419,19 @@ defineExpose({
   align-items: center;
   padding: 0 15px;
   height: 40px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border, #dcdfe6);
   border-radius: 6px;
-  background: #fff;
+  background: var(--color-surface, #fff);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .select-header:hover {
-  border-color: #c0c4cc;
+  border-color: var(--color-border, #c0c4cc);
 }
 
 .select-header.active {
-  border-color: #db0011;
+  border-color: var(--brand-primary, #16a34a);
 }
 
 .select-value {
@@ -444,24 +444,24 @@ defineExpose({
 }
 
 .select-value.placeholder {
-  color: #c0c4cc;
+  color: var(--text-faint, #c0c4cc);
 }
 
 .select-arrow {
   font-size: 12px;
-  color: #c0c4cc;
+  color: var(--text-faint, #c0c4cc);
   transition: transform 0.3s ease;
   margin-left: 8px;
 }
 
 .select-arrow.active {
   transform: rotate(180deg);
-  color: #909399;
+  color: var(--text-secondary, #909399);
 }
 
 .clear-btn {
   font-size: 16px;
-  color: #c0c4cc;
+  color: var(--text-faint, #c0c4cc);
   cursor: pointer;
   margin-right: 4px;
   transition: all 0.2s ease;
@@ -475,8 +475,8 @@ defineExpose({
 }
 
 .clear-btn:hover {
-  color: #909399;
-  background-color: #f5f7fa;
+  color: var(--text-faint, #909399);
+  background-color: var(--color-hover, #f5f7fa);
 }
 
 /* 下拉框过渡动画 */
@@ -496,10 +496,10 @@ defineExpose({
   top: calc(100% + 4px);
   left: 0;
   width: 100%;
-  border: 1px solid #e4e7ed;
+  border: 1px solid var(--color-border-soft, #e4e7ed);
   border-radius: 6px;
-  background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  background: var(--color-elevated, #fff);
+  box-shadow: var(--shadow-md, 0 4px 12px rgba(0, 0, 0, 0.08));
   z-index: 1000 !important;
   overflow: hidden;
 }
@@ -520,15 +520,15 @@ defineExpose({
 }
 
 .option-item:hover {
-  background-color: #f5f7fa;
+  background-color: var(--color-hover, #f5f7fa);
 }
 
 .option-item.selected {
-  background-color: #fff0f0;
+  background-color: var(--color-danger-bg, #fff0f0);
 }
 
 .option-item.selected .alias-name {
-  color: #db0011;
+  color: var(--brand-primary, #16a34a);
   font-weight: 500;
 }
 
@@ -551,7 +551,7 @@ defineExpose({
 
 .original-name {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-secondary, #909399);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -572,8 +572,8 @@ defineExpose({
 }
 
 .option-edit-input:focus {
-  border-color: #db0011;
-  box-shadow: 0 0 0 2px rgba(219, 0, 17, 0.1);
+  border-color: var(--brand-primary, #16a34a);
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.15);
 }
 
 .option-actions {
@@ -586,10 +586,10 @@ defineExpose({
 .save-btn {
   font-size: 12px;
   padding: 4px 12px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border, #dcdfe6);
   border-radius: 4px;
-  background: #fff;
-  color: #606266;
+  background: var(--color-surface, #fff);
+  color: var(--text-regular, #606266);
   cursor: pointer;
   transition: all 0.2s ease;
   outline: none;
@@ -597,19 +597,19 @@ defineExpose({
 }
 
 .edit-btn:hover {
-  color: #db0011;
-  border-color: #f5b7b7;
-  background-color: #fef0f0;
+  color: var(--brand-primary, #16a34a);
+  border-color: var(--color-danger, #f5b7b7);
+  background-color: var(--color-danger-bg, #fef0f0);
 }
 
 .save-btn:hover {
-  color: #67c23a;
-  border-color: #c2e7b0;
-  background-color: #f0f9eb;
+  color: var(--color-success, #67c23a);
+  border-color: var(--color-success, #c2e7b0);
+  background-color: var(--color-success-bg, #f0f9eb);
 }
 
 .option-item.editing {
-  background-color: #fafafa;
+  background-color: var(--color-hover, #fafafa);
 }
 
 /* 滚动条样式 */
@@ -622,13 +622,13 @@ defineExpose({
 }
 
 .select-options::-webkit-scrollbar-thumb {
-  background: #dcdfe6;
+  background: var(--color-border, #dcdfe6);
   border-radius: 3px;
   transition: background 0.2s ease;
 }
 
 .select-options::-webkit-scrollbar-thumb:hover {
-  background: #c0c4cc;
+  background: var(--text-faint, #c0c4cc);
 }
 
 /* 空状态样式 */
@@ -638,13 +638,13 @@ defineExpose({
   align-items: center;
   justify-content: center;
   padding: 40px 20px;
-  color: #909399;
+  color: var(--text-secondary, #909399);
   font-size: 14px;
 }
 
 .empty-icon {
   font-size: 32px;
   margin-bottom: 10px;
-  color: #c0c4cc;
+  color: var(--text-faint, #c0c4cc);
 }
 </style>

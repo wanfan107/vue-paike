@@ -1,21 +1,28 @@
 <template>
-  <div class="password-container">
-    <el-card class="password-card">
-      <div class="card-header">
-        <div class="header-title">修改登录密码</div>
-        <div class="header-subtitle">更新您的账户登录密码</div>
+  <div class="app-page">
+    <header class="app-page-header">
+      <h1>修改登录密码</h1>
+    </header>
+
+    <main>
+      <div class="form-panel">
+        <div class="panel-header">
+          <div class="panel-title">修改登录密码</div>
+          <div class="panel-subtitle">更新您的账户登录密码</div>
+        </div>
+        <div class="form-container">
+          <SubmitForm
+            :form-list="formList"
+            :rule-form="ruleForm"
+            :loading="loading"
+            @save="submit"
+            @close="close"
+          />
+        </div>
       </div>
-      <div class="form-container">
-        <SubmitForm
-          :form-list="formList"
-          :rule-form="ruleForm"
-          :loading="loading"
-          @save="submit"
-          @close="close"
-        ></SubmitForm>
-      </div>
-    </el-card>
-        <SuccessDialog
+    </main>
+
+    <SuccessDialog
       v-model="showSuccessDialog"
       title="操作成功"
       message="登录密码设置成功"
@@ -105,7 +112,7 @@ const formList = ref([
           h("div", {
             class: "password-strength-box",
             style: {
-              backgroundColor: i < passwordStrength.value ? passwordStrengthColor.value : "#e4e7ed",
+              backgroundColor: i < passwordStrength.value ? passwordStrengthColor.value : "var(--color-border-soft, #e4e7ed)",
               marginLeft: i > 0 ? "5px" : "0",
             },
           })
@@ -280,139 +287,79 @@ watch(
 </script>
 
 <style scoped lang="scss">
-.password-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-    flex-direction: column;
-  min-height: calc(100vh - 200px);
-  padding: 20px;
-}
+@use "../../../styles/variables.scss" as *;
 
-.password-card {
-  width: 100%;
+.form-panel {
   max-width: 700px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease;
+  margin: 0 auto;
+  background: var(--color-elevated);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
   overflow: hidden;
-
-  &:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-    transform: translateY(-2px);
-  }
 }
 
-.card-header {
-  background-color: #f8f9fa;
+.panel-header {
   padding: 24px;
   text-align: center;
-  border-bottom: 1px solid #e9ecef;
+  border-bottom: 1px solid var(--color-border-soft);
 }
 
-.header-title {
-  font-size: 20px;
+.panel-title {
+  font-size: 18px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
-.header-subtitle {
+.panel-subtitle {
   font-size: 14px;
-  color: #666;
+  color: var(--text-secondary);
 }
 
 .form-container {
   padding: 24px;
 }
 
-:v-deep(.el-form-item) {
+:deep(.el-form-item) {
   margin-bottom: 20px;
 }
 
-:v-deep(.el-form-item__label) {
+:deep(.el-form-item__label) {
   font-weight: 500;
-  color: #333;
+  color: var(--text-primary);
   font-size: 14px;
 }
 
-:v-deep(.el-input__inner),
-:v-deep(.el-textarea__inner) {
+:deep(.el-input__inner),
+:deep(.el-textarea__inner) {
   height: 40px;
   border-radius: 6px;
-  border: 1px solid #dcdfe6;
+  border: 1px solid var(--color-border-soft);
   transition: all 0.3s;
   font-size: 14px;
 }
 
-:v-deep(.el-textarea__inner) {
+:deep(.el-textarea__inner) {
   height: auto;
   min-height: 80px;
 }
 
-
-
-:v-deep(.el-button--primary) {
-  // background-color: #409eff;
-  // border-color: #409eff;
-  // border-radius: 6px;
+:deep(.el-button) {
   padding: 10px 20px;
   font-size: 14px;
   transition: all 0.3s;
 }
 
-:v-deep(.el-button) {
-  padding: 10px 20px;
-  font-size: 14px;
-  transition: all 0.3s;
-}
-
-/* 针对标题样式的优化 */
-:v-deep(.el-form-item__label[for=""]) {
-  font-size: 16px;
-  font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  display: block;
-}
-
-/* 适配移动端 */
-@media (max-width: 768px) {
-  .password-container {
-    padding: 10px;
-    min-height: calc(100vh - 150px);
-  }
-
-  .password-card {
-    max-width: 100%;
-  }
-
-  .form-container {
-    padding: 16px;
-  }
-
-  .card-header {
-    padding: 16px;
-  }
-
-  .header-title {
-    font-size: 18px;
-  }
-}
-
-
+/* 密码强度指示器 */
 :deep(.password-strength-container) {
   width: 100%;
-  // margin-top: 10px;
-  // padding: 10px;
-  // background-color: #f8f9fa;
   border-radius: 6px;
 }
 
 :deep(.password-strength-header) {
   font-size: 14px;
   font-weight: 500;
-  color: #606266;
+  color: var(--text-secondary);
   margin-bottom: 8px;
 }
 
@@ -424,7 +371,7 @@ watch(
 :deep(.password-strength-box) {
   width: 25%;
   height: 5px;
-  background-color: #e4e7ed;
+  background-color: var(--color-border-soft);
   border-radius: 5px;
   margin-left: 5px;
 }
@@ -434,5 +381,24 @@ watch(
   font-size: 12px;
   font-weight: 500;
   text-align: center;
+}
+
+/* 适配移动端 */
+@media (max-width: 768px) {
+  .form-panel {
+    max-width: 100%;
+  }
+
+  .form-container {
+    padding: 16px;
+  }
+
+  .panel-header {
+    padding: 16px;
+  }
+
+  .panel-title {
+    font-size: 18px;
+  }
 }
 </style>

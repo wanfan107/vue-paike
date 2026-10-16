@@ -8,7 +8,9 @@
   },
   "scripts": {
     "dev": "vite",
+    "dev:univepay": "vite --mode univepay",
     "build": "vite build",
+    "build:univepay": "vite build --mode univepay",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -29,6 +31,7 @@
     "timezone": "^1.0.23",
     "utc": "^0.1.0",
     "vue": "^3.5.25",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^4.6.3",
     "vue3-count-to": "^1.1.2"
   },

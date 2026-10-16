@@ -1,14 +1,12 @@
 <template>
-  <div class="page-container">
-    <header class="page-header">
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
 <!-- 搜索区域 -->
-<div class="search-section">
+<div class="search-panel">
   <div class="search-form">
     <el-form :inline="true" :model="searchForm">
       <el-form-item label="时间范围">
@@ -44,7 +42,7 @@
           <el-option :value="false" label="正常" />
         </el-select>
       </el-form-item> -->
-      <el-form-item>
+      <el-form-item class="search-actions">
         <el-button type="primary" :icon="Search" @click="search">
           查询
         </el-button>
@@ -76,24 +74,22 @@
         </div>
 
         <!-- 登录记录列表 -->
-        <div class="table-section">
-          <el-table :data="loginLogs" border stripe style="width: 100%" :loading="loading" @row-click="handleRowClick">
+        <div class="table-panel">
+          <el-table :data="loginLogs" border stripe style="width: 100%" v-loading="loading" @row-click="handleRowClick">
             <!-- <el-table-column prop="GroupCode" label="集团代码" width="120" /> -->
-            <el-table-column prop="Email" label="用户邮箱" width="200" />
-            <el-table-column prop="LoginTime" label="登录时间" width="180">
+            <el-table-column prop="Email" label="用户邮箱" width="200" align="left" />
+            <el-table-column prop="LoginTime" label="登录时间" width="180" align="center">
               <template #default="{ row }">
                 {{ formatDateTime(row.LoginTime) }}
               </template>
             </el-table-column>
-            <el-table-column prop="LoginIp" label="登录IP" width="150" />
-            <el-table-column prop="LoginResult" label="登录结果" width="100">
+            <el-table-column prop="LoginIp" label="登录IP" width="150" align="left" />
+            <el-table-column prop="LoginResult" label="登录结果" width="100" align="center">
               <template #default="{ row }">
-                <el-tag :type="row.LoginResult === 'success' ? 'success' : 'danger'" size="small">
-                  {{ row.LoginResult === 'success' ? '成功' : '失败' }}
-                </el-tag>
+                <StatusPill :type="row.LoginResult === 'success' ? 'success' : 'danger'" :text="row.LoginResult === 'success' ? '成功' : '失败'" />
               </template>
             </el-table-column>
-            <el-table-column prop="LoginMessage" label="结果描述" min-width="150" />
+            <el-table-column prop="LoginMessage" label="结果描述" min-width="150" align="left" />
             <!-- <el-table-column prop="IsAnomaly" label="是否异常" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.IsAnomaly ? 'warning' : 'success'" size="small">
@@ -101,7 +97,7 @@
                 </el-tag>
               </template>
             </el-table-column> -->
-            <el-table-column prop="AnomalyType" label="异常类型" width="150">
+            <el-table-column prop="AnomalyType" label="异常类型" width="150" align="center">
               <template #default="{ row }">
                 <span v-if="row.AnomalyType" class="anomaly-type">
                   {{ getAnomalyTypeLabel(row.AnomalyType) }}
@@ -146,9 +142,7 @@
             <div class="detail-row">
               <div class="detail-label">登录结果：</div>
               <div class="detail-value">
-                <el-tag :type="currentLog.LoginResult === 'success' ? 'success' : 'danger'" size="small">
-                  {{ currentLog.LoginResult === 'success' ? '成功' : '失败' }}
-                </el-tag>
+                <StatusPill :type="currentLog.LoginResult === 'success' ? 'success' : 'danger'" :text="currentLog.LoginResult === 'success' ? '成功' : '失败'" />
               </div>
             </div>
             <div class="detail-row">
@@ -170,7 +164,6 @@
             <el-button @click="showDetailDialog = false">关闭</el-button>
           </template>
         </el-dialog>
-      </div>
     </main>
   </div>
 </template>
@@ -179,6 +172,7 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import { Search, Refresh, Download } from '@element-plus/icons-vue';
 import { ElMessage } from 'element-plus';
+import StatusPill from '@/components/StatusPill.vue';
 import { http } from '@/api';
 const props = defineProps({
   title: {
@@ -341,70 +335,8 @@ onMounted(() => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: calc(100vh - 32px);
-}
-
-.page-header {
-  padding: $spacing-lg;
-
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-
-  hr {
-    margin: 12px 0 0 0;
-    opacity: 0.2;
-    border: none;
-    border-top: 1px solid;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  border-radius: $border-radius-md;
-}
-
-.search-section {
-  padding: $spacing-md;
-  border-radius: $border-radius-md;
+.search-panel {
   margin-bottom: $spacing-md;
-}
-
-.search-form {
-  .form-row {
-    display: flex;
-    gap: $spacing-lg;
-    flex-wrap: wrap;
-    margin-bottom: $spacing-md;
-  }
-
-  .form-item {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-
-    label {
-      font-size: 13px;
-      color: #606266;
-      font-weight: 500;
-    }
-  }
-
-  .form-actions {
-    display: flex;
-    gap: $spacing-sm;
-    justify-content: flex-end;
-  }
 }
 
 .stats-section {
@@ -418,51 +350,42 @@ onMounted(() => {
   flex: 1;
   min-width: 150px;
   padding: $spacing-md;
-  background-color: #f8f9fa;
+  background-color: var(--color-hover);
   border-radius: $border-radius-sm;
   text-align: center;
-  border-left: 4px solid #909399;
+  border-left: 4px solid var(--text-faint);
 
   &.success {
-    border-left-color: #67c23a;
-    background-color: #f0f9eb;
+    border-left-color: var(--brand-primary);
+    background-color: var(--color-receive-bg, #f0f9eb);
   }
 
   &.danger {
-    border-left-color: #f56c6c;
-    background-color: #fef0f0;
+    border-left-color: var(--color-send);
+    background-color: var(--color-send-bg, #fef0f0);
   }
 
   &.warning {
-    border-left-color: #e6a23c;
-    background-color: #fdf6ec;
+    border-left-color: var(--color-warning, #e6a23c);
+    background-color: var(--color-status-warn-bg, #fdf6ec);
   }
 
   .stat-value {
     font-size: 28px;
     font-weight: 700;
-    color: #303133;
+    color: var(--text-primary);
   }
 
   .stat-label {
     font-size: 13px;
-    color: #909399;
+    color: var(--text-faint);
     margin-top: 4px;
   }
 }
 
-.table-section {
-  :deep(.el-table) {
-    border-radius: 8px;
-    overflow: hidden;
-
-    .el-table__row {
-      cursor: pointer;
-
-      &:hover {
-        background-color: #f5f7fa;
-      }
-    }
+.table-panel {
+  :deep(.el-table__row) {
+    cursor: pointer;
   }
 }
 
@@ -473,12 +396,12 @@ onMounted(() => {
 }
 
 .anomaly-type {
-  color: #e6a23c;
+  color: var(--color-warning, #e6a23c);
   font-size: 12px;
 }
 
 .no-data {
-  color: #c0c4cc;
+  color: var(--text-faint);
   font-size: 12px;
 }
 
@@ -486,7 +409,7 @@ onMounted(() => {
   .detail-row {
     display: flex;
     padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-soft);
 
     &:last-child {
       border-bottom: none;
@@ -495,36 +418,28 @@ onMounted(() => {
     .detail-label {
       width: 110px;
       font-weight: 600;
-      color: #606266;
+      color: var(--text-secondary, #606266);
     }
 
     .detail-value {
       flex: 1;
-      color: #303133;
+      color: var(--text-primary, #303133);
     }
   }
 }
 
 .anomaly-details {
-  background-color: #f5f7fa;
+  background-color: var(--color-hover);
   padding: 12px;
   border-radius: 6px;
   font-size: 12px;
-  color: #606266;
+  color: var(--text-secondary, #606266);
   max-height: 200px;
   overflow-y: auto;
   white-space: pre-wrap;
 }
 
 @media (max-width: 768px) {
-  .page-container {
-    margin: $spacing-md;
-  }
-
-  .search-form .form-row {
-    flex-direction: column;
-  }
-
   .stats-section {
     flex-direction: column;
   }

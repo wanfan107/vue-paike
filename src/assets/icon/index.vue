@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <svg :class="classList" aria-hidden="true">
     <use :xlink:href="iconName" :fill="color" />
   </svg>
@@ -16,7 +16,7 @@ const props = defineProps({
   },
   color: {
     type: String,
-    default: '#db0011'
+    default: 'var(--brand-primary, #16a34a)'
   },
   size: {
     type: String,

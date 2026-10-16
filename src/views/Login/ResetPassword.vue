@@ -1,12 +1,12 @@
-<template>
+﻿<template>
   <div class="login-page">
     <div class="login-container">
       <div class="login-header">
         <div class="login-logo">
           <img
             style="width: 170px"
-            src="@/assets/image/logo.png"
-            alt="Univepay Logo"
+            src="@/assets/image/pix-payment-logo-lockup.png"
+            alt="Pix Payment Logo"
           />
           <div class="login-subtitle">Finance</div>
         </div>
@@ -102,7 +102,7 @@
       </div>
       <div class="css-zg4aas">
         <div class="css-1s7xaob">
-          <p class="chakra-text css-i8munm">Univepay Finance © 2026</p>
+          <p class="chakra-text css-i8munm">PIX © 2026</p>
         </div>
       </div>
     </div>
@@ -297,7 +297,7 @@ function goToLogin() {
 
 .login-form {
   width: 100%;
-  background-color: #ffffff;
+  background-color: var(--color-surface, #ffffff);
   padding: 30px;
   border-radius: 24px;
   box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -345,7 +345,7 @@ function goToLogin() {
 .password-strength-box {
   flex: 1;
   height: 5px;
-  background-color: #e4e7ed;
+  background-color: var(--color-border-soft, #e4e7ed);
   border-radius: 5px;
   margin-left: 3px;
 
@@ -389,7 +389,7 @@ function goToLogin() {
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
   -webkit-text-fill-color: #000;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }

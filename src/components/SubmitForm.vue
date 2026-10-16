@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div >
     <el-form
       ref="submitFormRef"
@@ -369,10 +369,10 @@ const handleInput = (prop, val) => {
 .container {
   max-width: 600px;
   margin: 0 auto;
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   padding: 30px;
   border-radius: 8px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md, 0 2px 12px 0 rgba(0, 0, 0, 0.1));
 }
 
 h2 {
@@ -387,7 +387,7 @@ h2 {
 // }
 
 .info-section {
-  background-color: #f0f9eb;
+  background-color: var(--color-success-bg, #f0f9eb);
   border: 1px solid #c2e7b0;
   border-radius: 4px;
   padding: 15px;
@@ -397,7 +397,7 @@ h2 {
 .info-section p {
   margin: 8px 0;
   font-size: 14px;
-  color: #67c23a;
+  color: var(--color-success, #67c23a);
 }
 
 // :deep(.password-strength-container) {
@@ -416,7 +416,7 @@ h2 {
 
 :deep(.password-strength-bar) {
   height: 10px;
-  background-color: #e4e7ed;
+  background-color: var(--color-border-soft, #e4e7ed);
   border-radius: 5px;
   overflow: hidden;
 }
@@ -438,7 +438,7 @@ h2 {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  background-color: #fff !important;
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }

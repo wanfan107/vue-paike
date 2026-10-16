@@ -225,7 +225,7 @@ const formatTime = (val) => {
 @use "../../styles/variables.scss" as *;
 
 .page-container {
-  background-color: #fff;
+  background-color: var(--color-surface, #fff);
   border-radius: 24px;
   margin: $spacing-lg;
 }
@@ -235,7 +235,7 @@ const formatTime = (val) => {
   h1 {
     margin: 0;
     font-size: $font-size-xl;
-    color: $text-color;
+    color: var(--text-primary, #18181b);
   }
   hr {
     text-size-adjust: 100%;
@@ -275,15 +275,16 @@ const formatTime = (val) => {
 }
 
 .content-wrapper {
-  background-color: white;
+  background-color: var(--color-surface, #fff);
   padding: $spacing-xl;
   border-radius: $border-radius-md;
+  border: 1px solid var(--color-border-soft, #ebeef5);
 }
 
 .empty-state {
   text-align: center;
   padding: $spacing-xl;
-  color: #666;
+  color: var(--text-secondary, #666);
 }
 
 .empty-icon {
@@ -295,7 +296,7 @@ const formatTime = (val) => {
 .empty-state h2 {
   margin: 0 0 $spacing-sm 0;
   font-size: $font-size-xl;
-  color: $text-color;
+  color: var(--text-primary, #18181b);
 }
 
 .empty-state p {
@@ -323,7 +324,7 @@ const formatTime = (val) => {
 .form-item {
   .form-label {
     font-size: 14px;
-    color: #606266;
+    color: var(--text-regular, #606266);
     margin-bottom: 8px;
   }
 }
@@ -342,12 +343,12 @@ const formatTime = (val) => {
     align-items: center;
     margin-bottom: $spacing-md;
     padding-bottom: $spacing-sm;
-    border-bottom: 1px solid #ebeef5;
+    border-bottom: 1px solid var(--color-divider, #ebeef5);
     
     span {
       font-size: $font-size-xl;
       font-weight: 600;
-      color: $text-color;
+      color: var(--text-primary, #18181b);
     }
     
     &.warning span {
@@ -369,19 +370,19 @@ const formatTime = (val) => {
 :deep(.el-table) {
   border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(0, 0, 0, 0.05));
   
   .el-table__header-wrapper th {
-    background-color: #f8f9fa;
+    background-color: var(--color-elevated, #f8f9fa);
     font-weight: 600;
-    color: #495057;
+    color: var(--text-secondary, #495057);
   }
   
   .el-table__row {
     transition: background-color 0.3s ease;
     
     &:hover {
-      background-color: #f8f9fa;
+      background-color: var(--color-hover, #f8f9fa);
     }
   }
 }

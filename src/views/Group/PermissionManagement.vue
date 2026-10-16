@@ -1,12 +1,10 @@
-<template>
-  <div class="page-container">
-    <header class="page-header">
+﻿<template>
+  <div class="app-page">
+    <header class="app-page-header">
       <h1>{{ title }}</h1>
-      <hr />
     </header>
 
-    <main class="page-content">
-      <div class="content-wrapper">
+    <main>
         <!-- 操作列表和新增按钮 -->
         <div class="section">
           <div class="section-header">
@@ -19,7 +17,7 @@
 
           <!-- 操作员列表 -->
           <div class="operator-list">
-            <el-table 74734
+            <el-table
               :data="operators" 
               border 
               stripe 
@@ -28,9 +26,9 @@
               highlight-current-row
             >
              
-              <el-table-column prop="email" label="邮箱名" width="180" />
-              <el-table-column prop="name" label="别名" width="100" />
-              <el-table-column prop="roleName" label="角色" width="120">
+              <el-table-column prop="email" label="邮箱名" width="180" align="left" />
+              <el-table-column prop="name" label="别名" width="100" align="center" />
+              <el-table-column prop="roleName" label="角色" width="120" align="center">
                 <template  #default="{ row }">
                   <el-tooltip :content="getRoleDescription(row.roleCode)" placement="top">
                     <el-tag :type="getRoleTagType(row.roleCode)" size="small">
@@ -39,7 +37,7 @@
                   </el-tooltip>
                 </template>
               </el-table-column>
-              <el-table-column prop="merchantCodes" label="可操作商户" width="260">
+              <el-table-column prop="merchantCodes" label="可操作商户" width="260" align="left">
                 <template #default="{ row }">
                   <div class="merchant-codes-wrapper">
                     <div v-if="row && row.merchantCodes && row.merchantCodes.length > 0">
@@ -60,46 +58,40 @@
                   </div>
                 </template>
               </el-table-column>
-                    <el-table-column prop="status" label="状态" width="80">
+                    <el-table-column prop="status" label="状态" width="80" align="center">
                 <template #default="{ row }">
-                  <el-tag :type="row.status === 0 ? 'success' : 'danger'" size="small">
-                    {{ row.status === 0 ? '启用' : '禁用' }}
-                  </el-tag>
+                  <StatusPill :type="row.status === 0 ? 'success' : 'neutral'" :text="row.status === 0 ? '启用' : '禁用'" />
                 </template>
               </el-table-column>
-              <el-table-column prop="isActivated" label="邮箱已激活" width="120">
+              <el-table-column prop="isActivated" label="邮箱已激活" width="120" align="center">
                 <template #default="{ row }">
-                  <el-tag :type="row.isActivated ? 'success' : 'danger'" size="small">
-                    {{ row.isActivated ? '是' : '否' }}
-                  </el-tag>
+                  <StatusPill :type="row.isActivated ? 'success' : 'neutral'" :text="row.isActivated ? '是' : '否'" />
                 </template>
               </el-table-column>
-              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="120">
+              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="120" align="center">
                 <template #default="{ row }">
-                  <el-tag :type="row.hasGoogleAuth ? 'success' : 'danger'" size="small">
-                    {{ row.hasGoogleAuth ? '是' : '否' }}
-                  </el-tag>
+                  <StatusPill :type="row.hasGoogleAuth ? 'success' : 'neutral'" :text="row.hasGoogleAuth ? '是' : '否'" />
                 </template>
               </el-table-column>
-              <el-table-column prop="createdOn" label="创建时间" width="170">
+              <el-table-column prop="createdOn" label="创建时间" width="170" align="center">
                 <template #default="{ row }">
                   {{ formatDate(row.createdOn) }}
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="340" fixed="right" >
+              <el-table-column label="操作" width="340" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="action-cell" @click.stop.prevent>
-                    <el-button  type="primary" size="small" @click.stop="editOperator(row)">
+                    <el-button type="primary" plain size="small" @click.stop="editOperator(row)">
                       编辑
                     </el-button>
-                    <el-button type="primary" size="small" @click.stop="showResetPasswordDialog(row)">
+                    <el-button type="primary" plain size="small" @click.stop="showResetPasswordDialog(row)">
                       重置密码
                     </el-button>
-                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="openChangeEmailDialog(row)">
+                    <el-button v-if="row.roleCode !== 'admin'" type="danger" plain size="small" @click.stop="openChangeEmailDialog(row)">
                       变更邮箱
                     </el-button>
                     <!-- 这里的删除是，逻辑删除 -->
-                    <el-button v-if="row.roleCode !== 'admin'" type="danger" size="small" @click.stop="softDeleteOperator(row)">
+                    <el-button v-if="row.roleCode !== 'admin'" type="danger" plain size="small" @click.stop="softDeleteOperator(row)">
                       删除
                     </el-button>
                   </div>
@@ -360,25 +352,19 @@
             <div class="info-row">
               <div class="info-label">状态：</div>
               <div class="info-value">
-                <el-tag :type="viewingOperator.status === 0 ? 'success' : 'danger'" size="small">
-                  {{ viewingOperator.status === 0 ? '启用' : '禁用' }}
-                </el-tag>
+                <StatusPill :type="viewingOperator.status === 0 ? 'success' : 'neutral'" :text="viewingOperator.status === 0 ? '启用' : '禁用'" />
               </div>
             </div>
             <div class="info-row">
               <div class="info-label">邮箱已激活：</div>
               <div class="info-value">
-                <el-tag :type="viewingOperator.isActivated ? 'success' : 'danger'" size="small">
-                  {{ viewingOperator.isActivated ? '是' : '否' }}
-                </el-tag>
+                <StatusPill :type="viewingOperator.isActivated ? 'success' : 'neutral'" :text="viewingOperator.isActivated ? '是' : '否'" />
               </div>
             </div>
             <div class="info-row">
               <div class="info-label">MFA2已绑定：</div>
               <div class="info-value">
-                <el-tag :type="viewingOperator.hasGoogleAuth ? 'success' : 'danger'" size="small">
-                  {{ viewingOperator.hasGoogleAuth ? '是' : '否' }}
-                </el-tag>
+                <StatusPill :type="viewingOperator.hasGoogleAuth ? 'success' : 'neutral'" :text="viewingOperator.hasGoogleAuth ? '是' : '否'" />
               </div>
             </div>
             <div class="info-row">
@@ -459,8 +445,6 @@
             </el-button>
           </template>
         </el-dialog>
-
-      </div>
     </main>
   </div>
 </template>
@@ -471,6 +455,7 @@ import { Plus, Clock } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from '@/api';
 import useUserStore from '@/stores/user';
+import StatusPill from '@/components/StatusPill.vue';
 
 defineProps({
   title: {
@@ -917,37 +902,6 @@ const saveOperator = async () => {
 <style scoped lang="scss">
 @use "../../styles/variables.scss" as *;
 
-.page-container {
-  background-color: #fff;
-  border-radius: 24px;
-  margin: $spacing-lg;
-  min-height: calc(100vh - 32px);
-}
-
-.page-header {
-  padding: $spacing-lg;
-  h1 {
-    margin: 0;
-    font-size: $font-size-xl;
-    color: $text-color;
-  }
-  hr {
-    margin: 12px 0 0 0;
-    opacity: 0.2;
-    border: none;
-    border-top: 1px solid;
-  }
-}
-
-.page-content {
-  padding: $spacing-lg;
-}
-
-.content-wrapper {
-  background-color: white;
-  border-radius: $border-radius-md;
-}
-
 .section {
   margin-bottom: 32px;
   
@@ -960,24 +914,15 @@ const saveOperator = async () => {
     .section-title {
       font-size: 18px;
       font-weight: 600;
-      color: $text-color;
+      color: var(--text-primary, #18181b);
       margin: 0;
     }
   }
 }
 
 .operator-list {
-  :deep(.el-table) {
-    border-radius: 8px;
-    overflow: hidden;
-    
-    .el-table__row {
-      cursor: pointer;
-      
-      &:hover {
-        background-color: #f5f7fa;
-      }
-    }
+  :deep(.el-table__row) {
+    cursor: pointer;
   }
 }
 
@@ -991,7 +936,7 @@ const saveOperator = async () => {
   }
   
   .no-data {
-    color: #c0c4cc;
+    color: var(--text-faint);
     font-size: 12px;
   }
 }
@@ -1003,7 +948,7 @@ const saveOperator = async () => {
 
 .merchant-count-label {
   font-size: 12px;
-  color: #909399;
+  color: var(--text-faint);
   margin-bottom: 4px;
   font-weight: 500;
 }
@@ -1025,7 +970,7 @@ const saveOperator = async () => {
   align-items: center;
   justify-content: flex-start;
   height: 48px;
-  color: #c0c4cc;
+  color: var(--text-faint);
   font-size: 12px;
 }
 
@@ -1050,13 +995,13 @@ const saveOperator = async () => {
   
   .merchant-code {
     font-size: 12px;
-    color: #909399;
+    color: var(--text-faint);
     font-family: monospace;
   }
 
   .merchant-qq {
     font-size: 12px;
-    color: #000000;
+    color: var(--text-primary, #000000);
     font-family: monospace;
   }
 }
@@ -1069,15 +1014,15 @@ const saveOperator = async () => {
   height: 18px;
   margin-left: 8px;
   border-radius: 50%;
-  background-color: #333;
-  color: #fff;
+  background-color: var(--text-primary);
+  color: var(--text-inverse, #fff);
   font-size: 12px;
   font-weight: bold;
   cursor: help;
   transition: all 0.2s;
 
   &:hover {
-    background-color: #666;
+    background-color: var(--text-secondary);
     transform: scale(1.1);
   }
 }
@@ -1087,15 +1032,15 @@ const saveOperator = async () => {
   align-items: center;
   gap: 8px;
   padding: 8px 12px;
-  background-color: #f5f7fa;
+  background-color: var(--color-hover);
   border-radius: 6px;
   font-size: 13px;
-  color: #606266;
+  color: var(--text-secondary);
   font-family: monospace;
   
   .el-icon {
     font-size: 16px;
-    color: #909399;
+    color: var(--text-faint);
   }
 }
 
@@ -1103,7 +1048,7 @@ const saveOperator = async () => {
   .info-row {
     display: flex;
     padding: 12px 0;
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid var(--color-border-soft);
     
     &:last-child {
       border-bottom: none;
@@ -1114,21 +1059,17 @@ const saveOperator = async () => {
       font-weight: 600;
       text-align: justify;
       text-align-last: justify;
-      color: #606266;
+      color: var(--text-secondary);
     }
     
     .info-value {
       flex: 1;
-      color: #303133;
+      color: var(--text-primary);
     }
   }
 }
 
 @media (max-width: 768px) {
-  .page-container {
-    margin: $spacing-md;
-  }
-  
   .section-header {
     flex-direction: column;
     gap: 12px;
@@ -1162,7 +1103,7 @@ const saveOperator = async () => {
 
 :deep(.el-form-item.is-required::before) {
   content: '*';
-  color: red;
+  color: var(--color-danger, red);
   position: relative;
   margin-right: 4px;
 }
@@ -1178,8 +1119,8 @@ const saveOperator = async () => {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  -webkit-text-fill-color: #000;
-  background-color: #fff !important;
+  -webkit-text-fill-color: var(--text-primary, #000);
+  background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
 }
@@ -1189,18 +1130,18 @@ const saveOperator = async () => {
   
   .confirm-text {
     font-size: 14px;
-    color: #303133;
+    color: var(--text-primary);
     margin-bottom: 12px;
     
     .email {
-      color: #409EFF;
+      color: var(--brand-primary);
       font-weight: 500;
     }
   }
   
   .hint-text {
     font-size: 13px;
-    color: #909399;
+    color: var(--text-faint);
     line-height: 1.6;
   }
 }

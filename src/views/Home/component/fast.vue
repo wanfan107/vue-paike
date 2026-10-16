@@ -14,7 +14,7 @@
           <el-card shadow="hover" class="fast-card">
             <div class="fast-card-content">
               <div class="fast-icon-wrapper">
-                <el-icon color="#db0011" class="fast-icon" :size="20">
+                <el-icon class="fast-icon" :size="20">
                   <component :is="item.elIcon"></component>
                 </el-icon>
               </div>
@@ -90,77 +90,60 @@ export default {
 <style scoped>
 .fast-container {
   width: 100%;
-  padding: 0 5px;
-  /* display: flex; */
-  /* gap: 16px; */
-  /* flex-wrap: wrap; */
-  margin-top: 15px;
+  margin-top: 12px;
 }
 
 .fast-card-wrapper {
-  flex: 1;
-  min-width: 180px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
 }
 
 .fast-card {
   display: flex;
-  /* align-items: center; */
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 8px 12px;
-  background-color: #ffffff;
+  align-items: center;
+  padding: 14px 16px;
+  background-color: var(--color-surface, #ffffff);
   border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  color: #333;
-  font-size: 14px;
-  font-weight: 500;
-  transition: all 0.3s ease;
-  min-height: auto;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--color-border-soft, #f0f1f3);
+  transition: all 0.25s ease;
   margin-bottom: 12px;
 }
 
 .fast-card:hover {
-  background-color: #f5f7fa;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: var(--brand-primary-glow, rgba(22, 163, 74, 0.3));
+  box-shadow: var(--shadow-md, 0 8px 24px rgba(0, 0, 0, 0.1));
   transform: translateY(-2px);
-}
-
-.fast-icon-wrapper {
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 8px; /* 小圆角 */
-  background-color: #f5f7fa; /* 浅灰色背景 */
-  transition: all 0.3s ease;
 }
 
 .fast-card-content {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .fast-icon-wrapper {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 50%;
-  background-color: #f5f7fa;
-  margin-right: 8px;
-    transition: all 0.3s ease;
+  border-radius: 10px;
+  background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.1));
+  color: var(--brand-primary, #16a34a);
+  transition: all 0.25s ease;
+  flex-shrink: 0;
 }
 
+.fast-card:hover .fast-icon-wrapper {
+  background-color: var(--brand-primary, #16a34a);
+  color: var(--text-inverse, #ffffff);
+}
 
 .fast-text {
   margin: 0;
   font-size: 14px;
-  color: #333;
+  color: var(--text-regular, #374151);
   font-weight: 500;
 }
 </style>

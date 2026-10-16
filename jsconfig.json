@@ -1,7 +1,9 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@brand/*": ["./src/assets/brands/univepay/*"]
     }
   },
   "exclude": ["node_modules", "dist"]
