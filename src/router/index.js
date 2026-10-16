@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { HomeFilled, Setting, Operation, DataLine, FolderOpened, DataAnalysis, CreditCard, Files, Wallet, WalletFilled, Download, Postcard, Folder, Search, Finished } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import i18n from '../i18n'
 
 // // 布局组件
 // const MainLayout = () => import('../components/MainLayout.vue')
@@ -239,6 +240,7 @@ const router = createRouter({
         // 账户管理
         {
           path: 'account',
+          name: 'account',
           redirect: 'info',
           title: '应用设置',
           icon: Setting,
@@ -310,7 +312,7 @@ router.beforeEach((to, from, next) => {
         // 没有权限，显示提示并重定向到首页
         ElMessage({
           type: 'warning',
-          message: '抱歉，您没有权限访问该页面',
+          message: i18n.global.t('common.noPermission'),
           duration: 3000
         });
         // console.warn('当前用户没有权限访问该页面:', to.path);

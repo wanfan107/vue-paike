@@ -8,39 +8,39 @@
       <!-- 搜索和筛选区域 -->
       <div class="search-panel">
         <el-form :inline="false" :model="searchForm" class="search-form">
-          <el-form-item label="订单时间">
+          <el-form-item :label="t('groupStatistics.monthly.timeLabel')">
             <el-date-picker
               v-model="searchForm.time"
               type="monthrange"
               unlink-panels
               :disabled-date="disabledDate"
-              range-separator="至"
-              start-placeholder="开始月份"
-              end-placeholder="结束月份"
+              :range-separator="t('common.to')"
+              :start-placeholder="t('groupStatistics.monthly.startMonth')"
+              :end-placeholder="t('groupStatistics.monthly.endMonth')"
             />
           </el-form-item>
 
-          <el-form-item label="曲线商户">
+          <el-form-item :label="t('groupStatistics.monthly.merchantCurveLabel')">
             <div class="merchant-filter-inline">
               <el-select
                 v-model="selectedMerchants"
                 multiple
                 collapse-tags
                 collapse-tags-tooltip
-                placeholder="选择商户（默认仅展示集团）"
+                :placeholder="t('groupStatistics.monthly.selectMerchantDefault')"
                 style="width: 250px;"
                 @change="updateCharts"
               >
                 <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
               </el-select>
-              <el-button @click="selectAll">全选</el-button>
-              <el-button @click="selectInverse">反选</el-button>
+              <el-button @click="selectAll">{{ t('groupStatistics.monthly.selectAll') }}</el-button>
+              <el-button @click="selectInverse">{{ t('groupStatistics.monthly.selectInverse') }}</el-button>
             </div>
           </el-form-item>
 
           <el-form-item class="search-actions">
-            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">搜索</el-button>
-            <el-button :icon="Refresh" @click="clearSearch" :loading="loading">刷新</el-button>
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">{{ t('common.search') }}</el-button>
+            <el-button :icon="Refresh" @click="clearSearch" :loading="loading">{{ t('common.refresh') }}</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -55,8 +55,8 @@
             <div class="chart-item line-chart">
               <div class="chart-header">
                 <el-select v-model="paymentFilter" size="small" style="width: 100px;" @change="updateCharts">
-                  <el-option label="收款" value="payin" />
-                  <el-option label="付款" value="payout" />
+                  <el-option :label="t('groupStatistics.monthly.payin')" value="payin" />
+                  <el-option :label="t('groupStatistics.monthly.payout')" value="payout" />
                 </el-select>
               </div>
               <div ref="lineChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
@@ -64,7 +64,7 @@
           </div>
         </div>
         <div v-else-if="show === true && tableData.length === 0" class="empty-chart-state">
-          <el-empty description="暂无数据" />
+          <el-empty :description="t('common.noData')" />
         </div>
       </div>
 
@@ -91,26 +91,26 @@
                       :data="scope.row.merchantItems || []"
                       :summary-method="getMerchantSummaries"
                       show-summary
-                      :sum-text="'集团汇总'"
+                      :sum-text="t('groupStatistics.monthly.groupSummary')"
                       border
                       max-height="300"
                       style="width: 100%; margin-top: 10px"
                       size="small"
                       class="expand-table"
                     >
-                      <el-table-column prop="code" label="商户号" align="center" />
-                      <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
-                      <el-table-column prop="TotalAmountReceived" label="收款总额" align="center" />
-                      <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
-                      <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
+                      <el-table-column prop="code" :label="t('groupStatistics.monthly.merchantNo')" align="center" />
+                      <el-table-column prop="SuccessCountPayin" :label="t('groupStatistics.monthly.payinCount')" align="center" />
+                      <el-table-column prop="TotalAmountReceived" :label="t('groupStatistics.monthly.payinAmount')" align="center" />
+                      <el-table-column prop="SuccessFeePayin" :label="t('groupStatistics.monthly.payinFee')" align="center" />
+                      <el-table-column prop="SuccessRateCountPayin" :label="t('groupStatistics.monthly.payinRate')" align="center">
                         <template #default="scope">
                           {{ toPercent(scope.row.SuccessRateCountPayin) }}
                         </template>
                       </el-table-column>
-                      <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
-                      <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
-                      <el-table-column prop="SuccessFeePayout" label="付款手续费" align="center" />
-                      <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
+                      <el-table-column prop="SuccessCountPayout" :label="t('groupStatistics.monthly.payoutCount')" align="center" />
+                      <el-table-column prop="SuccessAmountPayout" :label="t('groupStatistics.monthly.payoutAmount')" align="center" />
+                      <el-table-column prop="SuccessFeePayout" :label="t('groupStatistics.monthly.payoutFee')" align="center" />
+                      <el-table-column prop="SuccessRateCountPayout" :label="t('groupStatistics.monthly.payoutRate')" align="center">
                         <template #default="scope">
                           {{ toPercent(scope.row.SuccessRateCountPayout) }}
                         </template>
@@ -127,7 +127,7 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column prop="Month" label="月份" align="center" width="120" sortable />
+              <el-table-column prop="Month" :label="t('groupStatistics.monthly.month')" align="center" width="120" sortable />
               <el-table-column
                 min-width="140px"
                 align="right"
@@ -215,13 +215,13 @@ const groupChart = ref([]);
 const merchantCharts = ref([]);
 
 // 表格列配置
-const columns = reactive([
-  { prop: "PreviousMonthBalance", label: "期初余额" },
-  { prop: "SuccessAmountPayin", label: "当月收款总额" },
-  { prop: "SuccessAmountPayout", label: "当月付款总额" },
-  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当月收款总额 - 当月付款总额" },
-  { prop: "CurrentMonthBalance", label: "期末余额" },
-]);
+const columns = computed(() => ([
+  { prop: "PreviousMonthBalance", label: t('groupStatistics.monthly.prevBalance') },
+  { prop: "SuccessAmountPayin", label: t('groupStatistics.monthly.monthPayinAmount') },
+  { prop: "SuccessAmountPayout", label: t('groupStatistics.monthly.monthPayoutAmount') },
+  { prop: "TotalAmountReceived", label: t('groupStatistics.monthly.netAmount'), tooltip: t('groupStatistics.monthly.netAmountTooltip') },
+  { prop: "CurrentMonthBalance", label: t('groupStatistics.monthly.currentBalance') },
+]));
 
 // 禁用日期函数，只能选择到当月（根据币种选择时区）
 const disabledDate = (time) => {
@@ -252,7 +252,7 @@ const lineChartOption = computed(() => {
   const series = [];
   if (paymentFilter.value === 'payin') {
     series.push({
-      name: "集团收款金额",
+      name: t('groupStatistics.monthly.groupPayinAmount'),
       type: "line",
       data: points.map(p => p.payinAmount),
       smooth: true,
@@ -265,7 +265,7 @@ const lineChartOption = computed(() => {
   }
   if (paymentFilter.value === 'payout') {
     series.push({
-      name: "集团付款金额",
+      name: t('groupStatistics.monthly.groupPayoutAmount'),
       type: "line",
       data: points.map(p => p.payoutAmount),
       smooth: true,
@@ -283,7 +283,7 @@ const lineChartOption = computed(() => {
       colorIdx++;
       if (paymentFilter.value === 'payin') {
         series.push({
-          name: mc.code + " 收款",
+          name: `${mc.code} ${t('groupStatistics.monthly.payin')}`,
           type: "line",
           data: mc.points.map(p => p.payinAmount),
           smooth: true,
@@ -306,7 +306,7 @@ const lineChartOption = computed(() => {
       }
       if (paymentFilter.value === 'payout') {
         series.push({
-          name: mc.code + " 付款",
+          name: `${mc.code} ${t('groupStatistics.monthly.payout')}`,
           type: "line",
           data: mc.points.map(p => p.payoutAmount),
           smooth: true,
@@ -331,7 +331,7 @@ const lineChartOption = computed(() => {
   });
   return {
     title: {
-      text: "收款金额与付款金额趋势",
+      text: t('groupStatistics.monthly.chartAmountTrend'),
       left: '0%',
       top: '0%',
       textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
@@ -388,7 +388,7 @@ const lineChartOption = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "金额",
+      name: t('groupStatistics.monthly.axisAmount'),
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
@@ -409,7 +409,7 @@ const balanceChartOption = computed(() => {
   const months = points.map(p => p.x);
   const series = [
     {
-      name: "集团期初余额",
+      name: t('groupStatistics.monthly.groupPrevBalance'),
       type: "line",
       data: points.map(p => p.prevBalance),
       smooth: true,
@@ -426,7 +426,7 @@ const balanceChartOption = computed(() => {
       const color = merchantColors[colorIdx % merchantColors.length];
       colorIdx++;
       series.push({
-        name: mc.code + " 期初余额",
+        name: `${mc.code} ${t('groupStatistics.monthly.prevBalance')}`,
         type: "line",
         data: mc.points.map(p => p.prevBalance),
         smooth: true,
@@ -450,7 +450,7 @@ const balanceChartOption = computed(() => {
   });
   return {
     title: {
-      text: "期初余额趋势",
+      text: t('groupStatistics.monthly.chartBalanceTrend'),
       left: '0%',
       top: '0%',
       textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
@@ -507,7 +507,7 @@ const balanceChartOption = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "余额",
+      name: t('groupStatistics.monthly.axisBalance'),
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
@@ -591,7 +591,7 @@ const loadData = async () => {
     const res = await http.groupMonthlyRpt({ startMonth, endMonth });
     const data = res.data;
     if (!data) {
-      ElMessage.warning(res.msg || "获取数据失败");
+      ElMessage.warning(res.msg || t('groupStatistics.monthly.fetchFailed'));
       tableData.value = [];
       return;
     }
@@ -608,7 +608,7 @@ const loadData = async () => {
     initLineChart();
     initBalanceChart();
   } catch (error) {
-    ElMessage.error(error.msg || "获取数据失败");
+    ElMessage.error(error.msg || t('groupStatistics.monthly.fetchFailed'));
     console.error(error);
   } finally {
     loading.value = false;
@@ -757,7 +757,7 @@ const getMerchantSummaries = (param) => {
   const { columns, data } = param;
   const sums = [];
   columns.forEach((column, index) => {
-    if (index === 0) { sums[index] = '集团汇总'; return; }
+    if (index === 0) { sums[index] = t('groupStatistics.monthly.groupSummary'); return; }
     if (column.property === 'SuccessRateCountPayin' || column.property === 'SuccessRateCountPayout') {
       sums[index] = 'N/A'; return;
     }
@@ -779,7 +779,7 @@ const getMerchantSummaries = (param) => {
 const getCollectionPieChart = (row) => {
   const items = row.merchantItems || [];
   let data = items.map(it => ({
-    name: it.code || '未知',
+    name: it.code || t('groupStatistics.monthly.unknown'),
     value: Number(it.SuccessAmountPayin) || 0,
   })).filter(item => item.value > 0);
 
@@ -814,7 +814,7 @@ const getCollectionPieChart = (row) => {
   if (others.length > 0) {
     const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
     top3.push({
-      name: '其他',
+      name: t('groupStatistics.monthly.other'),
       value: othersTotal,
       others: others,
       itemStyle: {
@@ -840,7 +840,7 @@ const getCollectionPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户收款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: t('groupStatistics.monthly.chartCollectionPie'), left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -848,9 +848,9 @@ const getCollectionPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('groupStatistics.monthly.ratioText', { p: Number(params.percent).toFixed(2) })})`;
         if (params.data.others && params.data.others.length > 0) {
-          result += '<br/><br/>包含：';
+          result += '<br/><br/>' + t('groupStatistics.monthly.contains');
           params.data.others.forEach((otherItem, idx) => {
             result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
@@ -864,7 +864,7 @@ const getCollectionPieChart = (row) => {
     },
     legend: { orient: "horizontal", bottom: "5%", data: data.map(item => item.name), textStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12 }, itemGap: 15 },
     series: [{
-      name: "收款总额", type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
+      name: t('groupStatistics.monthly.payinSeriesName'), type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
       itemStyle: { borderRadius: 10, borderColor: cssVar('--color-surface', '#fff'), borderWidth: 3 },
       label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: cssVar('--text-primary', '#303133'), fontSize: 11, fontWeight: 500 },
       labelLine: { show: true, length: 15, length2: 10, smooth: true },
@@ -877,7 +877,7 @@ const getCollectionPieChart = (row) => {
 const getPaymentPieChart = (row) => {
   const items = row.merchantItems || [];
   let data = items.map(it => ({
-    name: it.code || '未知',
+    name: it.code || t('groupStatistics.monthly.unknown'),
     value: Number(it.SuccessAmountPayout) || 0,
   })).filter(item => item.value > 0);
 
@@ -912,7 +912,7 @@ const getPaymentPieChart = (row) => {
   if (others.length > 0) {
     const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
     top3.push({
-      name: '其他',
+      name: t('groupStatistics.monthly.other'),
       value: othersTotal,
       others: others,
       itemStyle: {
@@ -938,7 +938,7 @@ const getPaymentPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户付款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: t('groupStatistics.monthly.chartPaymentPie'), left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -946,9 +946,9 @@ const getPaymentPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('groupStatistics.monthly.ratioText', { p: Number(params.percent).toFixed(2) })})`;
         if (params.data.others && params.data.others.length > 0) {
-          result += '<br/><br/>包含：';
+          result += '<br/><br/>' + t('groupStatistics.monthly.contains');
           params.data.others.forEach((otherItem, idx) => {
             result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
@@ -962,7 +962,7 @@ const getPaymentPieChart = (row) => {
     },
     legend: { orient: "horizontal", bottom: "5%", data: data.map(item => item.name), textStyle: { color: cssVar('--text-secondary', '#606266'), fontSize: 12 }, itemGap: 15 },
     series: [{
-      name: "付款总额", type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
+      name: t('groupStatistics.monthly.payoutSeriesName'), type: "pie", radius: ["50%", ""], center: ["50%", "50%"], data: data, avoidLabelOverlap: true,
       itemStyle: { borderRadius: 10, borderColor: cssVar('--color-surface', '#fff'), borderWidth: 3 },
       label: { show: true, formatter: (params) => `${params.name}\n${Number(params.percent).toFixed(2)}%`, color: cssVar('--text-primary', '#303133'), fontSize: 11, fontWeight: 500 },
       labelLine: { show: true, length: 15, length2: 10, smooth: true },

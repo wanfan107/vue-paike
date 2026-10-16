@@ -8,15 +8,15 @@
         <!-- 搜索和筛选区域 -->
         <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="订单时间">
+            <el-form-item :label="t('statistics.daily.orderTime')">
               <el-date-picker
                 v-model="searchForm.time"
                 type="daterange"
                 unlink-panels
                 :disabled-date="disabledDate"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :range-separator="t('common.to')"
+                :start-placeholder="t('common.startDate')"
+                :end-placeholder="t('common.endDate')"
               />
             </el-form-item>
 
@@ -27,14 +27,14 @@
                 @click="handleSearch"
                 :loading="loading"
               >
-                搜索
+                {{ t('common.search') }}
               </el-button>
               <el-button
                 :icon="Refresh"
                 @click="clearSearch"
                 :loading="loading"
               >
-                刷新
+                {{ t('common.refresh') }}
               </el-button>
               <!-- <el-button
                 :icon="Download"
@@ -54,19 +54,19 @@
             <!-- 商户数据汇总 -->
             <div class="merchant-summary">
               <div class="summary-card today-collect">
-                <div class="summary-title">今日代收总额</div>
+                <div class="summary-title">{{ t('statistics.daily.todayCollect') }}</div>
                 <div class="summary-value">{{ formatCurrency(merchantSummaryData.todayCollect, currency.value) }}</div>
               </div>
               <div class="summary-card yesterday-collect">
-                <div class="summary-title">昨日代收总额</div>
+                <div class="summary-title">{{ t('statistics.daily.yesterdayCollect') }}</div>
                 <div class="summary-value">{{ formatCurrency(merchantSummaryData.yesterdayCollect, currency.value) }}</div>
               </div>
               <div class="summary-card today-pay">
-                <div class="summary-title">今日代付总额</div>
+                <div class="summary-title">{{ t('statistics.daily.todayPay') }}</div>
                 <div class="summary-value">{{ formatCurrency(merchantSummaryData.todayPay, currency.value) }}</div>
               </div>
               <div class="summary-card yesterday-pay">
-                <div class="summary-title">昨日代付总额</div>
+                <div class="summary-title">{{ t('statistics.daily.yesterdayPay') }}</div>
                 <div class="summary-value">{{ formatCurrency(merchantSummaryData.yesterdayPay, currency.value) }}</div>
               </div>
             </div>
@@ -80,7 +80,7 @@
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
-            <el-empty description="暂无数据" />
+            <el-empty :description="t('common.noData')" />
           </div>
         </div>
 
@@ -113,7 +113,7 @@
                         :data="scope.row.items"
                         :summary-method="getSummaries"
                         show-summary
-                        :sum-text="'总计'"
+                        :sum-text="t('statistics.daily.sumText')"
                         border
                         style="width: 100%; margin-top: 10px"
                         size="small"
@@ -121,53 +121,53 @@
                       >
                         <el-table-column
                           prop="typeName"
-                          label="类型"
+                          :label="t('statistics.daily.colType')"
                           align="center"
                         ></el-table-column>
                         <el-table-column
                           prop="SuccessCountPayin"
-                          label="收款笔数"
+                          :label="t('statistics.daily.colPayinCount')"
                           align="center"
                         > </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="收款总额"
+                          :label="t('statistics.daily.colPayinAmount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessOrderFee"
-                          label="收款手续费"
+                          :label="t('statistics.daily.colPayinFee')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
-                          label="收款笔数成功率"
+                          :label="t('statistics.daily.colPayinRate')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessCountPayout"
-                          label="付款笔数"
+                          :label="t('statistics.daily.colPayoutCount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayout"
-                          label="付款总额"
+                          :label="t('statistics.daily.colPayoutAmount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessFeePayout"
-                          label="付款手续费"
+                          :label="t('statistics.daily.colPayoutFee')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayout"
-                          label="付款笔数成功率"
+                          :label="t('statistics.daily.colPayoutRate')"
                           align="center"
                         >
                         </el-table-column>
@@ -183,7 +183,7 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable></el-table-column>
+                <el-table-column prop="OrderDate" :label="t('statistics.daily.colDate')" align="center" width="120" sortable></el-table-column>
                 <el-table-column
                   min-width="140px"
                   align="center"
@@ -286,12 +286,12 @@ const searchForm = reactive({
 // ];
 
 // 表格列配置
-const columns = reactive([
-  { prop: "PreviousDayEndBalance", label: "期初余额" },
-  { prop: "SuccessAmountPayin", label: "当日收款总额" },
-  { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
-  { prop: "CurrentDayEndBalance", label: "期末余额" },
+const columns = computed(() => [
+  { prop: "PreviousDayEndBalance", label: t('statistics.daily.openingBalance') },
+  { prop: "SuccessAmountPayin", label: t('statistics.daily.dailyPayinTotal') },
+  { prop: "SuccessAmountPayout", label: t('statistics.daily.dailyPayoutTotal') },
+  { prop: "TotalAmountReceived", label: t('statistics.daily.netReceivedTotal'), tooltip: t('statistics.daily.netReceivedTip') },
+  { prop: "CurrentDayEndBalance", label: t('statistics.daily.closingBalance') },
 ]);
 
 // 计算属性
@@ -309,7 +309,7 @@ const realTimeChart = computed(() => {
 
   return {
     title: {
-      text: "收款金额与付款金额趋势",
+      text: t('statistics.daily.trendTitle'),
     left: '0%',
       top: '0%',
       textStyle: {
@@ -328,7 +328,7 @@ const realTimeChart = computed(() => {
       }
     },
     legend: {
-      data: ["收款金额", "付款金额"],
+      data: [t('statistics.daily.collectionAmount'), t('statistics.daily.paymentAmount')],
       top: "5%",
       textStyle: {
         color: cssVar('--text-secondary','#606266'),
@@ -373,7 +373,7 @@ const realTimeChart = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "金额",
+      name: t('statistics.daily.amountAxis'),
       axisLine: {
         show: true,
         lineStyle: {
@@ -401,7 +401,7 @@ const realTimeChart = computed(() => {
     },
     series: [
       {
-        name: "收款金额",
+        name: t('statistics.daily.collectionAmount'),
         type: "line",
         data: collectionAmounts,
         smooth: true,
@@ -419,7 +419,7 @@ const realTimeChart = computed(() => {
         },
       },
       {
-        name: "付款金额",
+        name: t('statistics.daily.paymentAmount'),
         type: "line",
         data: paymentAmounts,
         smooth: true,
@@ -446,7 +446,7 @@ const balanceChartOption = computed(() => {
 
   return {
     title: {
-      text: '期初余额',
+      text: t('statistics.daily.balanceChartTitle'),
       left: '0%',
       top: '0%',
       textStyle: {
@@ -496,7 +496,7 @@ const balanceChartOption = computed(() => {
     yAxis: {
       show: true,
       type: 'value',
-      name: '余额',
+      name: t('statistics.daily.balanceAxis'),
       axisLine: {
         show: true,
         lineStyle: {
@@ -530,7 +530,7 @@ const balanceChartOption = computed(() => {
       }
     },
     series: [{
-      name: '余额',
+      name: t('statistics.daily.balanceAxis'),
       type: 'line',
       data: PreviousDayEndBalance,
       smooth: true,
@@ -956,7 +956,7 @@ const getSummaries = (param) => {
   const sums = [];
   columns.forEach((column, index) => {
     if (index === 0) {
-      sums[index] = '总计';
+      sums[index] = t('statistics.daily.sumText');
       return;
     }
     // 检查列名是否为收款成功率
@@ -988,8 +988,8 @@ const getCollectionPieChart = (row) => {
   const merchantProfitValue = Number(row.MerchantProfit) || 0;
 
   const data = [
-    { name: '收款手续费', value: feeValue },
-    { name: '商户分账', value: merchantProfitValue },
+    { name: t('statistics.daily.colPayinFee'), value: feeValue },
+    { name: t('statistics.daily.merchantProfit'), value: merchantProfitValue },
   ].filter(item => item.value > 0);
 
   // 高级渐变色方案
@@ -1063,7 +1063,7 @@ const getCollectionPieChart = (row) => {
 
   return {
     title: {
-      text: "收款金额分布",
+      text: t('statistics.daily.collectionDistribution'),
       left: "center",
       textStyle: {
         color: cssVar('--text-primary','#303133'),
@@ -1077,7 +1077,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('statistics.daily.shareRatio')}${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1098,7 +1098,7 @@ const getCollectionPieChart = (row) => {
     },
     series: [
       {
-        name: "收款金额",
+        name: t('statistics.daily.collectionAmount'),
         type: "pie",
         radius: ["50%", ""],
         center: ["50%", "50%"],
@@ -1141,14 +1141,14 @@ const getPaymentPieChart = (row) => {
   // 使用后端按 bank 维度返回的代付成功金额列表
   const bankList = row.PayoutByBank || [];
   const data = bankList.map((it) => ({
-    name: it.bank || "未知",
+    name: it.bank || t('statistics.daily.unknown'),
     value: Number(it.amount) || 0,
   })).filter(item => item.value > 0);
 
   // 追加代付手续费（= 单笔手续费 + 比例手续费，status=2）作为独立扇区，与收款饼图的"手续费"扇区对称
   const payoutFeeValue = Number(row.SuccessFeePayout) || 0;
   if (payoutFeeValue > 0) {
-    data.push({ name: '手续费', value: payoutFeeValue });
+    data.push({ name: t('statistics.daily.fee'), value: payoutFeeValue });
   }
 
   // 高级渐变色方案（与收款不同的配色）
@@ -1233,7 +1233,7 @@ const getPaymentPieChart = (row) => {
 
   return {
     title: {
-      text: "付款金额分布",
+      text: t('statistics.daily.paymentDistribution'),
       left: "center",
       textStyle: {
         color: cssVar('--text-primary','#303133'),
@@ -1247,7 +1247,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('statistics.daily.shareRatio')}${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1268,7 +1268,7 @@ const getPaymentPieChart = (row) => {
     },
     series: [
       {
-        name: "付款金额",
+        name: t('statistics.daily.paymentAmount'),
         type: "pie",
         radius: ["50%", ""],
         center: ["50%", "50%"],
@@ -1343,7 +1343,7 @@ const formatTime = (date) => {
 // 搜索方法
 const handleSearch = async () => {
   if (!searchForm.time || searchForm.time.length !== 2) {
-    ElMessage.warning('请选择日期范围');
+    ElMessage.warning(t('common.selectDateRange'));
     return;
   }
 
@@ -1384,15 +1384,15 @@ const handleSearch = async () => {
           dates: [],
           PreviousDayEndBalance: []
         };
-        ElMessage.info('暂无数据');
+        ElMessage.info(t('common.noData'));
       }
     } else {
-      ElMessage.error(res.msg || '查询失败');
+      ElMessage.error(res.msg || t('statistics.daily.queryFailed'));
     }
     
   } catch (error) {
     console.error('查询失败:', error);
-    ElMessage.error('查询失败，请稍后重试');
+    ElMessage.error(t('statistics.daily.queryFailedRetry'));
     tableData.value = [];
   } finally {
     loading.value = false;

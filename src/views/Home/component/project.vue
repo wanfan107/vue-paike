@@ -7,11 +7,11 @@
       :lg="8"
       :xl="8"
       v-for="(item, index) in projectList"
-      :key="item.name"
+      :key="item.nameKey"
     >
       <el-card :class="['project-card', 'project-card' + index]" shadow="hover">
         <div class="project-card-header">
-          <div class="project-name">{{ item.name }}</div>
+          <div class="project-name">{{ t(item.nameKey) }}</div>
           <div class="project-icon" :class="['icon' + index]">
              <!-- 添加图标 --->
             <el-icon v-if="index === 0"><Coin /></el-icon>
@@ -40,7 +40,7 @@
         </div>
         <div class="project-stats">
           <div class="stat-item">
-            <div class="stat-label">{{ item.desc }}</div>
+            <div class="stat-label">{{ t(item.descKey) }}</div>
             <div class="stat-value">
               <template v-if="props.showData">
                 {{ item.count }}
@@ -63,6 +63,7 @@ import { http } from "@/api";
 import useUserStore from "@/stores/user";
 import { Plus, Coin, Minus, CreditCard } from "@element-plus/icons-vue";
 import { getCurrencySymbol, getCurrencyConfig } from "@/utils/currency";
+import { useI18n } from 'vue-i18n';
 
 // 接收父组件传递的showData属性
 const props = defineProps({
@@ -71,6 +72,8 @@ const props = defineProps({
     default: true
   }
 });
+
+const { t } = useI18n();
 
 // 初始化store
 const userStore = useUserStore();
@@ -82,21 +85,21 @@ const currencyConfig = computed(() => getCurrencyConfig(userStore.merchantInfo?.
 // 响应式项目列表
 const projectList = reactive([
   {
-    name: "期初金额",
+    nameKey: "home.project.openingBalance",
     amount: 0,
-    desc: "当日初始余额",
+    descKey: "home.project.openingBalanceDesc",
     count: ''
   },
   {
-    name: "收款",
+    nameKey: "home.project.receive",
     amount: 0,
-    desc: "成功收款数",
+    descKey: "home.project.receiveDesc",
     count: 0
   },
   {
-    name: "付款",
+    nameKey: "home.project.pay",
     amount: 0,
-    desc: "成功付款数",
+    descKey: "home.project.payDesc",
     count: 0
   },
 ]);
@@ -120,8 +123,7 @@ const getdata = async () => {
       id: userStore.merchantInfo.id,
     });
     if (merchantRes.code === 200 && merchantRes.data) {
-      projectList[0].name = "余额";
-      projectList[0].desc = "当日初始余额";
+      projectList[0].nameKey = "home.project.balance";
       projectList[0].amount = Number(merchantRes.data.Balance) || 0;
     }
     }else{

@@ -1,7 +1,7 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
-      <h1>接口文档</h1>
+      <h1>{{ t('menu.ApiDoc') }}</h1>
       <hr />
     </header>
 
@@ -29,17 +29,17 @@
           <el-card class="fallback-card">
             <div class="fallback-header">
               <el-icon class="fallback-icon"><Document /></el-icon>
-              <h2>接口文档加载失败</h2>
+              <h2>{{ t('apiDoc.loadFailed') }}</h2>
             </div>
             <div class="fallback-body">
-              <p>当前接口文档暂时无法访问，请尝试以下操作：</p>
+              <p>{{ t('apiDoc.unavailable') }}</p>
               <ul class="fallback-list">
-                <li>检查网络连接</li>
-                <li>刷新页面重试</li>
-                <li>联系管理员获取帮助</li>
+                <li>{{ t('apiDoc.checkNetwork') }}</li>
+                <li>{{ t('apiDoc.retry') }}</li>
+                <li>{{ t('apiDoc.contactAdmin') }}</li>
               </ul>
               <div class="fallback-actions">
-                <el-button type="primary" @click="reloadIframe">重新加载</el-button>
+                <el-button type="primary" @click="reloadIframe">{{ t('apiDoc.reload') }}</el-button>
               </div>
             </div>
           </el-card>
@@ -51,7 +51,10 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { Document } from '@element-plus/icons-vue';
+
+const { t } = useI18n();
 
 // 加载状态
 const isLoading = ref(true);

@@ -24,7 +24,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import useUserStore from '@/stores/user';
 import SubmitForm from '@/components/SubmitForm.vue';
 import { useI18n } from 'vue-i18n';
@@ -33,26 +33,26 @@ const { t } = useI18n();
 
 const userStore = useUserStore();
 
-const formList = ref([
+const formList = computed(() => [
   {
-    label: "支付商户号",
+    label: t('account.info.form.merchantNo'),
     prop: "id",
     name: "input",
     colSpan: 24,
     disabled: true,
   },
   {
-    label: "联系方式",
+    label: t('account.info.form.contact'),
     prop: "email",
     name: "input",
     disabled: true,
   },
   {
-    label: "登录MFA2验证",
+    label: t('account.info.form.mfaLogin'),
     prop: "google",
     name: "switch",
-    activeText: "开启",
-    inactiveText: "关闭",
+    activeText: t('account.info.form.switchOn'),
+    inactiveText: t('account.info.form.switchOff'),
     activeValue: 1,
     inactiveValue: 0,
     colSpan: 24,

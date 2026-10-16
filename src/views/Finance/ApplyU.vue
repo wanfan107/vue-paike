@@ -33,7 +33,7 @@
               </div>
               <div class="detail-row">
                 <dt>{{ t('order.applyU.account.cycle') }}</dt>
-                <dd>{{ detail.type }}</dd>
+                <dd>{{ t('order.applyU.account.cycleText') }}</dd>
               </div>
               <div class="detail-row">
                 <dt>{{ t('order.applyU.account.rate') }}</dt>
@@ -268,7 +268,6 @@ const submitFormRef = ref(null);
 const detail = reactive({
   balance: '',
   unsettledBalance: '',
-  type: '每日结算',
   rate: ''
 });
 const ruleForm = reactive({
@@ -340,8 +339,8 @@ const walletAddressOptions = computed(() => {
   } else {
     options = []
     options.push({
-      name:  "暂无钱包地址，请先新增钱包地址",
-      original:  "暂无钱包地址，请先新增钱包地址",
+      name: t('order.applyU.msg.noWallet'),
+      original: t('order.applyU.msg.noWallet'),
       value:  "",
     });
   }
@@ -533,16 +532,16 @@ const submit = () => {
       if (ok) {
 ElMessageBox.alert(
   `<div style="text-align: center; padding: 8px;">
-    <div style="font-size: 18px; font-weight: bold; color: var(--brand-primary, #67C23A); margin-bottom: 10px;">申请已提交</div>
+    <div style="font-size: 18px; font-weight: bold; color: var(--brand-primary, #67C23A); margin-bottom: 10px;">${t('order.applyU.msg.submitSuccess')}</div>
     <div style="font-size: 14px; color: var(--text-secondary, #606266); line-height: 1.8;">
-      ${bizNo ? `<div>单号：<span style="font-family: monospace;">${bizNo}</span></div>` : ''}
-      <div>请完成 Telegram 商户群双人确认，后续进入 OP / Manager 双审</div>
-      <div style="color: var(--text-faint, #909399); font-size: 12px; margin-top: 6px;">审批通过后才会执行扣款与转U</div>
+      ${bizNo ? `<div>${t('order.applyU.msg.orderNoLabel')}<span style="font-family: monospace;">${bizNo}</span></div>` : ''}
+      <div>${t('order.applyU.msg.telegramHint')}</div>
+      <div style="color: var(--text-faint, #909399); font-size: 12px; margin-top: 6px;">${t('order.applyU.msg.approvalHint')}</div>
     </div>
   </div>`,
-  '提U审批申请',
+  t('order.applyU.msg.submitTitle'),
   {
-    confirmButtonText: '确定',
+    confirmButtonText: t('common.confirm'),
     type: 'success',
     showClose: false,
     closeOnClickModal: true,
@@ -555,15 +554,15 @@ ElMessageBox.alert(
   }
 );
       } else {
-        ElMessage.error(res.msg || res.message || res.ErrorMessage || '提交失败');
+        ElMessage.error(res.msg || res.message || res.ErrorMessage || t('order.applyU.msg.submitFailed'));
       }
     }) 
     .catch((err) => {
       loading.value = false;
       // 后端已废弃旧接口时返回 410/引导文案
-      const msg = err?.response?.data?.msg || err?.message || '提交失败，请稍后重试';
+      const msg = err?.response?.data?.msg || err?.message || t('order.applyU.msg.submitRetry');
       if (err?.response?.status === 410) {
-        ElMessageBox.alert(msg || '旧提U路径已停用，请改用提U审批流程', '流程已变更', { type: 'warning' });
+        ElMessageBox.alert(msg || t('order.applyU.msg.oldPathDisabled'), t('order.applyU.msg.flowChanged'), { type: 'warning' });
       } 
     });
 };

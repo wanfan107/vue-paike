@@ -385,7 +385,7 @@
       <div style="text-align: center;">
               <el-button type="primary" block @click="downloadVoucher" style="margin-top:10px">
           <el-icon><Download /></el-icon>
-          Descarregar comprovante
+          {{ t('order.payment.msg.downloadVoucher') }}
         </el-button>
       </div>
    
@@ -691,7 +691,7 @@ if (orderNo && orderNo.length === 32 && orderNo.startsWith('E')) {
       String(utcDate.getUTCHours()).padStart(2, '0') + ':' +
       String(utcDate.getUTCMinutes()).padStart(2, '0');
   }  else {
-    formattedTime.value = 'EndToEndId inválido';
+    formattedTime.value = t('order.payment.msg.invalidEndToEndId');
   }
 };
 

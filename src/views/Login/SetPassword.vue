@@ -13,29 +13,29 @@
       </div>
 
       <div v-if="isLoading" class="login-form">
-        <div class="loading-text">Verifying... / 验证中...</div>
+        <div class="loading-text">{{ t('login.verifying') }}</div>
       </div>
 
       <div v-else-if="tokenError" class="login-form">
         <div class="error-icon">!</div>
         <h2 class="error-title">{{ tokenError }}</h2>
-        <p class="error-hint">请联系集团管理员重新发送邀请</p>
+        <p class="error-hint">{{ t('login.contactAdminResend') }}</p>
         <el-button    style="width: 100%"
               type="primary"
               size="default"
               :loading="isLoading"
-               @click="goToLogin">前往登录</el-button>
+               @click="goToLogin">{{ t('login.goToLogin') }}</el-button>
       </div>
 
       <div v-else-if="success" class="login-form">
         <div class="success-icon">&#10003;</div>
-        <h2 class="success-title">密码设置成功</h2>
-        <p class="success-hint">您的账户已激活，现在可以登录</p>
+        <h2 class="success-title">{{ t('login.passwordSetSuccess') }}</h2>
+        <p class="success-hint">{{ t('login.accountActivated') }}</p>
         <el-button  style="width: 100%"
               type="primary"
               size="default"
               :loading="isLoading"
-              @click="goToLogin">前往登录</el-button>
+              @click="goToLogin">{{ t('login.goToLogin') }}</el-button>
       </div>
 
       <div v-else class="login-form">
@@ -46,18 +46,18 @@
           @keyup.enter.native="submitForm"
           :rules="rules"
         >
-          <div class="form-title">用户设置密码</div>
+          <div class="form-title">{{ t('login.userSetPasswordTitle') }}</div>
           <p class="form-subtitle" v-if="tokenData">
-            {{ tokenData.tokenType === 'ResetPassword' ? '重置您的账户密码' : '激活您的账户并设置密码' }}
+            {{ tokenData.tokenType === 'ResetPassword' ? t('login.resetYourPassword') : t('login.activateAndSetPassword') }}
           </p>
           
-          <el-form-item label="新密码" prop="newPassword">
+          <el-form-item :label="t('login.newPassword')" prop="newPassword">
             <el-input
               v-model="passwordForm.newPassword"
               size="default"
               type="password"
               show-password
-              placeholder="6-16位，字母或数字开头，至少包含3种字符类型"
+              :placeholder="t('login.newPasswordHint')"
             ></el-input>
             <div v-if="passwordForm.newPassword" class="password-strength-container">
               <div class="password-strength-boxes">
@@ -74,13 +74,13 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="确认密码" prop="confirmPassword">
+          <el-form-item :label="t('login.confirmPassword')" prop="confirmPassword">
             <el-input
               v-model="passwordForm.confirmPassword"
               size="default"
               type="password"
               show-password
-              placeholder="再次输入密码"
+              :placeholder="t('login.reenterPassword')"
             ></el-input>
           </el-form-item>
 
@@ -110,11 +110,13 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 import { http } from '@/api';
 
 const route = useRoute();
 const router = useRouter();
+const { t } = useI18n();
 
 const passwordFormRef = ref(null);
 const isLoading = ref(true);
@@ -131,25 +133,25 @@ const passwordForm = ref({
   confirmPassword: ''
 });
 
-const rules = ref({
+const rules = computed(() => ({
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { required: true, message: t('login.rules.newPasswordRequired'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (!value) {
-          callback(new Error('请输入新密码'));
+          callback(new Error(t('login.rules.newPasswordRequired')));
         } else if (value.length < 6) {
-          callback(new Error('密码长度至少6位'));
+          callback(new Error(t('login.rules.min6')));
         } else if (/\s/.test(value)) {  // 新增：检查是否包含空格
-      callback(new Error('密码不能包含空格'));
+      callback(new Error(t('login.rules.noSpace')));
     } else if (!/[a-zA-Z]/.test(value)) {
-          callback(new Error('密码必须包含字母'));
+          callback(new Error(t('login.rules.needLetter')));
         } else if (!/\d/.test(value)) {
-          callback(new Error('密码必须包含数字'));
+          callback(new Error(t('login.rules.needNumber')));
         } else if (!/[^A-Za-z0-9]/.test(value)) {
-          callback(new Error('密码必须包含特殊字符'));
+          callback(new Error(t('login.rules.needSpecial')));
         } else if (passwordStrength.value < 3) {
-          callback(new Error('密码强度需达到中高及以上'));
+          callback(new Error(t('login.rules.strengthLow')));
         } else {
           callback();
         }
@@ -158,11 +160,11 @@ const rules = ref({
     }
   ],
   confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { required: true, message: t('login.rules.confirmPasswordRequired'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (value !== passwordForm.value.newPassword) {
-          callback(new Error('两次输入的密码不一致'));
+          callback(new Error(t('login.rules.passwordMismatch')));
         } else {
           callback();
         }
@@ -170,12 +172,12 @@ const rules = ref({
       trigger: 'blur'
     }
   ]
-});
+}));
 
 const calculatePasswordStrength = (password) => {
   let strength = 0;
   let color = '#ff0000';
-  let text = '强度低';
+  let text = t('login.strength.low');
 
   if (!password) {
     passwordStrength.value = 0;
@@ -195,16 +197,16 @@ const calculatePasswordStrength = (password) => {
   passwordStrengthWidth.value = (strength / 4) * 100 + '%';
 
   if (strength <= 1) {
-    text = '强度低';
+    text = t('login.strength.low');
     color = '#ff0000';
   } else if (strength <= 2) {
-    text = '强度中';
+    text = t('login.strength.mid');
     color = '#ff8800';
   } else if (strength <= 3) {
-    text = '强度中高';
+    text = t('login.strength.midHigh');
     color = '#aabb00';
   } else {
-    text = '强度高';
+    text = t('login.strength.high');
     color = '#1a7f37';
   }
 
@@ -222,7 +224,7 @@ watch(
 
 
 const submitButtonText = computed(() => {
-  return '确认设置密码';
+  return t('login.confirmSetPassword');
 });
 
 onMounted(() => {
@@ -234,7 +236,7 @@ onMounted(() => {
   isLoading.value = true;
   const token = route.query.token || '';
   if (!token) {
-    tokenError.value = '无效链接：缺少令牌';
+    tokenError.value = t('login.msg.invalidLinkNoToken');
     isLoading.value = false;
     return;
   }
@@ -243,10 +245,10 @@ onMounted(() => {
     if (res.code === 200) {
       tokenData.value = res.data;
     } else {
-      tokenError.value = res.msg || '无效链接';
+      tokenError.value = res.msg || t('login.msg.invalidLink');
     }
   } catch (e) {
-    tokenError.value = '验证失败，请稍后重试';
+    tokenError.value = t('login.msg.verifyFailedRetry');
   }
   isLoading.value = false;
 }
@@ -265,13 +267,13 @@ async function submitForm() {
     
     if (res.code === 200) {
       success.value = true;
-      ElMessage.success(res.msg || '密码设置成功');
+      ElMessage.success(res.msg || t('login.passwordSetSuccess'));
     } else {
-      ElMessage.error(res.msg || '设置失败');
+      ElMessage.error(res.msg || t('login.msg.setFailed'));
     }
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('设置密码失败');
+      ElMessage.error(t('login.msg.setPasswordFailed'));
     }
   } finally {
     isLoading.value = false;

@@ -12,7 +12,7 @@
               <el-date-picker
                 v-model="selectedTime"
                 type="datetime"
-                placeholder="选择时间"            
+                :placeholder="t('statistics.overview.selectTime')"            
                 format="YYYY-MM-DD HH:mm:ss"
                 value-format="YYYY-MM-DD HH:mm:ss"
                 :show-now="false"
@@ -21,23 +21,23 @@
               <!-- 时间范围下拉 -->
               <el-select
                 v-model="timeRange"
-                placeholder="选择时间范围"
+                :placeholder="t('statistics.overview.selectTimeRange')"
                 @change="getdata"
               >
-                <el-option label="近5分钟" value="5" />
-                <el-option label="近15分钟" value="15" />
-                <el-option label="近30分钟" value="30" />
-                <el-option label="近1小时" value="60" />
+                <el-option :label="t('statistics.overview.last5min')" value="5" />
+                <el-option :label="t('statistics.overview.last15min')" value="15" />
+                <el-option :label="t('statistics.overview.last30min')" value="30" />
+                <el-option :label="t('statistics.overview.last1hour')" value="60" />
               </el-select>
               <el-popover
-                title="温馨提示"
-                content="为了统计准确性，统计时间自动提前两分钟。例如：当前时间是01:00:00，您统计近5分钟成功率数据，实际展示的订单数量及成功率区间为00:53:00-00:58:00"
+                :title="t('statistics.overview.tipTitle')"
+                :content="t('statistics.overview.tipContent')"
                 placement="bottom"
               >
                 <template #reference><el-icon><WarningFilled /></el-icon></template>
               </el-popover>
-              <el-tooltip class="item" effect="dark" content="刷新数据" placement="bottom">
-                <el-button :icon="Refresh" @click.stop="getdata()">刷新</el-button>
+              <el-tooltip class="item" effect="dark" :content="t('statistics.overview.refreshData')" placement="bottom">
+                <el-button :icon="Refresh" @click.stop="getdata()">{{ t('common.refresh') }}</el-button>
               </el-tooltip>
             </div>
           </div>
@@ -171,7 +171,7 @@ const realTimeChart = computed(() => {
 
   return {
     title: {
-      text: "收款成功率趋势",
+      text: t('statistics.overview.chartTitle'),
       left: "center",
       top: 20,
       textStyle: {
@@ -184,14 +184,14 @@ const realTimeChart = computed(() => {
       formatter: function (params) {
         const index = params[0].dataIndex;
         let result = params[0].axisValue + "<br/>";
-        result += "收款笔数成功率: " + collectionSuccessRates[index] + "%<br/>";
-        result += "收款金额: " + formatCurrency(collectionAmounts[index], currency.value) + "<br/>";
-        result += "收款笔数: " + collectionCounts[index] + "笔";
+        result += t('statistics.overview.tooltipSuccessRate', { rate: collectionSuccessRates[index] }) + "<br/>";
+        result += t('statistics.overview.tooltipAmount') + formatCurrency(collectionAmounts[index], currency.value) + "<br/>";
+        result += t('statistics.overview.tooltipCount', { count: collectionCounts[index] });
         return result;
       },
     },
     legend: {
-      data: ["收款成功率"],
+      data: [t('statistics.overview.successRateName')],
       bottom: "5%",
       textStyle: {
         color: cssVar('--text-secondary', '#606266'),
@@ -216,7 +216,7 @@ const realTimeChart = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "成功率 (%)",
+      name: t('statistics.overview.successRateAxis'),
       min: 70,
       max: 100,
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
@@ -227,7 +227,7 @@ const realTimeChart = computed(() => {
     },
     series: [
       {
-        name: "收款成功率",
+        name: t('statistics.overview.successRateName'),
         type: "line",
         data: collectionSuccessRates,
         symbol: "circle",
@@ -343,7 +343,7 @@ const getdata = async () => {
     }
 
   } catch (error) {
-    ElMessage.error(error.msg || "获取数据失败");
+    ElMessage.error(error.msg || t('statistics.overview.getDataFailed'));
     console.error(error);
   }
 };

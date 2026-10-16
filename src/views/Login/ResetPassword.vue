@@ -19,24 +19,24 @@
           @keyup.enter.native="submitForm"
           :rules="rules"
         >
-          <div class="form-title">重置密码</div>
+          <div class="form-title">{{ t('login.resetPasswordTitle') }}</div>
           
-          <el-form-item label="邮箱" prop="email">
+          <el-form-item :label="t('login.email')" prop="email">
             <el-input
               v-model="passwordForm.email"
               size="default"
               type="text"
-              placeholder="请输入注册邮箱"
+              :placeholder="t('login.emailPlaceholder')"
               disabled
             ></el-input>
           </el-form-item>
 
-          <el-form-item label="验证码" prop="verificationCode">
+          <el-form-item :label="t('login.captcha')" prop="verificationCode">
             <el-input
               v-model="passwordForm.verificationCode"
               size="default"
               type="text"
-              placeholder="请输入验证码"
+              :placeholder="t('login.captchaPlaceholder')"
             >
               <template #append>
                 <el-button
@@ -44,19 +44,19 @@
                   :disabled="countdown > 0"
                   @click="sendVerificationCode"
                 >
-                  {{ countdown > 0 ? `${countdown}秒后重发` : '发送验证码' }}
+                  {{ countdown > 0 ? t('login.resendCode', { n: countdown }) : t('login.getCode') }}
                 </el-button>
               </template>
             </el-input>
           </el-form-item>
 
-          <el-form-item label="新密码" prop="newPassword">
+          <el-form-item :label="t('login.newPassword')" prop="newPassword">
             <el-input
               v-model="passwordForm.newPassword"
               size="default"
               type="password"
               show-password
-              placeholder="请输入新密码"
+              :placeholder="t('login.newPasswordPlaceholder')"
             ></el-input>
             <div v-if="passwordForm.newPassword" class="password-strength-container">
               <div class="password-strength-boxes">
@@ -73,13 +73,13 @@
             </div>
           </el-form-item>
 
-          <el-form-item label="确认密码" prop="confirmPassword">
+          <el-form-item :label="t('login.confirmPassword')" prop="confirmPassword">
             <el-input
               v-model="passwordForm.confirmPassword"
               size="default"
               type="password"
               show-password
-              placeholder="请确认新密码"
+              :placeholder="t('login.confirmPasswordPlaceholder')"
             ></el-input>
           </el-form-item>
 
@@ -91,12 +91,12 @@
               :loading="isLoading"
               @click="submitForm"
             >
-              确认重置密码
+              {{ t('login.confirmResetPassword') }}
             </el-button>
           </el-form-item>
 
           <div style="text-align: center; margin-top: 16px;">
-            <el-link type="primary" @click="goToLogin">返回登录</el-link>
+            <el-link type="primary" @click="goToLogin">{{ t('login.backToLogin') }}</el-link>
           </div>
         </el-form>
       </div>
@@ -110,11 +110,13 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, computed, watch } from 'vue';
 import { useRouter } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import { ElMessage } from 'element-plus';
 
 const router = useRouter();
+const { t } = useI18n();
 
 const passwordFormRef = ref(null);
 const isLoading = ref(false);
@@ -129,31 +131,31 @@ const passwordForm = ref({
   confirmPassword: ''
 });
 
-const rules = ref({
+const rules = computed(() => ({
   email: [
-    { required: true, message: '请输入邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+    { required: true, message: t('login.rules.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('login.rules.emailFormat'), trigger: 'blur' }
   ],
   verificationCode: [
-    { required: true, message: '请输入验证码', trigger: 'blur' },
-    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+    { required: true, message: t('login.rules.captchaRequired'), trigger: 'blur' },
+    { min: 6, max: 6, message: t('login.rules.captchaLen'), trigger: 'blur' }
   ],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { required: true, message: t('login.rules.newPasswordRequired'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (!value) {
-          callback(new Error('请输入新密码'));
+          callback(new Error(t('login.rules.newPasswordRequired')));
         } else if (value.length < 6) {
-          callback(new Error('密码长度至少6位'));
+          callback(new Error(t('login.rules.min6')));
         } else if (!/[a-zA-Z]/.test(value)) {
-          callback(new Error('密码必须包含字母'));
+          callback(new Error(t('login.rules.needLetter')));
         } else if (!/\d/.test(value)) {
-          callback(new Error('密码必须包含数字'));
+          callback(new Error(t('login.rules.needNumber')));
         } else if (!/[^A-Za-z0-9]/.test(value)) {
-          callback(new Error('密码必须包含特殊字符'));
+          callback(new Error(t('login.rules.needSpecial')));
         } else if (passwordStrength.value < 3) {
-          callback(new Error('密码强度需达到中高及以上'));
+          callback(new Error(t('login.rules.strengthLow')));
         } else {
           callback();
         }
@@ -162,11 +164,11 @@ const rules = ref({
     }
   ],
   confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
+    { required: true, message: t('login.rules.confirmPasswordRequired'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (value !== passwordForm.value.newPassword) {
-          callback(new Error('两次输入的密码不一致'));
+          callback(new Error(t('login.rules.passwordMismatch')));
         } else {
           callback();
         }
@@ -174,7 +176,7 @@ const rules = ref({
       trigger: 'blur'
     }
   ]
-});
+}));
 
 const calculatePasswordStrength = (password) => {
   let strength = 0;
@@ -218,7 +220,7 @@ async function sendVerificationCode() {
   try {
     await passwordFormRef.value.validateField('email');
     
-    ElMessage.info('验证码已发送到您的邮箱');
+    ElMessage.info(t('login.msg.codeSentToEmail'));
     
     countdown.value = 60;
     const timer = setInterval(() => {
@@ -240,12 +242,12 @@ async function submitForm() {
     
     await new Promise(resolve => setTimeout(resolve, 800));
     
-    ElMessage.success('密码重置成功！');
+    ElMessage.success(t('login.msg.resetSuccess'));
     
     router.push('/login');
   } catch (error) {
     if (error !== 'cancel') {
-      ElMessage.error('请填写完整信息');
+      ElMessage.error(t('login.msg.fillComplete'));
     }
   } finally {
     isLoading.value = false;

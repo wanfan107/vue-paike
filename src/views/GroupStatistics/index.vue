@@ -11,7 +11,7 @@
             <el-date-picker
               v-model="selectedTime"
               type="datetime"
-              placeholder="选择时间"
+              :placeholder="t('groupStatistics.overview.selectTime')"
               format="YYYY-MM-DD HH:mm:ss"
               value-format="YYYY-MM-DD HH:mm:ss"
               :show-now="false"
@@ -20,35 +20,35 @@
             />
             <el-select
               v-model="timeRange"
-              placeholder="选择时间范围"
+              :placeholder="t('groupStatistics.overview.selectTimeRange')"
               style="width: 140px;"
               @change="getdata"
             >
-              <el-option label="近5分钟" value="5" />
-              <el-option label="近15分钟" value="15" />
-              <el-option label="近30分钟" value="30" />
-              <el-option label="近1小时" value="60" />
+              <el-option :label="t('groupStatistics.overview.last5Min')" value="5" />
+              <el-option :label="t('groupStatistics.overview.last15Min')" value="15" />
+              <el-option :label="t('groupStatistics.overview.last30Min')" value="30" />
+              <el-option :label="t('groupStatistics.overview.last1Hour')" value="60" />
             </el-select>
             <el-popover
-              title="温馨提示"
-              content="为了统计准确性，统计时间自动提前两分钟。例如：当前时间是01:00:00，您统计近5分钟成功率数据，实际展示的订单数量及成功率区间为00:53:00-00:58:00"
+              :title="t('groupStatistics.overview.tipTitle')"
+              :content="t('groupStatistics.overview.tipContent')"
               placement="bottom"
             >
               <template #reference><el-icon><WarningFilled /></el-icon></template>
             </el-popover>
-            <el-button :icon="Refresh" @click.stop="getdata()">刷新</el-button>
+            <el-button :icon="Refresh" @click.stop="getdata()">{{ t('common.refresh') }}</el-button>
           </div>
         </div>
 
         <div class="merchant-filter-bar">
-          <span class="filter-label">商户筛选</span>
+          <span class="filter-label">{{ t('groupStatistics.overview.merchantFilter') }}</span>
           <div class="merchant-select-wrapper">
             <el-select
               v-model="selectedMerchants"
               multiple
               collapse-tags
               collapse-tags-tooltip
-              placeholder="选择商户"
+              :placeholder="t('groupStatistics.overview.selectMerchant')"
               style="width: 250px;"
               size="small"
             >
@@ -60,18 +60,18 @@
               />
             </el-select>
             <div class="select-buttons">
-              <el-button size="small" @click="selectAll">全选</el-button>
-              <el-button size="small" @click="selectInverse">反选</el-button>
+              <el-button size="small" @click="selectAll">{{ t('groupStatistics.overview.selectAll') }}</el-button>
+              <el-button size="small" @click="selectInverse">{{ t('groupStatistics.overview.selectInverse') }}</el-button>
             </div>
           </div>
         </div>
         <div class="chart-container">
           <div :style="{ height: tableHeight + 'px' }" style="overflow: hidden;">
             <el-table :data="tableRows" border size="small" :height="tableHeight">
-              <el-table-column prop="code" label="商户代码" align="center" width="160" />
-              <el-table-column prop="orderCount" label="创建订单" align="center" />
-              <el-table-column prop="successCount" label="成功订单" align="center" />
-              <el-table-column prop="successRate" label="成功率" align="center" />
+              <el-table-column prop="code" :label="t('groupStatistics.overview.merchantCode')" align="center" width="160" />
+              <el-table-column prop="orderCount" :label="t('groupStatistics.overview.createdOrders')" align="center" />
+              <el-table-column prop="successCount" :label="t('groupStatistics.overview.successOrders')" align="center" />
+              <el-table-column prop="successRate" :label="t('groupStatistics.overview.successRate')" align="center" />
             </el-table>
           </div>
           <div class="resize-handle" @mousedown="startResize"></div>
@@ -213,7 +213,7 @@ const tableRows = computed(() => {
   }));
   // 集团汇总行
   rows.push({
-    code: '集团汇总',
+    code: t('groupStatistics.overview.groupSummary'),
     orderCount: apiData.value.group.orderCount,
     successCount: apiData.value.group.successCount,
     successRate: apiData.value.group.successRate,
@@ -238,7 +238,7 @@ const realTimeChart = computed(() => {
       const color = merchantColors[colorIdx % merchantColors.length];
       colorIdx++;
       series.push({
-        name: mc.code + " 成功率",
+        name: `${mc.code} ${t('groupStatistics.overview.successRate')}`,
         type: "line",
         data: mc.points.map(p => parseRate(p.successRate)),
         symbol: "circle",
@@ -263,7 +263,7 @@ const realTimeChart = computed(() => {
 
   return {
     title: {
-      text: "集团收款成功率趋势",
+      text: t('groupStatistics.overview.chartTitle'),
       left: "center",
       top: 20,
       textStyle: {
@@ -337,7 +337,7 @@ const realTimeChart = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "成功率 (%)",
+      name: t('groupStatistics.overview.axisSuccessRate'),
       min: 70,
       max: 100,
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
@@ -408,7 +408,7 @@ const getdata = async () => {
     const res = await http.groupRealtime({ startTime, endTime });
     const data = res.data;
     if (!data) {
-      ElMessage.warning(res.msg || "获取数据失败");
+      ElMessage.warning(res.msg || t('groupStatistics.overview.fetchFailed'));
       return;
     }
 
@@ -429,7 +429,7 @@ const getdata = async () => {
       chartInstance.setOption(realTimeChart.value, true);
     }
   } catch (error) {
-    ElMessage.error(error.msg || "获取数据失败");
+    ElMessage.error(error.msg || t('groupStatistics.overview.fetchFailed'));
     console.error(error);
   }
 };

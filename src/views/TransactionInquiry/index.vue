@@ -10,7 +10,7 @@
             <el-form-item>
               <el-input
                 v-model="input"
-                placeholder="请输入系统单、客户订单号查询、银行单号查询"
+                :placeholder="t('home.searchPlaceholder')"
                 clearable
                 style="width: 400px"
                 @keyup.enter="handleSearch"
@@ -18,7 +18,7 @@
             </el-form-item>
             <el-form-item class="search-actions">
               <el-button type="primary" :icon="Search" @click="handleSearch">
-                搜索
+                {{ t('common.search') }}
               </el-button>
             </el-form-item>
           </el-form>
@@ -27,7 +27,7 @@
         <div class="empty-state" v-if="datalist.length==0">
           <div class="empty-icon">📋</div>
           <h2>{{ title }}</h2>
-          <p>请输入搜索条件</p>
+          <p>{{ t('home.enterSearchCondition') }}</p>
         </div>
         <div class="empty-state" v-else>
           <!-- 这里显示搜索结果 -->
@@ -57,7 +57,7 @@ const input = ref('');
 
 const handleSearch = () => {
   if (!input.value.trim()) {
-    ElMessage.warning('请输入搜索条件');
+    ElMessage.warning(t('home.enterSearchCondition'));
     return;
   }
   // 实现搜索逻辑

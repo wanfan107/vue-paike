@@ -152,7 +152,7 @@
                 v-else
                 :style="{
                   ...formStyle,
-                  color: '#00000040',
+                  color: 'var(--text-faint, #00000040)',
                   width: '100%',
                   wordBreak: 'break-all',
                   whiteSpace: 'normal',
@@ -179,7 +179,7 @@
         }"
       >
         <el-button v-if="showClose" @click="onClose" >{{
-          cancelText
+          cancelText || t('common.reset')
         }}</el-button>
         <el-button
           :loading="loading"
@@ -200,7 +200,7 @@
           marginTop: '10px',
         }"
       >
-        当前模式不支持关闭MFA2验证码
+        {{ t('common.mfaNotSupported') }}
       </div>
     </slot>
     <slot name="footer" v-if="footer2">
@@ -213,7 +213,7 @@
           marginTop: '10px',
         }"
       >
-        当前模式不支持自定义修改IP白名单
+        {{ t('common.ipWhitelistNotSupported') }}
       </div>
     </slot>
   </div>
@@ -230,7 +230,7 @@ const { t } = useI18n();
 const props = defineProps({
   cancelText: {
     type: String,
-    default: "重置",
+    default: "",
   },
   labelWidth: {
     type: String,
@@ -290,11 +290,6 @@ const emit = defineEmits(['save', 'close', 'error', 'change', 'blur']);
 // 定义组件状态
 const submitFormRef = ref(null);
 
-// 生命周期钩子 - 组件挂载后
-onMounted(() => {
-  console.log(props.loading);
-});
-
 // 渲染自定义组件的方法
 const renderCustomComponent = (item) => {
   const { ruleForm } = props;
@@ -315,7 +310,6 @@ const onSave = () => {
       emit('error');
     }
   });
-  console.log(props.loading);
 };
 
 // 表单关闭

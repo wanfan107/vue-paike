@@ -8,26 +8,26 @@
         <!-- 搜索区域 -->
         <!-- <div class="search-container">
           <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="商户代码">
+            <el-form-item :label="t('order.groupMerchantList.search.merchantCode')">
               <el-input
                 v-model="searchForm.code"
-                placeholder="请输入商户代码"
+                :placeholder="t('order.groupMerchantList.search.merchantCodePlaceholder')"
                 clearable
                 style="width: 180px"
               />
             </el-form-item>
-            <el-form-item label="状态">
+            <el-form-item :label="t('order.groupMerchantList.search.status')">
               <el-select
                 v-model="searchForm.status"
-                placeholder="全部"
+                :placeholder="t('order.groupMerchantList.search.statusAll')"
                 clearable
                 style="width: 120px"
               >
-                <el-option :value="0" label="未激活" />
-                <el-option :value="1" label="基本状态" />
-                <el-option :value="2" label="风控冻结" />
-                <el-option :value="3" label="财务冻结" />
-                <el-option :value="4" label="启用商户" />
+                <el-option :value="0" :label="t('order.groupMerchantList.search.status0')" />
+                <el-option :value="1" :label="t('order.groupMerchantList.search.status1')" />
+                <el-option :value="2" :label="t('order.groupMerchantList.search.status2')" />
+                <el-option :value="3" :label="t('order.groupMerchantList.search.status3')" />
+                <el-option :value="4" :label="t('order.groupMerchantList.search.status4')" />
               </el-select>
             </el-form-item>
             <el-form-item>
@@ -45,58 +45,58 @@
         <div class="stats-section">
           <div class="stat-card">
             <div class="stat-value">{{ totalCount }}</div>
-            <div class="stat-label">总商户数</div>
+            <div class="stat-label">{{ t('order.groupMerchantList.stat.totalCount') }}</div>
           </div>
           <div class="stat-card info">
             <div class="stat-value">{{ totalBalance }}</div>
-            <div class="stat-label">总余额</div>
+            <div class="stat-label">{{ t('order.groupMerchantList.stat.totalBalance') }}</div>
           </div>
           <div class="stat-card success">
             <div class="stat-value">{{ activeCount }}</div>
-            <div class="stat-label">启用商户</div>
+            <div class="stat-label">{{ t('order.groupMerchantList.stat.activeCount') }}</div>
           </div>
           <div class="stat-card danger">
             <div class="stat-value">{{ frozenCount }}</div>
-            <div class="stat-label">冻结商户</div>
+            <div class="stat-label">{{ t('order.groupMerchantList.stat.frozenCount') }}</div>
           </div>
           <div class="stat-card warning">
             <div class="stat-value">{{ suspendedCount }}</div>
-            <div class="stat-label">挂起商户</div>
+            <div class="stat-label">{{ t('order.groupMerchantList.stat.suspendedCount') }}</div>
           </div>
         </div>
 
         <!-- 商户列表 -->
         <div class="table-panel">
           <el-table :data="merchantList" border style="width: 100%" v-loading="loading">
-            <el-table-column prop="isGroup" label="类型" width="80" align="center">
+            <el-table-column prop="isGroup" :label="t('order.groupMerchantList.table.type')" width="120" align="center">
               <template #default="{ row }">
                 <el-tag :type="row.isGroup ? 'warning' : 'danger'" size="small">
-                  {{ row.isGroup ? '集团' : '商户' }}
+                  {{ row.isGroup ? t('order.groupMerchantList.table.typeGroup') : t('order.groupMerchantList.table.typeMerchant') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="code" label="商户号" min-width="100" align="left"></el-table-column>
-            <el-table-column prop="balance" label="余额" min-width="150" align="right">
+            <el-table-column prop="code" :label="t('order.groupMerchantList.table.code')" min-width="100" align="left"></el-table-column>
+            <el-table-column prop="balance" :label="t('order.groupMerchantList.table.balance')" min-width="150" align="right">
               <template #default="{ row }">
                 {{ formatMoney(row.balance) }}
               </template>
             </el-table-column>
-            <el-table-column prop="checkedBalanceTime" label="余额更新时间" width="170" align="center">
+            <el-table-column prop="checkedBalanceTime" :label="t('order.groupMerchantList.table.balanceUpdateTime')" width="170" align="center">
               <template #default="{ row }">
                 {{ formatDate(row.checkedBalanceTime) }}
               </template>
             </el-table-column>
-            <el-table-column prop="currency" label="币种" width="70" align="center"></el-table-column>
-            <el-table-column prop="status" label="商户状态" width="100" align="center">
+            <el-table-column prop="currency" :label="t('order.groupMerchantList.table.currency')" width="90" align="center"></el-table-column>
+            <el-table-column prop="status" :label="t('order.groupMerchantList.table.status')" width="120" align="center">
               <template #default="{ row }">
                 <StatusPill :type="statusPillType(row.status)" :text="statusText(row.status)" />
               </template>
             </el-table-column>
-            <el-table-column prop="isSuspended" label="挂起" width="70" align="center">
+            <el-table-column prop="isSuspended" :label="t('order.groupMerchantList.table.suspended')" width="150" align="center">
               <template #default="{ row }">
                 <StatusPill
                   :type="row.isSuspended ? 'success' : 'neutral'"
-                  :text="row.isSuspended ? '是' : '否'"
+                  :text="row.isSuspended ? t('order.groupMerchantList.table.yes') : t('order.groupMerchantList.table.no')"
                 />
               </template>
             </el-table-column>
@@ -108,11 +108,11 @@
                 <span v-else>-</span>
               </template>
             </el-table-column> -->
-            <el-table-column prop="telegram" label="网站" min-width="320" align="left">
+            <el-table-column prop="telegram" :label="t('order.groupMerchantList.table.website')" min-width="320" align="left">
               <template #default="{ row }">
                 <el-tooltip
                   v-if="editingCode === row.code"
-                  :content="'点击外部自动保存'"
+                  :content="t('order.groupMerchantList.table.websiteTipSave')"
                   placement="top"
                   :show-after="300"
                 >
@@ -123,31 +123,31 @@
                       maxlength="50"
                       show-word-limit
                       size="small"
-                      placeholder="请输入网站URL，如 https://example.com"
+                      :placeholder="t('order.groupMerchantList.table.websitePlaceholder')"
                       @input="filterWebsiteInput"
                       @blur="handleBlur(row)"
                       @keyup.enter="handleEnter(row)"
                       @keyup.esc="cancelEdit"
                       @mousedown.stop
                     />
-                    <span class="edit-hint">失焦保存 · Enter 确定 · Esc 取消</span>
+                    <span class="edit-hint">{{ t('order.groupMerchantList.table.websiteHint') }}</span>
                   </div>
                 </el-tooltip>
                 <el-tooltip
                   v-else
-                  :content="'点击编辑'"
+                  :content="t('order.groupMerchantList.table.websiteTipEdit')"
                   placement="top"
                   :show-after="300"
                 >
                   <div class="website-cell" @click="startEdit(row)">
                     <span class="website-text">{{ row.qq || '—' }}</span>
-                    <span v-if="!row.qq" class="website-placeholder">点击填写</span>
+                    <span v-if="!row.qq" class="website-placeholder">{{ t('order.groupMerchantList.table.websiteEmpty') }}</span>
                     <el-icon class="edit-icon"><Edit /></el-icon>
                   </div>
                 </el-tooltip>
               </template>
             </el-table-column>
-            <el-table-column v-if="hasCreditUsed" prop="creditUsed" label="授信已用" width="120" align="right" >
+            <el-table-column v-if="hasCreditUsed" prop="creditUsed" :label="t('order.groupMerchantList.table.creditUsed')" width="120" align="right" >
               <template #default="{ row }">
                 {{ formatMoney(row.creditUsed) }}
               </template>
@@ -157,7 +157,7 @@
                 {{ formatMoney(row.creditMax) }}
               </template>
             </el-table-column> -->
-            <el-table-column prop="createdOn" label="商户创建时间" width="170" align="center">
+            <el-table-column prop="createdOn" :label="t('order.groupMerchantList.table.createdOn')" width="170" align="center">
               <template #default="{ row }">
                 {{ formatDate(row.createdOn) }}
               </template>
@@ -208,6 +208,14 @@ const statusMap = {
   4: "启用商户"
 };
 
+const statusKeyMap = {
+  0: 'order.groupMerchantList.table.status0',
+  1: 'order.groupMerchantList.table.status1',
+  2: 'order.groupMerchantList.table.status2',
+  3: 'order.groupMerchantList.table.status3',
+  4: 'order.groupMerchantList.table.status4'
+};
+
 // 统计数据
 const totalCount = computed(() => merchantList.value.length);
 const totalBalance = computed(() => {
@@ -220,7 +228,9 @@ const suspendedCount = computed(() => merchantList.value.filter(m => m.isSuspend
 const hasCreditUsed = computed(() => merchantList.value.some(m => Number(m.creditUsed) > 0));
 
 const statusText = (status) => {
-  return statusMap[status] || "未知";
+  const key = statusKeyMap[status];
+  if (key) return t(key);
+  return statusMap[status] || t('order.groupMerchantList.table.statusUnknown');
 };
 
 const statusPillType = (status) => {
@@ -250,10 +260,10 @@ const loadData = async () => {
     if (res.code === 200) {
       merchantList.value = res.data.filter(m => !m.code?.startsWith('G')) || [];
     } else {
-      ElMessage.error(res.msg || "加载数据失败");
+      ElMessage.error(res.msg || t('order.groupMerchantList.msg.loadFailed'));
     }
   } catch (e) {
-    ElMessage.error("加载数据失败");
+    ElMessage.error(t('order.groupMerchantList.msg.loadFailed'));
   }
   loading.value = false;
 };
@@ -322,20 +332,23 @@ const handleEnter = async (row) => {
 const saveWebsite = async (row) => {
   const newVal = (editWebsite.value || '').trim();
   if (newVal.length > 50) {
-    ElMessage.warning('网站长度不能超过50个字符');
+    ElMessage.warning(t('order.groupMerchantList.msg.websiteTooLong'));
     isSubmitting.value = false;
     return;
   }
   if (newVal && !/^(https?):\/\/[^\s]+$/.test(newVal)) {
-    ElMessage.warning('网站必须为合法的URL格式（以 http:// 或 https:// 开头）');
+    ElMessage.warning(t('order.groupMerchantList.msg.websiteInvalid'));
     isSubmitting.value = false;
     return;
   }
   try {
     await ElMessageBox.confirm(
-      `确认将商户 ${row.code} 的网站修改为：「${newVal || '(空)'}」？`,
-      '修改确认',
-      { confirmButtonText: '确定', cancelButtonText: '取消', type: 'warning' }
+      t('order.groupMerchantList.msg.websiteConfirmMsg', {
+        code: row.code,
+        value: newVal || t('order.groupMerchantList.msg.websiteEmptyValue')
+      }),
+      t('order.groupMerchantList.msg.websiteConfirmTitle'),
+      { confirmButtonText: t('common.confirm'), cancelButtonText: t('common.cancel'), type: 'warning' }
     );
   } catch (e) {
     cancelEdit();
@@ -344,13 +357,13 @@ const saveWebsite = async (row) => {
   try {
     const res = await http.updateMerchantWebsite({ merchantCode: row.code, website: newVal });
     if (res.code === 200) {
-      ElMessage.success('修改成功');
+      ElMessage.success(t('order.groupMerchantList.msg.updateSuccess'));
       row.qq = newVal;
     } else {
-      ElMessage.error(res.msg || '修改失败');
+      ElMessage.error(res.msg || t('order.groupMerchantList.msg.updateFailed'));
     }
   } catch (e) {
-    ElMessage.error('修改失败');
+    ElMessage.error(t('order.groupMerchantList.msg.updateFailed'));
   } finally {
     cancelEdit();
   }

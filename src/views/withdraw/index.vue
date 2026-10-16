@@ -273,7 +273,7 @@ const { t } = useI18n();
 const props = defineProps({
   title: {
     type: String,
-    default: "下发订单",
+    default: "",
   },
 });
 

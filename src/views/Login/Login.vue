@@ -1,5 +1,34 @@
 ﻿<template>
   <div class="login-page">
+    <!-- 右上角：主题切换 + 语言切换 -->
+    <div class="login-toolbar">
+      <button class="icon-btn" :title="t('header.themeToggle')" @click="toggleTheme">
+        <el-icon :size="16">
+          <Sunny v-if="isDark" />
+          <Moon v-else />
+        </el-icon>
+      </button>
+      <el-dropdown trigger="click" @command="handleLocaleCommand">
+        <button class="icon-btn lang-btn" :title="t('header.language')">
+          <el-icon :size="16"><Operation /></el-icon>
+          <span class="lang-label">{{ currentLocaleLabel }}</span>
+          <el-icon class="lang-arrow" :size="12"><ArrowDown /></el-icon>
+        </button>
+        <template #dropdown>
+          <el-dropdown-menu>
+            <el-dropdown-item
+              v-for="item in LOCALES"
+              :key="item.value"
+              :command="item.value"
+              :class="{ 'is-current': item.value === locale }"
+            >
+              {{ item.label }}
+            </el-dropdown-item>
+          </el-dropdown-menu>
+        </template>
+      </el-dropdown>
+    </div>
+
     <!-- 左侧品牌展示区 -->
     <div class="login-brand">
       <div class="brand-glow"></div>
@@ -206,7 +235,7 @@
       :show-close="false"
     >
     <div         v-loading="loading"
-        element-loading-text="正在登录..."
+        :element-loading-text="t('login.loginLoading')"
         element-loading-spinner="el-icon-loading"
         element-loading-background="rgba(255, 255, 255, 0.9)">
       <div class="dialog-close" @click="closeDialog1">×</div>
@@ -223,7 +252,7 @@
           <el-select
             v-model="searchKey"
             filterable
-            placeholder="请选择"
+            :placeholder="t('common.select')"
             clearable
           >
             <el-option
@@ -250,8 +279,8 @@
             </el-tooltip>
           </div>
           <div class="right-column">
-<div class="account-company"><span>余额：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
-            <div class="account-number">创建时间：{{ account.createdOn }}</div>
+<div class="account-company"><span>{{ t('login.balanceLabel') }}</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
+            <div class="account-number">{{ t('login.createdTimeLabel') }}{{ account.createdOn }}</div>
           </div>
         </div>
       </div>
@@ -263,7 +292,7 @@
       :z-index="1003"
       top="10vh"
       width="400px"
-      title="忘记密码"
+      :title="t('login.forgotPasswordTitle')"
       v-model="showForgotPasswordDialog"
       :close-on-click-modal="false"
       append-to-body
@@ -276,17 +305,17 @@
         :model="forgotPasswordForm"
         :rules="forgotPasswordRules"
       >
-        <el-form-item label="邮箱" prop="email">
+        <el-form-item :label="t('login.email')" prop="email">
           <el-input
             v-model="forgotPasswordForm.email"
-            placeholder="请输入注册邮箱"
+            :placeholder="t('login.emailPlaceholder')"
             disabled
           ></el-input>
         </el-form-item>
-        <el-form-item label="验证码" prop="verificationCode">
+        <el-form-item :label="t('login.captcha')" prop="verificationCode">
           <el-input
             v-model="forgotPasswordForm.verificationCode"
-            placeholder="请输入验证码"
+            :placeholder="t('login.captchaPlaceholder')"
             clearable
           >
             <template #append>
@@ -295,20 +324,20 @@
                 :disabled="countdown > 0"
                 @click="sendVerificationCode"
               >
-                {{ countdown > 0 ? `${countdown}秒后重发` : '发送验证码' }}
+                {{ countdown > 0 ? t('login.resendCode', { n: countdown }) : t('login.getCode') }}
               </el-button>
             </template>
           </el-input>
         </el-form-item>
       </el-form>
       <template #footer>
-        <el-button @click="showForgotPasswordDialog = false">取消</el-button>
+        <el-button @click="showForgotPasswordDialog = false">{{ t('common.cancel') }}</el-button>
         <el-button
           type="primary"
           :loading="resettingPassword"
           @click="resetPassword"
         >
-          重置密码
+          {{ t('login.resetPasswordTitle') }}
         </el-button>
       </template>
     </el-dialog> -->
@@ -323,6 +352,9 @@
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { ArrowDown, Sunny, Moon, Operation } from '@element-plus/icons-vue';
+import { useTheme } from '@/composables/useTheme';
+import { LOCALES, setLocale } from '@/i18n';
 import { ElMessage } from 'element-plus';
 import useUserStore from '@/stores/user';
 import FingerprintJS, { sources as fpSources, loadSources } from '@fingerprintjs/fingerprintjs';
@@ -330,7 +362,13 @@ import { useVisitorData } from '@fingerprint/vue';
 import { http } from '@/api';
 import md5 from 'js-md5';
 
-const { t } = useI18n();
+const { t, locale } = useI18n();
+const { isDark, toggleTheme } = useTheme();
+
+const currentLocaleLabel = computed(
+  () => LOCALES.find((item) => item.value === locale.value)?.label || t('common.zh'),
+);
+const handleLocaleCommand = (value) => setLocale(value);
 
 
 // 组件注册
@@ -400,7 +438,7 @@ async function sendEmailCode() {
     await groupLoginLogin();
     startEmailCountdown();
   } catch (error) {
-    ElMessage.error(error.msg || '获取验证码失败');
+    ElMessage.error(error.msg || t('login.msg.emailCodeFailed'));
   }
 }
 
@@ -745,7 +783,7 @@ async function _groupLogin() {
                   id: m.code,
                   code: m.code,
                   // siteUrl: m.siteUrl || '',
-                  type: m.qq || '未配置网站',
+                  type: m.qq || t('header.unconfiguredSite'),
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));
@@ -876,7 +914,7 @@ async function singleLoginLogin() {
     console.log("aws-----aws--------", error);
     // 专门处理用户取消CAPTCHA的情况
     if (error && error.isCaptchaCancel) {
-      ElMessage.info("已取消安全验证"); 
+      ElMessage.info(t('login.msg.captchaCancelled')); 
     }
   } finally {
     isLoading.value = false;
@@ -924,7 +962,7 @@ async function groupLoginLogin() {
   catch (error) {
     console.log("aws-----aws--------", error);
     if (error && error.isCaptchaCancel) {
-      ElMessage.info("已取消安全验证");
+      ElMessage.info(t('login.msg.captchaCancelled'));
     }
   } finally {
     isLoading.value = false;
@@ -1222,10 +1260,10 @@ async function confirmBind(account) {
         // 跳转到首页
         router.push({ path: "/home" });
       }else{
-        ElMessage.error(res.msg || "选择商户失败");
+        ElMessage.error(res.msg || t('login.msg.selectMerchantFailed'));
       }
     } catch (err) {
-      ElMessage.error(err.msg || "选择商户失败");
+      ElMessage.error(err.msg || t('login.msg.selectMerchantFailed'));
     } finally {
       loading.value = false;
     }
@@ -1296,86 +1334,113 @@ async function confirmBind(account) {
 
 // ---------- 左侧品牌展示区 ----------
 .login-brand {
-  flex: 0 0 45%;
+  flex: 0 0 46%;
   position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 56px 48px;
-  background: linear-gradient(160deg, #0f3d2e 0%, #16a34a 55%, #22c55e 100%);
+  padding: 64px 56px;
+  background:
+    radial-gradient(120% 80% at 16% 6%, rgba(74, 222, 128, 0.26) 0%, transparent 55%),
+    radial-gradient(95% 75% at 102% 102%, rgba(34, 197, 94, 0.38) 0%, transparent 60%),
+    linear-gradient(155deg, #04231a 0%, #0a472c 42%, #0f6b3a 76%, #15803d 100%);
   overflow: hidden;
-  color: var(--text-inverse, #ffffff);
+  // 品牌区恒定浅色文字：不跟随明暗主题（避免暗色下 --text-inverse 反色）
+  color: #ffffff;
+}
+// 品牌区纹理：细网格 + 左上角渐隐
+.login-brand::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask: radial-gradient(125% 105% at 0% 0%, #000 0%, transparent 72%);
+  -webkit-mask: radial-gradient(125% 105% at 0% 0%, #000 0%, transparent 72%);
+  pointer-events: none;
 }
 // 装饰光晕
 .brand-glow {
   position: absolute;
-  top: -30%;
-  right: -20%;
-  width: 600px;
-  height: 600px;
+  top: -28%;
+  right: -22%;
+  width: 620px;
+  height: 620px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15), transparent 70%);
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.18), transparent 68%);
+  filter: blur(6px);
   pointer-events: none;
 }
 .brand-glow::after {
   content: "";
   position: absolute;
-  bottom: -40%;
-  left: -30%;
-  width: 500px;
-  height: 500px;
+  bottom: -42%;
+  left: -32%;
+  width: 520px;
+  height: 520px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.4), transparent 70%);
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.45), transparent 70%);
 }
 .brand-content {
   position: relative;
   z-index: 1;
-  margin-top: 8vh;
+  margin-top: 5vh;
 }
 .brand-logo {
-  width: 220px;
+  width: 200px;
   height: auto;
-  margin-bottom: 48px;
+  margin-bottom: 44px;
+  filter: drop-shadow(0 10px 26px rgba(0, 0, 0, 0.35));
 }
 .brand-title {
-  font-size: 36px;
+  font-size: 40px;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-bottom: 16px;
-  line-height: 1.2;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin-bottom: 18px;
 }
 .brand-desc {
-  font-size: 16px;
-  line-height: 1.6;
-  opacity: 0.85;
+  font-size: 15px;
+  line-height: 1.75;
+  opacity: 0.78;
   max-width: 380px;
-  margin-bottom: 48px;
+  margin-bottom: 44px;
 }
 .brand-features {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  align-items: flex-start;
+  gap: 12px;
 }
 .feature-item {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
-  font-size: 15px;
-  opacity: 0.92;
+  gap: 10px;
+  padding: 10px 18px;
+  font-size: 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(8px);
 }
 .feature-dot {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: #86efac;
-  box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.25);
+  box-shadow: 0 0 0 4px rgba(134, 239, 172, 0.22);
 }
 .brand-footer {
   position: relative;
   z-index: 1;
-  font-size: 13px;
-  opacity: 0.7;
-  letter-spacing: 0.02em;
+  padding-top: 22px;
+  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.55;
 }
 
 // ---------- 右侧表单区 ----------
@@ -1385,69 +1450,109 @@ async function confirmBind(account) {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 40px;
+  padding: 48px 40px;
   position: relative;
-  background: var(--color-bg, #fafaf9);
+  overflow: hidden;
+  background: var(--color-bg, #f7f7f8);
 }
-.manual-link {
+// 环境光：品牌色柔光晕染，让表单卡片浮起
+.login-main::before {
+  content: "";
   position: absolute;
-  top: 24px;
-  right: 32px;
-  font-size: 13px;
-  color: var(--text-secondary, #6b7280);
-  text-decoration: none;
-  transition: color 0.2s ease;
-  &:hover { color: var(--brand-primary, #16a34a); }
+  top: -18%;
+  left: 50%;
+  width: 760px;
+  height: 760px;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--brand-primary-soft, rgba(22, 163, 74, 0.1)), transparent 68%);
+  pointer-events: none;
 }
 .login-form-wrap {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
+  padding: 44px 40px;
+  border-radius: 24px;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border-soft, #ececef);
+  box-shadow: var(--shadow-lg, 0 12px 32px rgba(15, 23, 42, 0.08));
 }
 .form-header {
-  margin-bottom: 36px;
+  margin-bottom: 30px;
 }
 .form-title {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: 700;
-  color: var(--text-primary, #111827);
-  letter-spacing: -0.01em;
-  margin-bottom: 8px;
+  color: var(--text-primary, #18181b);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 10px;
 }
 .form-subtitle {
   font-size: 15px;
-  color: var(--text-secondary, #6b7280);
+  line-height: 1.6;
+  color: var(--text-secondary, #71717a);
 }
 
 .login-form {
   width: 100%;
 
-  .el-form-item {
-    margin-bottom: 24px;
+  :deep(.el-form-item) {
+    margin-bottom: 22px;
   }
 
-  .el-form-item__label {
+  :deep(.el-form-item__label) {
     font-size: 13px;
     font-weight: 600;
-    color: #374151;
-    padding-bottom: 6px;
+    line-height: 1.4;
+    color: var(--text-secondary, #71717a);
+    padding-bottom: 8px;
   }
 
-  .el-input {
-    width: 100%;
+  :deep(.el-input__wrapper) {
+    height: 48px;
+    padding: 0 16px;
+    border-radius: 12px;
+    background-color: var(--color-surface, #ffffff);
+    box-shadow: 0 0 0 1px var(--color-border, #dcdce0) inset;
+    transition: box-shadow 0.2s ease, background-color 0.2s ease;
 
-    .el-input__inner {
-      height: 48px;
-      font-size: 15px;
-      padding: 0 16px;
+    &:hover {
+      box-shadow: 0 0 0 1px var(--text-faint, #a1a1aa) inset;
+    }
+    &.is-focus {
+      box-shadow:
+        0 0 0 1px var(--brand-primary, #16a34a) inset,
+        0 0 0 4px var(--brand-primary-soft, rgba(22, 163, 74, 0.1));
     }
   }
 
-  .el-button {
+  :deep(.el-input__inner) {
     height: 48px;
+    font-size: 15px;
+    background-color: transparent;
+    color: var(--text-primary, #18181b);
+  }
+
+  :deep(.el-button) {
+    width: 100%;
+    height: 50px;
     font-size: 16px;
     font-weight: 600;
-    border-radius: 10px;
+    border-radius: 12px;
     letter-spacing: 0.02em;
+    box-shadow: 0 8px 20px var(--brand-primary-glow, rgba(22, 163, 74, 0.2));
+    transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+
+    &:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px var(--brand-primary-glow, rgba(22, 163, 74, 0.28));
+    }
+    &:active {
+      transform: translateY(0);
+    }
   }
 }
 
@@ -1460,21 +1565,23 @@ async function confirmBind(account) {
 .code-input {
   width: 50px;
   height: 50px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid var(--color-border, #dcdce0);
   border-radius: 10px;
+  background-color: var(--color-surface, #ffffff);
+  color: var(--text-primary, #18181b);
   font-size: 24px;
   font-weight: 600;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
   outline: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  box-shadow: var(--shadow-xs, 0 1px 3px rgba(0, 0, 0, 0.06));
 
   &:focus {
     border-color: var(--brand-primary, #16a34a);
-    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+    box-shadow: 0 0 0 3px var(--brand-primary-soft, rgba(22, 163, 74, 0.15));
     transform: translateY(-1px);
   }
-  &:hover { border-color: #d1d5db; }
+  &:hover { border-color: var(--text-faint, #a1a1aa); }
 }
 
 // ---------- 响应式：窄屏隐藏品牌区 ----------
@@ -1514,13 +1621,13 @@ async function confirmBind(account) {
 
 .dialog-title {
   font-size: 16px;
-  color: #666;
+  color: var(--text-secondary, #71717a);
   font-weight: 500;
   text-align: center;
 }
 .dialog-title1 {
   font-size: 12px;
-  color: #303030;
+  color: var(--text-regular, #52525b);
   // font-weight: 700;
 }
 
@@ -1537,7 +1644,7 @@ async function confirmBind(account) {
 .loading-spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid rgba(0, 0, 0, 0.1);
+  border: 4px solid var(--color-border, #dcdce0);
   border-left-color: var(--brand-primary, #16a34a);
   border-radius: 50%;
   animation: spin 1s linear infinite;
@@ -1546,7 +1653,7 @@ async function confirmBind(account) {
 
 .loading-text {
   font-size: 14px;
-  color: #606266;
+  color: var(--text-secondary, #71717a);
 }
 
 @keyframes spin {
@@ -1609,7 +1716,7 @@ async function confirmBind(account) {
 .account-type {
   width: 90%;
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary, #71717a);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1618,12 +1725,12 @@ async function confirmBind(account) {
 .account-company {
   font-size: 16px;
   font-weight: bold;
-  color: #333;
+  color: var(--text-primary, #18181b);
 }
 
 .account-number {
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary, #71717a);
 }
 
 .dialog-close {
@@ -1632,7 +1739,10 @@ async function confirmBind(account) {
   right: 16px;
   font-size: 30px;
   cursor: pointer;
-  color: #999;
+  color: var(--text-faint, #a1a1aa);
+  transition: color 0.2s ease;
+
+  &:hover { color: var(--text-primary, #18181b); }
 }
 :deep(.login-form .el-form-item__label) {
   font-size: 13px !important;
@@ -1664,7 +1774,7 @@ async function confirmBind(account) {
 }
 
 .css-i8munm {
-  color: #a0aec0;
+  color: var(--text-faint, #a1a1aa);
   text-align: center;
   margin-bottom: 20px;
   text-transform: uppercase;
@@ -1673,17 +1783,57 @@ async function confirmBind(account) {
 
 .manual-link {
   position: fixed;
-  top: 20px;
-  right: 20px;
-  font-size: 14px;
-  color: #409eff;
+  top: 68px;
+  right: 24px;
+  font-size: 13px;
+  color: var(--text-secondary, #71717a);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
   z-index: 9;
 
   &:hover {
-    color: #409eff;
+    color: var(--brand-primary, #16a34a);
     text-decoration: underline;
+  }
+}
+
+/* 右上角：主题 / 语言切换 */
+.login-toolbar {
+  position: fixed;
+  top: 20px;
+  right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  z-index: 10;
+
+  .icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 12px;
+    border: 1px solid var(--color-border-soft, #ececef);
+    border-radius: 10px;
+    background: var(--color-surface, #ffffff);
+    color: var(--text-secondary, #71717a);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: var(--shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.04));
+    transition: color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+      color: var(--brand-primary, #16a34a);
+      border-color: var(--brand-primary, #16a34a);
+      box-shadow: var(--shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.06));
+      transform: translateY(-1px);
+    }
+  }
+
+  .lang-arrow {
+    margin-left: 2px;
   }
 }
 .el-dialog__body {
@@ -1699,7 +1849,7 @@ async function confirmBind(account) {
 :deep(.el-input__inner:-webkit-autofill:focus),
 :deep(.el-input__inner:-webkit-autofill:active) {
   -webkit-background-clip: text;
-  -webkit-text-fill-color: #000;
+  -webkit-text-fill-color: var(--text-primary, #000);
   background-color: var(--color-surface, #fff) !important;
   background-clip: text;
   transition: background-color 5000s ease-in-out 0s;
@@ -1715,11 +1865,12 @@ async function confirmBind(account) {
 :deep(.email-code-btn) {
   background-color: var(--brand-primary, #16a34a) !important;
   border-color: var(--brand-primary, #16a34a) !important;
-  color: var(--text-inverse, #fff) !important;
+  // 品牌绿底上的文字恒定浅色（暗色下 --text-inverse 会反色，不能用）
+  color: #ffffff !important;
   width: 100%;
   height: 100%;
   padding: 0 15px;
-  border-radius: 0 10px 10px 0;
+  border-radius: 0 12px 12px 0;
   margin-left: -1px;
   transition: all 0.2s ease;
 
@@ -1730,9 +1881,10 @@ async function confirmBind(account) {
   }
 
   &:disabled {
-    background-color: #86efac !important;
-    border-color: #86efac !important;
-    opacity: 0.6;
+    background-color: var(--brand-primary-light, #dcfce7) !important;
+    border-color: var(--brand-primary-light, #dcfce7) !important;
+    color: var(--text-faint, #a1a1aa) !important;
+    opacity: 0.7;
     cursor: not-allowed;
   }
 }

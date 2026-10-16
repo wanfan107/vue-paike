@@ -74,7 +74,7 @@ const userStore = useUserStore();
 // 定义响应式数据
 const loading = ref(false);
 const isGogleCode = ref(false);
-const formList = ref([
+const formList = computed(() => [
   // 接口地址、应用信息、应用ID - appID 、通道ID - txChannel、虚拟账号、平台公钥(验签)、付款设置、商户公钥(加签)、付款IP
   // {
   //   label: "接口地址",
@@ -82,11 +82,11 @@ const formList = ref([
   //   placeholder: "请输入接口地址",
   // },
   {
-    label: "应用信息",
+    label: t('account.config.form.appInfo'),
     name: "title",
   },
   {
-    label: "账户信息",
+    label: t('account.config.form.accountInfo'),
     prop: "accountId",
   },
   // {
@@ -96,22 +96,22 @@ const formList = ref([
   // },
 
   {
-    label: "付款设置",
+    label: t('account.config.form.paymentSettings'),
     name: "title",
   },
   {
-    label: "付款IP",
+    label: t('account.config.form.paymentIP'),
     prop: "paymentIP",
-    placeholder: "多个IP以#隔开",
+    placeholder: t('account.config.form.ipPlaceholder'),
     name: "input",
     type: "textarea",
     disabled: true, // 修改函数返回值为布尔类型   禁用
     rules: [{ required: true, message: t('account.config.rules.paymentIP'), trigger: "blur" }],
   },
   {
-    label: "登陆IP白名单",
+    label: t('account.config.form.loginIPWhiteList'),
     prop: "paymentIP1",
-    placeholder: "多个IP以#隔开",
+    placeholder: t('account.config.form.ipPlaceholder'),
     name: "input",
     type: "textarea",
     disabled: true,  // 修改函数返回值为布尔类型   启用

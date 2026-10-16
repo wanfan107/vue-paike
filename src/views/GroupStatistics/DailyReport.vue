@@ -8,41 +8,41 @@
       <!-- 搜索和筛选区域 -->
       <div class="search-panel">
         <el-form :inline="false" :model="searchForm" class="search-form">
-          <el-form-item label="订单时间">
+          <el-form-item :label="t('groupStatistics.daily.timeLabel')">
             <el-date-picker
               v-model="searchForm.time"
               type="daterange"
               unlink-panels
               :disabled-date="disabledDate"
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
+              :range-separator="t('common.to')"
+              :start-placeholder="t('common.startDate')"
+              :end-placeholder="t('common.endDate')"
               value-format="YYYY-MM-DD"
               format="YYYY-MM-DD"
             />
           </el-form-item>
 
-          <el-form-item label="曲线商户">
+          <el-form-item :label="t('groupStatistics.daily.merchantCurveLabel')">
             <div class="merchant-filter-inline">
               <el-select
                 v-model="selectedMerchants"
                 multiple
                 collapse-tags
                 collapse-tags-tooltip
-                placeholder="选择商户（默认仅展示集团）"
+                :placeholder="t('groupStatistics.daily.selectMerchantDefault')"
                 style="width: 250px;"
                 @change="updateCharts"
               >
                 <el-option v-for="m in merchantOptions" :key="m.code" :label="`${m.code}${m.qq ? ' - ' + m.qq : ''}`" :value="m.code" />
               </el-select>
-              <el-button @click="selectAll">全选</el-button>
-              <el-button @click="selectInverse">反选</el-button>
+              <el-button @click="selectAll">{{ t('groupStatistics.daily.selectAll') }}</el-button>
+              <el-button @click="selectInverse">{{ t('groupStatistics.daily.selectInverse') }}</el-button>
             </div>
           </el-form-item>
 
           <el-form-item class="search-actions">
-            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">搜索</el-button>
-            <el-button :icon="Refresh" @click="clearSearch" :loading="loading">刷新</el-button>
+            <el-button type="primary" :icon="Search" @click="handleSearch" :loading="loading">{{ t('common.search') }}</el-button>
+            <el-button :icon="Refresh" @click="clearSearch" :loading="loading">{{ t('common.refresh') }}</el-button>
           </el-form-item>
         </el-form>
       </div>
@@ -57,8 +57,8 @@
             <div class="chart-item line-chart">
               <div class="chart-header">
                 <el-select v-model="paymentFilter" size="small" style="width: 100px;" @change="updateCharts">
-                  <el-option label="收款" value="payin" />
-                  <el-option label="付款" value="payout" />
+                  <el-option :label="t('groupStatistics.daily.payin')" value="payin" />
+                  <el-option :label="t('groupStatistics.daily.payout')" value="payout" />
                 </el-select>
               </div>
               <div ref="lineChartRef" style="width: 100%; height: calc(100% - 20px);"></div>
@@ -66,7 +66,7 @@
           </div>
         </div>
         <div v-else-if="show === true && tableData.length === 0" class="empty-chart-state">
-          <el-empty description="暂无数据" />
+          <el-empty :description="t('common.noData')" />
         </div>
       </div>
 
@@ -94,26 +94,26 @@
                       :data="scope.row.merchantItems || []"
                       :summary-method="getMerchantSummaries"
                       show-summary
-                      :sum-text="'集团汇总'"
+                      :sum-text="t('groupStatistics.daily.groupSummary')"
                       border
                       max-height="300"
                       style="width: 100%; margin-top: 10px"
                       size="small"
                       class="expand-table"
                     >
-                      <el-table-column prop="code" label="商户号" align="center" />
-                      <el-table-column prop="SuccessCountPayin" label="收款笔数" align="center" />
-                      <el-table-column prop="SuccessAmountPayin" label="收款总额" align="center" />
-                      <el-table-column prop="SuccessFeePayin" label="收款手续费" align="center" />
-                      <el-table-column prop="SuccessRateCountPayin" label="收款笔数成功率" align="center">
+                      <el-table-column prop="code" :label="t('groupStatistics.daily.merchantNo')" align="center" />
+                      <el-table-column prop="SuccessCountPayin" :label="t('groupStatistics.daily.payinCount')" align="center" />
+                      <el-table-column prop="SuccessAmountPayin" :label="t('groupStatistics.daily.payinAmount')" align="center" />
+                      <el-table-column prop="SuccessFeePayin" :label="t('groupStatistics.daily.payinFee')" align="center" />
+                      <el-table-column prop="SuccessRateCountPayin" :label="t('groupStatistics.daily.payinRate')" align="center">
                         <template #default="scope">
                           {{ toPercent(scope.row.SuccessRateCountPayin) }}
                         </template>
                       </el-table-column>
-                      <el-table-column prop="SuccessCountPayout" label="付款笔数" align="center" />
-                      <el-table-column prop="SuccessAmountPayout" label="付款总额" align="center" />
-                      <el-table-column prop="SuccessFeePayout" label="付款手续费" align="center" />
-                      <el-table-column prop="SuccessRateCountPayout" label="付款笔数成功率" align="center">
+                      <el-table-column prop="SuccessCountPayout" :label="t('groupStatistics.daily.payoutCount')" align="center" />
+                      <el-table-column prop="SuccessAmountPayout" :label="t('groupStatistics.daily.payoutAmount')" align="center" />
+                      <el-table-column prop="SuccessFeePayout" :label="t('groupStatistics.daily.payoutFee')" align="center" />
+                      <el-table-column prop="SuccessRateCountPayout" :label="t('groupStatistics.daily.payoutRate')" align="center">
                         <template #default="scope">
                           {{ toPercent(scope.row.SuccessRateCountPayout) }}
                         </template>
@@ -130,7 +130,7 @@
                   </div>
                 </template>
               </el-table-column>
-              <el-table-column prop="OrderDate" label="日期" align="center" width="120" sortable>
+              <el-table-column prop="OrderDate" :label="t('groupStatistics.daily.date')" align="center" width="120" sortable>
                 <template #default="scope">
                   {{ formatDate(scope.row.OrderDate) }}
                 </template>
@@ -222,13 +222,13 @@ const groupChart = ref([]);
 const merchantCharts = ref([]);
 
 // 表格列配置
-const columns = reactive([
-  { prop: "PreviousDayEndBalance", label: "期初余额" },
-  { prop: "SuccessAmountPayin", label: "当日收款总额" },
-  { prop: "SuccessAmountPayout", label: "当日付款总额" },
-  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当日收款总额 - 当日付款总额" },
-  { prop: "CurrentDayEndBalance", label: "期末余额" },
-]);
+const columns = computed(() => ([
+  { prop: "PreviousDayEndBalance", label: t('groupStatistics.daily.prevBalance') },
+  { prop: "SuccessAmountPayin", label: t('groupStatistics.daily.dayPayinAmount') },
+  { prop: "SuccessAmountPayout", label: t('groupStatistics.daily.dayPayoutAmount') },
+  { prop: "TotalAmountReceived", label: t('groupStatistics.daily.netAmount'), tooltip: t('groupStatistics.daily.netAmountTooltip') },
+  { prop: "CurrentDayEndBalance", label: t('groupStatistics.daily.currentBalance') },
+]));
 
 // 禁用日期函数，只能选择到昨天（根据币种选择时区）
 const disabledDate = (time) => {
@@ -266,7 +266,7 @@ const lineChartOption = computed(() => {
 
   if (paymentFilter.value === 'payin') {
     series.push({
-      name: "集团收款金额",
+      name: t('groupStatistics.daily.groupPayinAmount'),
       type: "line",
       data: points.map(p => p.payinAmount),
       smooth: true,
@@ -280,7 +280,7 @@ const lineChartOption = computed(() => {
 
   if (paymentFilter.value === 'payout') {
     series.push({
-      name: "集团付款金额",
+      name: t('groupStatistics.daily.groupPayoutAmount'),
       type: "line",
       data: points.map(p => p.payoutAmount),
       smooth: true,
@@ -299,7 +299,7 @@ const lineChartOption = computed(() => {
       colorIdx++;
       if (paymentFilter.value === 'payin') {
         series.push({
-          name: mc.code + " 收款",
+          name: `${mc.code} ${t('groupStatistics.daily.payin')}`,
           type: "line",
           data: mc.points.map(p => p.payinAmount),
           smooth: true,
@@ -322,7 +322,7 @@ const lineChartOption = computed(() => {
       }
       if (paymentFilter.value === 'payout') {
         series.push({
-          name: mc.code + " 付款",
+          name: `${mc.code} ${t('groupStatistics.daily.payout')}`,
           type: "line",
           data: mc.points.map(p => p.payoutAmount),
           smooth: true,
@@ -347,7 +347,7 @@ const lineChartOption = computed(() => {
   });
   return {
     title: {
-      text: "收款金额与付款金额趋势",
+      text: t('groupStatistics.daily.chartAmountTrend'),
       left: '0%',
       top: '0%',
       textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
@@ -404,7 +404,7 @@ const lineChartOption = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "金额",
+      name: t('groupStatistics.daily.axisAmount'),
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
@@ -425,7 +425,7 @@ const balanceChartOption = computed(() => {
   const dates = points.map(p => p.x);
   const series = [
     {
-      name: "集团期初余额",
+      name: t('groupStatistics.daily.groupPrevBalance'),
       type: "line",
       data: points.map(p => p.prevBalance),
       smooth: true,
@@ -442,7 +442,7 @@ const balanceChartOption = computed(() => {
       const color = merchantColors[colorIdx % merchantColors.length];
       colorIdx++;
       series.push({
-        name: mc.code + " 期初余额",
+        name: `${mc.code} ${t('groupStatistics.daily.prevBalance')}`,
         type: "line",
         data: mc.points.map(p => p.prevBalance),
         smooth: true,
@@ -466,7 +466,7 @@ const balanceChartOption = computed(() => {
   });
   return {
     title: {
-      text: "期初余额趋势",
+      text: t('groupStatistics.daily.chartBalanceTrend'),
       left: '0%',
       top: '0%',
       textStyle: { fontSize: 14, color: cssVar('--text-secondary', '#606266') },
@@ -523,7 +523,7 @@ const balanceChartOption = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "余额",
+      name: t('groupStatistics.daily.axisBalance'),
       axisLine: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisTick: { show: true, lineStyle: { color: cssVar('--color-border-soft', '#e4e7ed') } },
       axisLabel: {
@@ -602,7 +602,7 @@ const loadData = async () => {
     const res = await http.groupDailyRpt({ startDate, endDate });
     const data = res.data;
     if (!data) {
-      ElMessage.warning(res.msg || "获取数据失败");
+      ElMessage.warning(res.msg || t('groupStatistics.daily.fetchFailed'));
       tableData.value = [];
       return;
     }
@@ -623,7 +623,7 @@ const loadData = async () => {
     initLineChart();
     initBalanceChart();
   } catch (error) {
-    ElMessage.error(error.msg || "获取数据失败");
+    ElMessage.error(error.msg || t('groupStatistics.daily.fetchFailed'));
     console.error(error);
   } finally {
     loading.value = false;
@@ -787,7 +787,7 @@ const getSummaries = (param) => {
   const { columns, data } = param;
   const sums = [];
   columns.forEach((column, index) => {
-    if (index === 0) { sums[index] = '总计'; return; }
+    if (index === 0) { sums[index] = t('groupStatistics.daily.summaryTotal'); return; }
     if (column.property === 'SuccessRatePayin' || column.property === 'SuccessRatePayout') {
       sums[index] = 'N/A'; return;
     }
@@ -810,7 +810,7 @@ const getMerchantSummaries = (param) => {
   const { columns, data } = param;
   const sums = [];
   columns.forEach((column, index) => {
-    if (index === 0) { sums[index] = '集团汇总'; return; }
+    if (index === 0) { sums[index] = t('groupStatistics.daily.groupSummary'); return; }
     if (column.property === 'SuccessRateCountPayin' || column.property === 'SuccessRateCountPayout') {
       sums[index] = 'N/A'; return;
     }
@@ -832,7 +832,7 @@ const getMerchantSummaries = (param) => {
 const getCollectionPieChart = (row) => {
   const items = row.merchantItems || [];
   let data = items.map(it => ({
-    name: it.code || '未知',
+    name: it.code || t('groupStatistics.daily.unknown'),
     value: Number(it.SuccessAmountPayin) || 0,
   })).filter(item => item.value > 0);
 
@@ -867,7 +867,7 @@ const getCollectionPieChart = (row) => {
   if (others.length > 0) {
     const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
     top3.push({
-      name: '其他',
+      name: t('groupStatistics.daily.other'),
       value: othersTotal,
       others: others,
       itemStyle: {
@@ -893,7 +893,7 @@ const getCollectionPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户收款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: t('groupStatistics.daily.chartCollectionPie'), left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -901,9 +901,9 @@ const getCollectionPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('groupStatistics.daily.ratioText', { p: Number(params.percent).toFixed(2) })})`;
         if (params.data.others && params.data.others.length > 0) {
-          result += '<br/><br/>包含：';
+          result += '<br/><br/>' + t('groupStatistics.daily.contains');
           params.data.others.forEach((otherItem, idx) => {
             result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
@@ -923,7 +923,7 @@ const getCollectionPieChart = (row) => {
       itemGap: 15
     },
     series: [{
-      name: "收款金额",
+      name: t('groupStatistics.daily.payinSeriesName'),
       type: "pie",
       radius: ["50%", ""],
       center: ["50%", "50%"],
@@ -941,7 +941,7 @@ const getCollectionPieChart = (row) => {
 const getPaymentPieChart = (row) => {
   const items = row.merchantItems || [];
   let data = items.map(it => ({
-    name: it.code || '未知',
+    name: it.code || t('groupStatistics.daily.unknown'),
     value: Number(it.SuccessAmountPayout) || 0,
   })).filter(item => item.value > 0);
 
@@ -976,7 +976,7 @@ const getPaymentPieChart = (row) => {
   if (others.length > 0) {
     const othersTotal = others.reduce((sum, item) => sum + item.value, 0);
     top3.push({
-      name: '其他',
+      name: t('groupStatistics.daily.other'),
       value: othersTotal,
       others: others,
       itemStyle: {
@@ -1002,7 +1002,7 @@ const getPaymentPieChart = (row) => {
   data = top3;
 
   return {
-    title: { text: "各商户付款总额占比", left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
+    title: { text: t('groupStatistics.daily.chartPaymentPie'), left: "center", textStyle: { color: cssVar('--text-primary', '#303133'), fontSize: 15, fontWeight: 600 }, padding: [10, 0, 10, 0] },
     tooltip: {
       trigger: "item",
       confine: false,
@@ -1010,9 +1010,9 @@ const getPaymentPieChart = (row) => {
       maxWidth: 400,
       maxHeight: 500,
       formatter: function(params) {
-        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        let result = `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('groupStatistics.daily.ratioText', { p: Number(params.percent).toFixed(2) })})`;
         if (params.data.others && params.data.others.length > 0) {
-          result += '<br/><br/>包含：';
+          result += '<br/><br/>' + t('groupStatistics.daily.contains');
           params.data.others.forEach((otherItem, idx) => {
             result += `<br/>${otherItem.name}: ${formatCurrency(otherItem.value, currency.value)}`;
           });
@@ -1032,7 +1032,7 @@ const getPaymentPieChart = (row) => {
       itemGap: 15
     },
     series: [{
-      name: "付款金额",
+      name: t('groupStatistics.daily.payoutSeriesName'),
       type: "pie",
       radius: ["50%", ""],
       center: ["50%", "50%"],

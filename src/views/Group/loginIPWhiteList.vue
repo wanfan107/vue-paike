@@ -14,10 +14,10 @@
           label-width="120px"
           class="whitelist-form"
         >
-          <el-form-item label="商户号" prop="merchantCode">
+          <el-form-item :label="t('order.groupIPWhiteList.form.merchantCode')" prop="merchantCode">
             <el-select
               v-model="form.merchantCode"
-              placeholder="请选择商户号"
+              :placeholder="t('order.groupIPWhiteList.form.merchantCodePlaceholder')"
               style="width: 280px;"
               clearable
             >
@@ -33,53 +33,53 @@
           <el-divider />
 
           <div class="section-block">
-            <div class="section-title">登录IP白名单</div>
-            <el-form-item label="IP地址" prop="loginIp">
+            <div class="section-title">{{ t('order.groupIPWhiteList.form.loginSectionTitle') }}</div>
+            <el-form-item :label="t('order.groupIPWhiteList.form.ipAddress')" prop="loginIp">
               <el-input
                 v-model="form.loginIp"
                 type="textarea"
-                placeholder="请输入登录IP地址，多个IP用#号分隔"
+                :placeholder="t('order.groupIPWhiteList.form.loginIpPlaceholder')"
                 :rows="3"
                 clearable
               />
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="submitForm('3')">保存登录IP</el-button>
+              <el-button type="primary" @click="submitForm('3')">{{ t('order.groupIPWhiteList.form.saveLoginIp') }}</el-button>
             </el-form-item>
           </div>
 
           <div class="section-block">
-            <div class="section-title">代付IP白名单</div>
-            <el-form-item label="IP地址" prop="payIp">
+            <div class="section-title">{{ t('order.groupIPWhiteList.form.paySectionTitle') }}</div>
+            <el-form-item :label="t('order.groupIPWhiteList.form.ipAddress')" prop="payIp">
               <el-input
                 v-model="form.payIp"
                 type="textarea"
-                placeholder="请输入代付IP地址，多个IP用#号分隔"
+                :placeholder="t('order.groupIPWhiteList.form.payIpPlaceholder')"
                 :rows="3"
                 clearable
               />
             </el-form-item>
 
             <el-form-item>
-              <el-button type="primary" @click="submitForm('1')">保存代付IP</el-button>
+              <el-button type="primary" @click="submitForm('1')">{{ t('order.groupIPWhiteList.form.savePayIp') }}</el-button>
             </el-form-item>
           </div>
         </el-form>
 
         <!-- IP白名单查询 -->
         <div class="query-section">
-          <div class="section-title">IP白名单查询</div>
+          <div class="section-title">{{ t('order.groupIPWhiteList.query.title') }}</div>
           <el-form
             ref="queryFormRef"
             :model="queryForm"
             class="query-form"
             label-width="100px"
           >
-            <el-form-item label="商户号">
+            <el-form-item :label="t('order.groupIPWhiteList.query.merchantCode')">
               <el-select
                 v-model="queryForm.merchantCode"
-                placeholder="请选择商户号"
+                :placeholder="t('order.groupIPWhiteList.query.merchantCodePlaceholder')"
                 style="width: 280px;"
                 clearable
               >
@@ -92,15 +92,15 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="类型">
+            <el-form-item :label="t('order.groupIPWhiteList.query.type')">
               <el-select
                 v-model="queryForm.useFor"
-                placeholder="请选择类型登录或代付IP"
+                :placeholder="t('order.groupIPWhiteList.query.typePlaceholder')"
                 style="width: 200px;"
                 clearable
               >
-                <el-option label="登录" value="3" />
-                <el-option label="代付" value="1" />
+                <el-option :label="t('order.groupIPWhiteList.query.typeLogin')" value="3" />
+                <el-option :label="t('order.groupIPWhiteList.query.typePay')" value="1" />
               </el-select>
             </el-form-item>
 
@@ -114,8 +114,8 @@
             </el-form-item> -->
 
             <el-form-item>
-              <el-button type="primary" @click="queryIpWhiteList">查询</el-button>
-              <el-button @click="resetQueryForm">重置</el-button>
+              <el-button type="primary" @click="queryIpWhiteList">{{ t('order.groupIPWhiteList.query.searchBtn') }}</el-button>
+              <el-button @click="resetQueryForm">{{ t('order.groupIPWhiteList.query.resetBtn') }}</el-button>
             </el-form-item>
           </el-form>
 
@@ -127,7 +127,7 @@
               :disabled="selectedIps.length === 0"
               @click="handleBatchDelete"
             >
-              批量删除 ({{ selectedIps.length }})
+              {{ t('order.groupIPWhiteList.query.batchDelete', { count: selectedIps.length }) }}
             </el-button>
           </div>
 
@@ -142,17 +142,17 @@
             @selection-change="handleSelectionChange"
           >
             <el-table-column type="selection" width="55" />
-            <el-table-column prop="merchantCode" label="商户号" width="120" />
-            <el-table-column prop="ip" label="IP地址" min-width="200" />
-            <el-table-column prop="useForDisplay" label="用途" width="100" />
-            <el-table-column prop="enabled" label="状态" width="100">
+            <el-table-column prop="merchantCode" :label="t('order.groupIPWhiteList.table.merchantCode')" width="120" />
+            <el-table-column prop="ip" :label="t('order.groupIPWhiteList.table.ip')" min-width="200" />
+            <el-table-column prop="useForDisplay" :label="t('order.groupIPWhiteList.table.useFor')" width="100" />
+            <el-table-column prop="enabled" :label="t('order.groupIPWhiteList.table.status')" width="100">
               <template #default="scope">
                 <el-tag :type="scope.row.enabled ? 'success' : 'danger'">
-                  {{ scope.row.enabled ? '启用' : '禁用' }}
+                  {{ scope.row.enabled ? t('order.groupIPWhiteList.table.enabled') : t('order.groupIPWhiteList.table.disabled') }}
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="120">
+            <el-table-column :label="t('order.groupIPWhiteList.table.action')" width="120">
               <template #default="scope">
                 <el-button
                   type="danger"
@@ -160,7 +160,7 @@
                   :disabled="!scope.row.enabled"
                   @click="handleDelete(scope.row)"
                 >
-                  删除
+                  {{ t('order.groupIPWhiteList.table.delete') }}
                 </el-button>
               </template>
             </el-table-column>
@@ -174,7 +174,7 @@
 
 <script setup>
 import { Search } from "@element-plus/icons-vue";
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { http } from "@/api";
@@ -198,11 +198,11 @@ const form = reactive({
   payIp: ''
 });
 
-const rules = reactive({
+const rules = computed(() => ({
   merchantCode: [
-    { required: true, message: '请选择商户号', trigger: 'change' }
+    { required: true, message: t('order.groupIPWhiteList.rules.merchantCodeRequired'), trigger: 'change' }
   ]
-});
+}));
 
 // 查询表单
 const queryFormRef = ref(null);
@@ -227,11 +227,11 @@ const handleSelectionChange = (val) => {
 const handleDelete = async (row) => {
   try {
     await ElMessageBox.confirm(
-      `确定要删除IP地址 ${row.ip} 吗？`,
-      '确认删除',
+      t('order.groupIPWhiteList.msg.deleteConfirmMsg', { ip: row.ip }),
+      t('order.groupIPWhiteList.msg.deleteConfirmTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     ).then(async () => {
@@ -245,17 +245,17 @@ const handleDelete = async (row) => {
 // 批量删除
 const handleBatchDelete = async () => {
   if (selectedIps.value.length === 0) {
-    ElMessage.warning('请先选择要删除的IP');
+    ElMessage.warning(t('order.groupIPWhiteList.msg.selectFirst'));
     return;
   }
-  
+
   try {
     await ElMessageBox.confirm(
-      `确定要删除选中的 ${selectedIps.value.length} 个IP地址吗？`,
-      '批量删除确认',
+      t('order.groupIPWhiteList.msg.batchDeleteConfirmMsg', { count: selectedIps.value.length }),
+      t('order.groupIPWhiteList.msg.batchDeleteConfirmTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         type: 'warning'
       }
     ).then(async () => {
@@ -286,17 +286,17 @@ const doDelete = async (deleteList) => {
     });
     
     if (res.Success) {
-      ElMessage.success(res.Data?.Message || '删除成功');
+      ElMessage.success(res.Data?.Message || t('order.groupIPWhiteList.msg.deleteSuccess'));
       // 重新查询刷新列表
       if (queryForm.merchantCode) {
         await queryIpWhiteList();
       }
       selectedIps.value = [];
     } else {
-      ElMessage.error(res.ErrorMessage || '删除失败');
+      ElMessage.error(res.ErrorMessage || t('order.groupIPWhiteList.msg.deleteFailed'));
     }
   } catch (error) {
-    ElMessage.error('删除失败');
+    ElMessage.error(t('order.groupIPWhiteList.msg.deleteFailed'));
   }
 };
 
@@ -311,7 +311,7 @@ const loadMerchants = async () => {
       }));
     }
   } catch (error) {
-    ElMessage.error('加载商户列表失败');
+    ElMessage.error(t('order.groupIPWhiteList.msg.loadMerchantsFailed'));
   }
 };
 
@@ -325,7 +325,7 @@ const submitForm = async (useFor) => {
   const ipList = ipInput.split('#').map(ip => ip.trim()).filter(ip => ip);
   
   if (ipList.length === 0) {
-    ElMessage.warning( useFor === '3' ? '请输入登录IP地址' : '请输入代付IP地址');
+    ElMessage.warning(useFor === '3' ? t('order.groupIPWhiteList.msg.loginIpRequired') : t('order.groupIPWhiteList.msg.payIpRequired'));
     return;
   }
   
@@ -337,13 +337,13 @@ const submitForm = async (useFor) => {
   
   try {
     const googleCode = await ElMessageBox.prompt(
-      '请输入MFA2验证码',
-      '验证',
+      t('order.groupIPWhiteList.msg.mfaPromptMsg'),
+      t('order.groupIPWhiteList.msg.mfaPromptTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('common.confirm'),
+        cancelButtonText: t('common.cancel'),
         inputPattern: /^\d{6}$/,
-        inputErrorMessage: '请输入6位数字验证码'
+        inputErrorMessage: t('order.groupIPWhiteList.msg.mfaPattern')
       }
     ).catch(() => null);
     
@@ -359,24 +359,24 @@ const submitForm = async (useFor) => {
       code: googleCode.value
     });
     if (res.Success) {
-      ElMessage.success(res.Data?.Message || '保存成功');
+      ElMessage.success(res.Data?.Message || t('order.groupIPWhiteList.msg.saveSuccess'));
       if (useFor === '3') {
         form.loginIp = '';
       } else {
         form.payIp = '';
       }
     } else {
-      ElMessage.error(res.ErrorMessage || '保存失败');
+      ElMessage.error(res.ErrorMessage || t('order.groupIPWhiteList.msg.saveFailed'));
     }
   } catch (error) {
-    ElMessage.error('保存失败');
+    ElMessage.error(t('order.groupIPWhiteList.msg.saveFailed'));
   }
 };
 
 // 查询IP白名单
 const queryIpWhiteList = async () => {
   if (!queryForm.merchantCode) {
-    ElMessage.warning('请选择商户号');
+    ElMessage.warning(t('order.groupIPWhiteList.msg.merchantCodeRequired'));
     return;
   }
   // if (!queryForm.code) {
@@ -411,10 +411,10 @@ const queryIpWhiteList = async () => {
       ipList.value = allIps;
     } else {
       ipList.value = [];
-      ElMessage.warning(res.ErrorMessage || '暂无数据');
+      ElMessage.warning(res.ErrorMessage || t('order.groupIPWhiteList.msg.noData'));
     }
   } catch (error) {
-    ElMessage.error('查询失败');
+    ElMessage.error(t('order.groupIPWhiteList.msg.queryFailed'));
     ipList.value = [];
   } finally {
     queryLoading.value = false;

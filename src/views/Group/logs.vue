@@ -9,13 +9,13 @@
 <div class="search-panel">
   <div class="search-form">
     <el-form :inline="true" :model="searchForm">
-      <el-form-item label="时间范围">
+      <el-form-item :label="t('order.groupLogs.search.timeRange')">
         <el-date-picker
           v-model="searchForm.dateRange"
           type="datetimerange"
-          range-separator="至"
-          start-placeholder="开始时间"
-          end-placeholder="结束时间"
+          :range-separator="t('order.groupLogs.search.rangeSeparator')"
+          :start-placeholder="t('order.groupLogs.search.startPlaceholder')"
+          :end-placeholder="t('order.groupLogs.search.endPlaceholder')"
           value-format="YYYY-MM-DD HH:mm:ss"
           clearable
         />
@@ -31,23 +31,23 @@
           <el-option value="failure" label="失败" />
         </el-select>
       </el-form-item>
-      <el-form-item label="是否异常">
+      <el-form-item :label="t('order.groupLogs.search.isAnomaly')">
         <el-select
           v-model="searchForm.isAnomaly"
-          placeholder="全部"
+          :placeholder="t('order.groupLogs.search.statusAll')"
           style="width: 100px;"
           clearable
         >
-          <el-option :value="true" label="异常" />
-          <el-option :value="false" label="正常" />
+          <el-option :value="true" :label="t('order.groupLogs.search.anomaly')" />
+          <el-option :value="false" :label="t('order.groupLogs.search.normal')" />
         </el-select>
       </el-form-item> -->
       <el-form-item class="search-actions">
         <el-button type="primary" :icon="Search" @click="search">
-          查询
+          {{ t('order.groupLogs.search.searchBtn') }}
         </el-button>
         <el-button :icon="Refresh" @click="resetSearch">
-          刷新
+          {{ t('order.groupLogs.search.refreshBtn') }}
         </el-button>
       </el-form-item>
     </el-form>
@@ -57,15 +57,15 @@
         <div class="stats-section">
           <div class="stat-card">
             <div class="stat-value">{{ totalCount }}</div>
-            <div class="stat-label">总记录数</div>
+            <div class="stat-label">{{ t('order.groupLogs.stats.total') }}</div>
           </div>
           <div class="stat-card success">
             <div class="stat-value">{{ successCount }}</div>
-            <div class="stat-label">成功登录</div>
+            <div class="stat-label">{{ t('order.groupLogs.stats.success') }}</div>
           </div>
           <div class="stat-card danger">
             <div class="stat-value">{{ failureCount }}</div>
-            <div class="stat-label">登录失败</div>
+            <div class="stat-label">{{ t('order.groupLogs.stats.failed') }}</div>
           </div>
           <!-- <div class="stat-card warning">
             <div class="stat-value">{{ anomalyCount }}</div>
@@ -77,19 +77,19 @@
         <div class="table-panel">
           <el-table :data="loginLogs" border stripe style="width: 100%" v-loading="loading" @row-click="handleRowClick">
             <!-- <el-table-column prop="GroupCode" label="集团代码" width="120" /> -->
-            <el-table-column prop="Email" label="用户邮箱" width="200" align="left" />
-            <el-table-column prop="LoginTime" label="登录时间" width="180" align="center">
+            <el-table-column prop="Email" :label="t('order.groupLogs.table.email')" width="200" align="left" />
+            <el-table-column prop="LoginTime" :label="t('order.groupLogs.table.loginTime')" width="180" align="center">
               <template #default="{ row }">
                 {{ formatDateTime(row.LoginTime) }}
               </template>
             </el-table-column>
-            <el-table-column prop="LoginIp" label="登录IP" width="150" align="left" />
-            <el-table-column prop="LoginResult" label="登录结果" width="100" align="center">
+            <el-table-column prop="LoginIp" :label="t('order.groupLogs.table.loginIp')" width="150" align="left" />
+            <el-table-column prop="LoginResult" :label="t('order.groupLogs.table.loginResult')" width="140" align="center">
               <template #default="{ row }">
-                <StatusPill :type="row.LoginResult === 'success' ? 'success' : 'danger'" :text="row.LoginResult === 'success' ? '成功' : '失败'" />
+                <StatusPill :type="row.LoginResult === 'success' ? 'success' : 'danger'" :text="row.LoginResult === 'success' ? t('order.groupLogs.status.success') : t('order.groupLogs.status.failed')" />
               </template>
             </el-table-column>
-            <el-table-column prop="LoginMessage" label="结果描述" min-width="150" align="left" />
+            <el-table-column prop="LoginMessage" :label="t('order.groupLogs.table.resultDesc')" min-width="150" align="left" />
             <!-- <el-table-column prop="IsAnomaly" label="是否异常" width="100">
               <template #default="{ row }">
                 <el-tag :type="row.IsAnomaly ? 'warning' : 'success'" size="small">
@@ -97,7 +97,7 @@
                 </el-tag>
               </template>
             </el-table-column> -->
-            <el-table-column prop="AnomalyType" label="异常类型" width="150" align="center">
+            <el-table-column prop="AnomalyType" :label="t('order.groupLogs.table.anomalyType')" width="150" align="center">
               <template #default="{ row }">
                 <span v-if="row.AnomalyType" class="anomaly-type">
                   {{ getAnomalyTypeLabel(row.AnomalyType) }}
@@ -117,10 +117,10 @@
         </div>
 
         <!-- 异常详情对话框 -->
-        <el-dialog v-model="showDetailDialog" title="异常登录详情" width="500px">
+        <el-dialog v-model="showDetailDialog" :title="t('order.groupLogs.dialog.title')" width="500px">
           <div v-if="currentLog" class="detail-info">
             <div class="detail-row">
-              <div class="detail-label">记录ID：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.recordId') }}</div>
               <div class="detail-value">{{ currentLog.AutoId }}</div>
             </div>
             <!-- <div class="detail-row">
@@ -128,25 +128,25 @@
               <div class="detail-value">{{ currentLog.GroupCode }}</div>
             </div> -->
             <div class="detail-row">
-              <div class="detail-label">用户邮箱：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.email') }}</div>
               <div class="detail-value">{{ currentLog.Email }}</div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">登录时间：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.loginTime') }}</div>
               <div class="detail-value">{{ formatDateTime(currentLog.LoginTime) }}</div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">登录IP：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.loginIp') }}</div>
               <div class="detail-value">{{ currentLog.LoginIp }}</div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">登录结果：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.loginResult') }}</div>
               <div class="detail-value">
-                <StatusPill :type="currentLog.LoginResult === 'success' ? 'success' : 'danger'" :text="currentLog.LoginResult === 'success' ? '成功' : '失败'" />
+                <StatusPill :type="currentLog.LoginResult === 'success' ? 'success' : 'danger'" :text="currentLog.LoginResult === 'success' ? t('order.groupLogs.status.success') : t('order.groupLogs.status.failed')" />
               </div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">异常类型：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.anomalyType') }}</div>
               <div class="detail-value">
                 <el-tag type="warning" size="small">
                   {{ getAnomalyTypeLabel(currentLog.AnomalyType) }}
@@ -154,14 +154,14 @@
               </div>
             </div>
             <div class="detail-row">
-              <div class="detail-label">异常详情：</div>
+              <div class="detail-label">{{ t('order.groupLogs.dialog.anomalyDetails') }}</div>
               <div class="detail-value">
                 <pre class="anomaly-details">{{ formatAnomalyDetails(currentLog.AnomalyDetails) }}</pre>
               </div>
             </div>
           </div>
           <template #footer>
-            <el-button @click="showDetailDialog = false">关闭</el-button>
+            <el-button @click="showDetailDialog = false">{{ t('order.groupLogs.dialog.close') }}</el-button>
           </template>
         </el-dialog>
     </main>
@@ -208,11 +208,11 @@ const anomalyCount = computed(() => loginLogs.value.filter(log => log.IsAnomaly)
 // 获取异常类型标签
 const getAnomalyTypeLabel = (type) => {
   const labels = {
-    'NewDevice': '新设备',
-    'NewIP': '新IP',
-    'NewDevice_NewIP': '新设备+新IP'
+    'NewDevice': t('order.groupLogs.anomaly.newDevice'),
+    'NewIP': t('order.groupLogs.anomaly.newIP'),
+    'NewDevice_NewIP': t('order.groupLogs.anomaly.newDeviceNewIP')
   };
-  return labels[type] || type || '未知';
+  return labels[type] || type || t('order.groupLogs.anomaly.unknown');
 };
 // 格式化日期时间
 const formatDateTime = (dateStr) => {
@@ -277,12 +277,12 @@ const fetchLoginLogs = async () => {
       pagination.total = filteredList.length; 
     }
     else {
-      ElMessage.error(res.msg || '获取登录记录失败');
+      ElMessage.error(res.msg || t('order.groupLogs.msg.fetchFailed'));
     }
   }
   catch (error) {
     console.error('获取登录记录失败:', error);
-    ElMessage.error('获取登录记录失败');
+    ElMessage.error(t('order.groupLogs.msg.fetchFailed'));
   }
   finally {
     loading.value = false;
@@ -304,7 +304,7 @@ const resetSearch = () => {
 };
 // 导出数据
 const exportData = () => {
-  ElMessage.info('导出功能开发中');
+  ElMessage.info(t('order.groupLogs.msg.exportDev'));
 };
 // 点击行
 const handleRowClick = (row) => {

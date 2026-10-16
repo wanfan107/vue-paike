@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <header class="page-header">
       <h1>{{ t('menu.groupRotation') }}</h1>
@@ -8,19 +8,19 @@
     <main class="page-content">
       <div class="content-wrapper">
           <div class="account-balance">
-            <span class="balance-label">账户余额</span>
+            <span class="balance-label">{{ t('order.groupRotation.balanceLabel') }}</span>
             <span class="balance-amount">{{ formatCurrency(currentAccount.balance, currency.value) }}</span>
           </div>
           <div class="form-container">
           <el-form :model="transferForm" :rules="rules" ref="transferFormRef" label-width="120px">
-            <el-form-item label="转出账户" prop="fromAccount">
+            <el-form-item :label="t('order.groupRotation.form.fromAccount')" prop="fromAccount">
               <el-select v-model="transferForm.fromAccount" disabled>
                 <el-option :label="currentAccount.name" :value="currentAccount.id"></el-option>
               </el-select>
             </el-form-item>
             
-            <el-form-item label="转入账户" prop="toAccount">
-              <el-select v-model="transferForm.toAccount" placeholder="请选择转入账户">
+            <el-form-item :label="t('order.groupRotation.form.toAccount')" prop="toAccount">
+              <el-select v-model="transferForm.toAccount" :placeholder="t('order.groupRotation.form.toAccountPlaceholder')">
                 <el-option 
                   v-for="account in availableAccounts" 
                   :key="account.id" 
@@ -30,10 +30,10 @@
               </el-select>
             </el-form-item>
             
-            <el-form-item label="转账金额" prop="amount">
+            <el-form-item :label="t('order.groupRotation.form.amount')" prop="amount">
               <el-input 
                 v-model.number="transferForm.amount" 
-                placeholder="请输入转账金额" 
+                :placeholder="t('order.groupRotation.form.amountPlaceholder')"  
                 type="number"
                 :min="0.01"
                 :step="0.01"
@@ -42,7 +42,7 @@
                 <template #prefix>{{ getCurrencySymbol(currency.value) }}</template>
               </el-input>
               <div class="amount-tips">
-                最小转账金额: {{ getCurrencySymbol(currency.value) }} 0.01
+                {{ t('order.groupRotation.form.minAmount') }}: {{ getCurrencySymbol(currency.value) }} 0.01
               </div>
             </el-form-item>
             
@@ -58,10 +58,10 @@
               </el-input>
             </el-form-item> -->
             
-            <el-form-item label="转账备注">
+            <el-form-item :label="t('order.groupRotation.form.remark')">
               <el-input 
                 v-model="transferForm.remark" 
-                placeholder="请输入转账备注（选填）"
+                :placeholder="t('order.groupRotation.form.remarkPlaceholder')" 
                 type="textarea"
                 :rows="2"
               ></el-input>
@@ -69,9 +69,9 @@
             
             <el-form-item>
               <div class="form-actions">
-                <el-button @click="resetForm">重置</el-button>
+                <el-button @click="resetForm">{{ t('order.groupRotation.form.reset') }}</el-button>
                 <el-button type="primary" @click="submitTransfer" :loading="loading">
-                  确认转账
+                  {{ t('order.groupRotation.form.submit') }}
                 </el-button>
               </div>
             </el-form-item>
@@ -84,19 +84,19 @@
           <!-- 转账记录 -->
           <div class="transfer-history">
             <div class="history-header">
-              <h3>转账记录</h3>
+              <h3>{{ t('order.groupRotation.history.title') }}</h3>
               <div class="history-controls">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
+                  :range-separator="t('order.groupRotation.history.separator')"
+                  :start-placeholder="t('order.groupRotation.history.startDate')"
+                  :end-placeholder="t('order.groupRotation.history.endDate')"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   @change="getTransferHistory"
                 />
                 <el-button type="primary" size="small" @click="getTransferHistory">
-                  查询
+                  {{ t('order.groupRotation.history.searchBtn') }}
                 </el-button>
               </div>
             </div>
@@ -108,27 +108,27 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="orderNo" label="转账单号" width="180" />
-              <el-table-column prop="fromAccount" label="转出账户" />
-              <el-table-column prop="toAccount" label="转入账户" />
-              <el-table-column prop="amount" label="转账金额" width="120">
+              <el-table-column prop="orderNo" :label="t('order.groupRotation.table.orderNo')" width="180" />
+              <el-table-column prop="fromAccount" :label="t('order.groupRotation.table.fromAccount')" />
+              <el-table-column prop="toAccount" :label="t('order.groupRotation.table.toAccount')" />
+              <el-table-column prop="amount" :label="t('order.groupRotation.table.amount')" width="120">
                 <template #default="scope">
                   {{ formatCurrency(scope.row.amount, currency.value) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100">
+              <el-table-column prop="status" :label="t('order.groupRotation.table.status')" width="100">
                 <template #default="scope">
                   <el-tag :type="scope.row.status === 'SUCCESS' ? 'success' : 'danger'">
-                    {{ scope.row.status === 'SUCCESS' ? '成功' : '失败' }}
+                    {{ scope.row.status === 'SUCCESS' ? t('order.groupRotation.table.statusSuccess') : t('order.groupRotation.table.statusFailed') }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" />
-              <el-table-column prop="remark" label="备注" />
+              <el-table-column prop="createTime" :label="t('order.groupRotation.table.time')" width="180" />
+              <el-table-column prop="remark" :label="t('order.groupRotation.table.remark')" />
             </el-table>
             
             <div class="history-empty" v-if="!historyLoading && transferHistory.length === 0">
-              <el-empty description="暂无转账记录" />
+              <el-empty :description="t('order.groupRotation.history.empty')" />
             </div>
           </div>
       </div>
@@ -137,7 +137,7 @@
     <!-- 授信款未还清弹窗 -->
     <el-dialog
       v-model="showPrepayDialog"
-      title="提示"
+      :title="t('order.groupRotation.dialog.prepayTitle')"
       width="400px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -148,13 +148,13 @@
           <el-icon><Warning /></el-icon>
         </div>
         <div class="dialog-message">
-          授信款未还清，不能提U
+          {{ t('order.groupRotation.dialog.prepayMessage') }}
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="handleDialogClose">
-            确定
+            {{ t('order.groupRotation.dialog.confirm') }}
           </el-button>
         </span>
       </template>
@@ -230,17 +230,17 @@ const transferForm = reactive({
 });
 
 // 表单验证规则
-const rules = {
+const rules = computed(() => ({
   toAccount: [
-    { required: true, message: '请选择转入账户', trigger: 'change' }
+    { required: true, message: t('order.groupRotation.rules.toAccountRequired'), trigger: 'change' }
   ],
   amount: [
-    { required: true, message: '请输入转账金额', trigger: 'blur' },
-    { type: 'number', min: 0.01, message: '转账金额不能小于0.01', trigger: 'blur' },
+    { required: true, message: t('order.groupRotation.rules.amountRequired'), trigger: 'blur' },
+    { type: 'number', min: 0.01, message: t('order.groupRotation.rules.amountMin'), trigger: 'blur' },
     {
       validator: (rule, value, callback) => {
         if (value > currentAccount.balance) {
-          callback(new Error('转账金额不能超过账户余额'));
+          callback(new Error(t('order.groupRotation.rules.amountExceed')));
         } else {
           callback();
         }
@@ -252,7 +252,7 @@ const rules = {
   //   { required: true, message: '请输入转账U数', trigger: 'blur' },
   //   { type: 'number', min: 0.01, message: '转账U数不能小于0.01', trigger: 'blur' }
   // ]
-};
+}));
 
 // 金额转换为U数
 const convertAmountToU = () => {
@@ -294,7 +294,7 @@ const submitTransfer = async () => {
         await new Promise(resolve => setTimeout(resolve, 1500));
         
         // 模拟转账成功
-        ElMessage.success('转账成功');
+        ElMessage.success(t('order.groupRotation.msg.success'));
         
         // 重置表单
         resetForm();
@@ -305,7 +305,7 @@ const submitTransfer = async () => {
         // 刷新转账记录
         getTransferHistory();
       } catch (error) {
-        ElMessage.error('转账失败，请稍后重试');
+        ElMessage.error(t('order.groupRotation.msg.failed'));
       } finally {
         loading.value = false;
       }
@@ -413,7 +413,7 @@ const getTransferHistory = async () => {
       }
     ];
   } catch (error) {
-    ElMessage.error('获取转账记录失败');
+    ElMessage.error(t('order.groupRotation.msg.historyFailed'));
   } finally {
     historyLoading.value = false;
   }

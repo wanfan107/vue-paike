@@ -8,10 +8,10 @@
         <!-- 操作列表和新增按钮 -->
         <div class="section">
           <div class="section-header">
-            <h3 class="section-title">操作员列表</h3>
+            <h3 class="section-title">{{ t('order.groupPermission.title') }}</h3>
             <el-button type="primary" @click="showAddDialog = true">
               <el-icon><Plus /></el-icon>
-              新增操作员
+              {{ t('order.groupPermission.addOperator') }}
             </el-button>
           </div>
 
@@ -26,9 +26,9 @@
               highlight-current-row
             >
              
-              <el-table-column prop="email" label="邮箱名" width="180" align="left" />
-              <el-table-column prop="name" label="别名" width="100" align="center" />
-              <el-table-column prop="roleName" label="角色" width="120" align="center">
+              <el-table-column prop="email" :label="t('order.groupPermission.table.email')" width="180" align="left" />
+              <el-table-column prop="name" :label="t('order.groupPermission.table.alias')" width="100" align="center" />
+              <el-table-column prop="roleName" :label="t('order.groupPermission.table.role')" width="120" align="center">
                 <template  #default="{ row }">
                   <el-tooltip :content="getRoleDescription(row.roleCode)" placement="top">
                     <el-tag :type="getRoleTagType(row.roleCode)" size="small">
@@ -37,11 +37,11 @@
                   </el-tooltip>
                 </template>
               </el-table-column>
-              <el-table-column prop="merchantCodes" label="可操作商户" width="260" align="left">
+              <el-table-column prop="merchantCodes" :label="t('order.groupPermission.table.operableMerchants')" width="260" align="left">
                 <template #default="{ row }">
                   <div class="merchant-codes-wrapper">
                     <div v-if="row && row.merchantCodes && row.merchantCodes.length > 0">
-                      <div class="merchant-count-label">共 {{ row.merchantCodes.length }} 个</div>
+                      <div class="merchant-count-label">{{ t('order.groupPermission.table.merchantCount', { count: row.merchantCodes.length }) }}</div>
                       <div class="merchant-codes-tags">
                         <el-tag
                           v-for="code in row.merchantCodes"
@@ -58,41 +58,41 @@
                   </div>
                 </template>
               </el-table-column>
-                    <el-table-column prop="status" label="状态" width="80" align="center">
+                    <el-table-column prop="status" :label="t('order.groupPermission.table.status')" width="80" align="center">
                 <template #default="{ row }">
-                  <StatusPill :type="row.status === 0 ? 'success' : 'neutral'" :text="row.status === 0 ? '启用' : '禁用'" />
+                  <StatusPill :type="row.status === 0 ? 'success' : 'neutral'" :text="row.status === 0 ? t('order.groupPermission.statusText.enable') : t('order.groupPermission.statusText.disable')" />
                 </template>
               </el-table-column>
-              <el-table-column prop="isActivated" label="邮箱已激活" width="120" align="center">
+              <el-table-column prop="isActivated" :label="t('order.groupPermission.table.emailActivated')" width="120" align="center">
                 <template #default="{ row }">
-                  <StatusPill :type="row.isActivated ? 'success' : 'neutral'" :text="row.isActivated ? '是' : '否'" />
+                  <StatusPill :type="row.isActivated ? 'success' : 'neutral'" :text="row.isActivated ? t('order.groupPermission.statusText.yes') : t('order.groupPermission.statusText.no')" />
                 </template>
               </el-table-column>
-              <el-table-column prop="hasGoogleAuth" label="MFA2已绑定" width="120" align="center">
+              <el-table-column prop="hasGoogleAuth" :label="t('order.groupPermission.table.mfaBound')" width="120" align="center">
                 <template #default="{ row }">
-                  <StatusPill :type="row.hasGoogleAuth ? 'success' : 'neutral'" :text="row.hasGoogleAuth ? '是' : '否'" />
+                  <StatusPill :type="row.hasGoogleAuth ? 'success' : 'neutral'" :text="row.hasGoogleAuth ? t('order.groupPermission.statusText.yes') : t('order.groupPermission.statusText.no')" />
                 </template>
               </el-table-column>
-              <el-table-column prop="createdOn" label="创建时间" width="170" align="center">
+              <el-table-column prop="createdOn" :label="t('order.groupPermission.table.createTime')" width="170" align="center">
                 <template #default="{ row }">
                   {{ formatDate(row.createdOn) }}
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="340" fixed="right" align="center">
+              <el-table-column :label="t('order.groupPermission.table.action')" width="340" fixed="right" align="center">
                 <template #default="{ row }">
                   <div class="action-cell" @click.stop.prevent>
                     <el-button type="primary" plain size="small" @click.stop="editOperator(row)">
-                      编辑
+                      {{ t('order.groupPermission.action.edit') }}
                     </el-button>
                     <el-button type="primary" plain size="small" @click.stop="showResetPasswordDialog(row)">
-                      重置密码
+                      {{ t('order.groupPermission.action.resetPassword') }}
                     </el-button>
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" plain size="small" @click.stop="openChangeEmailDialog(row)">
-                      变更邮箱
+                      {{ t('order.groupPermission.action.changeEmail') }}
                     </el-button>
                     <!-- 这里的删除是，逻辑删除 -->
                     <el-button v-if="row.roleCode !== 'admin'" type="danger" plain size="small" @click.stop="softDeleteOperator(row)">
-                      删除
+                      {{ t('order.groupPermission.action.delete') }}
                     </el-button>
                   </div>
                 </template>
@@ -104,62 +104,62 @@
         <!-- 新增操作员对话框 -->
         <el-dialog
           v-model="showAddDialog"
-          title="新增操作员"
+          :title="t('order.groupPermission.dialog.addTitle')"
           width="600px"
           :close-on-click-modal="false"
           @close="resetForm"
         >
           <el-form :model="formData" :rules="formRules" ref="formRef" label-width="120px">
-            <el-form-item label="邮箱名" prop="email">
-              <el-input 
-                v-model="formData.email" 
-                placeholder="请输入邮箱名"
+            <el-form-item :label="t('order.groupPermission.form.email')" prop="email">
+              <el-input
+                v-model="formData.email"
+                :placeholder="t('order.groupPermission.form.emailPlaceholder')"
                 clearable
                 @keyup.enter="saveOperator"
               />
             </el-form-item>
 
-            <el-form-item label="别名" prop="name">
-              <el-input 
-                v-model="formData.name" 
-                placeholder="请输入别名"
+            <el-form-item :label="t('order.groupPermission.form.alias')" prop="name">
+              <el-input
+                v-model="formData.name"
+                :placeholder="t('order.groupPermission.form.aliasPlaceholder')"
                 clearable
                 maxlength="50"
                 @keyup.enter="saveOperator"
               />
             </el-form-item>
 
-            <el-form-item label="账户类型" prop="roleCode">
+            <el-form-item :label="t('order.groupPermission.form.accountType')" prop="roleCode">
               <el-radio-group v-model="formData.roleCode">
                 <el-radio value="finance">
-                  财务账户
+                  {{ t('order.groupPermission.form.financeAccount') }}
                 </el-radio>
                 <el-radio value="operator">
-                  运营账户
+                  {{ t('order.groupPermission.form.operatorAccount') }}
                 </el-radio>
               </el-radio-group>
-              <el-tooltip content="财务账户：可进行下发、互转、查询、导出报表对账等操作。运营账户：仅能查询订单和导出报表对账，无法进行下发和互转" placement="top">
+              <el-tooltip :content="t('order.groupPermission.form.accountTypeTip')" placement="top">
                 <span class="account-type-tip">?</span>
               </el-tooltip>
             </el-form-item>
 
-            <el-form-item label="账户状态" prop="status">
+            <el-form-item :label="t('order.groupPermission.form.accountStatus')" prop="status">
               <el-radio-group v-model="formData.status">
                 <el-radio :value="0">
-                  启用
+                  {{ t('order.groupPermission.statusText.enable') }}
                 </el-radio>
                 <el-radio :value="6">
-                  禁用
+                  {{ t('order.groupPermission.statusText.disable') }}
                 </el-radio>
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item label="管理商户" prop="merchantCodes">
+            <el-form-item :label="t('order.groupPermission.form.manageMerchants')" prop="merchantCodes">
               <el-select
                 v-model="formData.merchantCodes"
                 multiple
                 filterable
-                placeholder="请选择管理的商户"
+                :placeholder="t('order.groupPermission.form.manageMerchantsPlaceholder')"
                 style="width: 100%"
                 collapse-tags
                 collapse-tags-tooltip
@@ -178,18 +178,18 @@
                       size="small"
                       effect="plain"
                     >
-                      {{ merchant.isGroup ? '集团' : '商户'}}
+                      {{ merchant.isGroup ? t('order.groupPermission.statusText.group') : t('order.groupPermission.statusText.merchant') }}
                     </el-tag>
                     <span v-if="merchant.qq" class="merchant-qq">{{ merchant.qq }}</span>
                   </div>
-                </el-option>   
+                </el-option>
               </el-select>
             </el-form-item>
 
-            <el-form-item label="MFA2验证码" prop="code">
-              <el-input 
-                v-model="formData.code" 
-                placeholder="请输入MFA2验证码"
+            <el-form-item :label="t('order.groupPermission.form.mfaCode')" prop="code">
+              <el-input
+                v-model="formData.code"
+                :placeholder="t('order.groupPermission.form.mfaPlaceholder')"
                 clearable
                 @keyup.enter="saveOperator"
               />
@@ -197,9 +197,9 @@
           </el-form>
 
           <template #footer>
-            <el-button @click="showAddDialog = false">取消</el-button>
+            <el-button @click="showAddDialog = false">{{ t('order.groupPermission.button.cancel') }}</el-button>
             <el-button type="primary" @click="saveOperator" :loading="saving">
-              确定
+              {{ t('order.groupPermission.button.confirm') }}
             </el-button>
           </template>
         </el-dialog>
@@ -207,68 +207,68 @@
         <!-- 编辑操作员对话框 -->
         <el-dialog
           v-model="showEditDialog"
-          title="编辑操作员"
+          :title="t('order.groupPermission.dialog.editTitle')"
           width="600px"
           :close-on-click-modal="false"
           @close="resetEditForm"
         >
           <el-form :model="editFormData" :rules="formRules" ref="editFormRef" label-width="120px" >
-            <el-form-item label="邮箱名" prop="email">
-              <el-input 
-                v-model="editFormData.email" 
-                placeholder="请输入邮箱名"
+            <el-form-item :label="t('order.groupPermission.form.email')" prop="email">
+              <el-input
+                v-model="editFormData.email"
+                :placeholder="t('order.groupPermission.form.emailPlaceholder')"
                 clearable
                 disabled
                 @keyup.enter="updateOperator"
               />
             </el-form-item>
 
-            <el-form-item label="别名" prop="name">
-              <el-input 
-                v-model="editFormData.name" 
-                placeholder="请输入别名"
+            <el-form-item :label="t('order.groupPermission.form.alias')" prop="name">
+              <el-input
+                v-model="editFormData.name"
+                :placeholder="t('order.groupPermission.form.aliasPlaceholder')"
                 clearable
                 maxlength="50"
                 @keyup.enter="updateOperator"
               />
             </el-form-item>
 
-            <el-form-item label="账户类型" prop="roleCode">
+            <el-form-item :label="t('order.groupPermission.form.accountType')" prop="roleCode">
               <el-radio-group v-model="editFormData.roleCode" :disabled="editFormData.roleCode === 'admin'">
                 <el-radio v-if="editFormData.roleCode === 'admin'" value="admin">
-                  管理员
+                  {{ t('order.groupPermission.form.admin') }}
                 </el-radio>
                 <template v-else>
                   <el-radio value="finance">
-                    财务账户
+                    {{ t('order.groupPermission.form.financeAccount') }}
                   </el-radio>
                   <el-radio value="operator">
-                    运营账户
+                    {{ t('order.groupPermission.form.operatorAccount') }}
                   </el-radio>
                 </template>
               </el-radio-group>
-              <el-tooltip content="财务账户：可进行下发、互转、查询、导出报表对账等操作。运营账户：仅能查询订单和导出报表对账，无法进行下发和互转" placement="top">
+              <el-tooltip :content="t('order.groupPermission.form.accountTypeTip')" placement="top">
                 <span class="account-type-tip">?</span>
               </el-tooltip>
             </el-form-item>
 
-            <el-form-item label="账户状态" prop="status">
+            <el-form-item :label="t('order.groupPermission.form.accountStatus')" prop="status">
               <el-radio-group v-model="editFormData.status" :disabled="editFormData.roleCode === 'admin'">
                 <el-radio :value="0">
-                  启用
+                  {{ t('order.groupPermission.statusText.enable') }}
                 </el-radio>
                 <el-radio :value="6">
-                  禁用
+                  {{ t('order.groupPermission.statusText.disable') }}
                 </el-radio>
               </el-radio-group>
             </el-form-item>
 
-            <el-form-item label="管理商户" prop="merchantCodes">
+            <el-form-item :label="t('order.groupPermission.form.manageMerchants')" prop="merchantCodes">
               <el-select
                 v-model="editFormData.merchantCodes"
                 multiple
                 filterable
-                placeholder="请选择管理的商户"
+                :placeholder="t('order.groupPermission.form.manageMerchantsPlaceholder')"
                 style="width: 100%"
                 collapse-tags
                 collapse-tags-tooltip
@@ -294,7 +294,7 @@
                       size="small"
                       effect="plain"
                     >
-                      {{ merchant.isGroup ? '集团' : '商户'}}
+                      {{ merchant.isGroup ? t('order.groupPermission.statusText.group') : t('order.groupPermission.statusText.merchant') }}
                     </el-tag>
                                         <span v-if="merchant.qq" class="merchant-qq">{{ merchant.qq }}</span>
                   </div>
@@ -302,26 +302,26 @@
               </el-select>
             </el-form-item>
 
-            <el-form-item label="创建时间">
+            <el-form-item :label="t('order.groupPermission.form.createTime')">
               <div class="create-time-display">
                 <el-icon><Clock /></el-icon>
                 <span>{{ editFormData.createTime }}</span>
               </div>
             </el-form-item>
 
-            <el-form-item label="MFA2验证码" prop="code">
-              <el-input 
-                v-model="editFormData.code" 
-                placeholder="请输入MFA2验证码"
+            <el-form-item :label="t('order.groupPermission.form.mfaCode')" prop="code">
+              <el-input
+                v-model="editFormData.code"
+                :placeholder="t('order.groupPermission.form.mfaPlaceholder')"
                 clearable
               />
             </el-form-item>
           </el-form>
 
           <template #footer>
-            <el-button @click="showEditDialog = false">取消</el-button>
+            <el-button @click="showEditDialog = false">{{ t('order.groupPermission.button.cancel') }}</el-button>
             <el-button type="primary" @click="updateOperator" :loading="updating">
-              更新
+              {{ t('order.groupPermission.button.update') }}
             </el-button>
           </template>
         </el-dialog>
@@ -329,20 +329,20 @@
         <!-- 查看基本信息对话框（只读） -->
         <el-dialog
           v-model="showViewDialog"
-          title="操作员基本信息"
+          :title="t('order.groupPermission.dialog.viewTitle')"
           width="550px"
         >
           <div class="view-info">
             <div class="info-row">
-              <div class="info-label">邮箱：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.email') }}</div>
               <div class="info-value">{{ viewingOperator.email }}</div>
             </div>
             <div class="info-row">
-              <div class="info-label">别名：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.alias') }}</div>
               <div class="info-value">{{ viewingOperator.name || '-' }}</div>
             </div>
             <div class="info-row">
-              <div class="info-label">角色：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.role') }}</div>
               <div class="info-value">
                 <el-tag :type="getRoleTagType(viewingOperator.roleCode)" size="small">
                   {{ viewingOperator.roleName }}
@@ -350,62 +350,62 @@
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">状态：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.status') }}</div>
               <div class="info-value">
-                <StatusPill :type="viewingOperator.status === 0 ? 'success' : 'neutral'" :text="viewingOperator.status === 0 ? '启用' : '禁用'" />
+                <StatusPill :type="viewingOperator.status === 0 ? 'success' : 'neutral'" :text="viewingOperator.status === 0 ? t('order.groupPermission.statusText.enable') : t('order.groupPermission.statusText.disable')" />
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">邮箱已激活：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.emailActivated') }}</div>
               <div class="info-value">
-                <StatusPill :type="viewingOperator.isActivated ? 'success' : 'neutral'" :text="viewingOperator.isActivated ? '是' : '否'" />
+                <StatusPill :type="viewingOperator.isActivated ? 'success' : 'neutral'" :text="viewingOperator.isActivated ? t('order.groupPermission.statusText.yes') : t('order.groupPermission.statusText.no')" />
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">MFA2已绑定：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.mfaBound') }}</div>
               <div class="info-value">
-                <StatusPill :type="viewingOperator.hasGoogleAuth ? 'success' : 'neutral'" :text="viewingOperator.hasGoogleAuth ? '是' : '否'" />
+                <StatusPill :type="viewingOperator.hasGoogleAuth ? 'success' : 'neutral'" :text="viewingOperator.hasGoogleAuth ? t('order.groupPermission.statusText.yes') : t('order.groupPermission.statusText.no')" />
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">可操作商户：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.operableMerchants') }}</div>
               <div class="info-value">
                 <div class="merchant-tags">
                   <span v-for="(code, idx) in viewingOperator.merchantCodes" :key="code" style="margin-left: 4px;">
                     <el-tag size="small" type="info">{{ code }}</el-tag>
                   </span>
-                  <span v-if="(!viewingOperator.merchantCodes || viewingOperator.merchantCodes.length === 0)" class="no-data">未分配商户</span>
+                  <span v-if="(!viewingOperator.merchantCodes || viewingOperator.merchantCodes.length === 0)" class="no-data">{{ t('order.groupPermission.view.noMerchant') }}</span>
                 </div>
               </div>
             </div>
             <div class="info-row">
-              <div class="info-label">创建时间：</div>
+              <div class="info-label">{{ t('order.groupPermission.view.createTime') }}</div>
               <div class="info-value">{{ formatDate(viewingOperator.createTime) }}</div>
             </div>
           </div>
           <template #footer>
-            <el-button @click="showViewDialog = false">关闭</el-button>
+            <el-button @click="showViewDialog = false">{{ t('order.groupPermission.button.close') }}</el-button>
           </template>
         </el-dialog>
 
         <!-- 重置密码对话框 -->
         <el-dialog
           v-model="showResetDialog"
-          title="重置密码"
+          :title="t('order.groupPermission.dialog.resetTitle')"
           width="450px"
           :close-on-click-modal="false"
         >
           <div class="reset-password-content">
-            <p class="confirm-text">确定向 <span class="email">{{ resettingOperator.email }}</span> 发送密码重置邮件？</p>
-            <p class="hint-text">用户将通过邮件中的链接自行设置新密码，链接有效期为24小时。</p>
+            <p class="confirm-text">{{ t('order.groupPermission.reset.confirmText', { email: resettingOperator.email }) }}</p>
+            <p class="hint-text">{{ t('order.groupPermission.reset.hintText') }}</p>
           </div>
 
 
 
           <template #footer>
-            <el-button @click="showResetDialog = false">取消</el-button>
+            <el-button @click="showResetDialog = false">{{ t('order.groupPermission.button.cancel') }}</el-button>
             <el-button type="primary" @click="resetPassword" :loading="resetting">
-              确定发送
+              {{ t('order.groupPermission.button.confirmSend') }}
             </el-button>
           </template>
         </el-dialog>
@@ -413,35 +413,35 @@
         <!-- 变更邮箱对话框 -->
         <el-dialog
           v-model="showChangeEmailDialog"
-          title="变更邮箱"
+          :title="t('order.groupPermission.dialog.changeEmailTitle')"
           width="450px"
           :close-on-click-modal="false"
         >
           <el-form :model="changeEmailForm" :rules="changeEmailRules" ref="changeEmailFormRef" label-width="100px">
-            <el-form-item label="当前邮箱">
+            <el-form-item :label="t('order.groupPermission.form.currentEmail')">
               <span>{{ changeEmailOperator.email }}</span>
             </el-form-item>
-            <el-form-item label="新邮箱" prop="newEmail">
-              <el-input 
-                v-model="changeEmailForm.newEmail" 
-                placeholder="请输入新邮箱"
+            <el-form-item :label="t('order.groupPermission.form.newEmail')" prop="newEmail">
+              <el-input
+                v-model="changeEmailForm.newEmail"
+                :placeholder="t('order.groupPermission.form.newEmailPlaceholder')"
                 clearable
                 maxlength="80"
               />
             </el-form-item>
-            <el-form-item label="MFA2验证码" prop="gcode">
-              <el-input 
-                v-model="changeEmailForm.gcode" 
-                placeholder="请输入MFA2验证码"
+            <el-form-item :label="t('order.groupPermission.form.mfaCode')" prop="gcode">
+              <el-input
+                v-model="changeEmailForm.gcode"
+                :placeholder="t('order.groupPermission.form.mfaPlaceholder')"
                 clearable
                 maxlength="6"
               />
             </el-form-item>
           </el-form>
           <template #footer>
-            <el-button @click="showChangeEmailDialog = false">取消</el-button>
+            <el-button @click="showChangeEmailDialog = false">{{ t('order.groupPermission.button.cancel') }}</el-button>
             <el-button type="primary" @click="changeEmail" :loading="changingEmail">
-              确定
+              {{ t('order.groupPermission.button.confirm') }}
             </el-button>
           </template>
         </el-dialog>
@@ -450,7 +450,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { Plus, Clock } from '@element-plus/icons-vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
@@ -508,12 +508,12 @@ const formData = reactive({
 
 
 // 重置密码表单验证规则
-const resetFormRules = {
+const resetFormRules = computed(() => ({
   code: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
-    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+    { required: true, message: t('order.groupPermission.rules.mfaRequired'), trigger: 'blur' },
+    { min: 6, max: 6, message: t('order.groupPermission.rules.mfaLength'), trigger: 'blur' }
   ]
-};
+}));
 
 // 变更邮箱表单数据
 const changeEmailForm = reactive({
@@ -522,17 +522,17 @@ const changeEmailForm = reactive({
 });
 
 // 变更邮箱表单验证规则
-const changeEmailRules = {
+const changeEmailRules = computed(() => ({
   newEmail: [
-    { required: true, message: '请输入新邮箱', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
-    { max: 80, message: '邮箱长度不能超过80个字符', trigger: 'blur' }
+    { required: true, message: t('order.groupPermission.rules.newEmailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('order.groupPermission.rules.emailFormat'), trigger: 'blur' },
+    { max: 80, message: t('order.groupPermission.rules.emailMax'), trigger: 'blur' }
   ],
   gcode: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
-    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+    { required: true, message: t('order.groupPermission.rules.mfaRequired'), trigger: 'blur' },
+    { min: 6, max: 6, message: t('order.groupPermission.rules.mfaLength'), trigger: 'blur' }
   ]
-};
+}));
 
 // 编辑表单数据
 const editFormData = reactive({
@@ -547,38 +547,38 @@ const editFormData = reactive({
 });
 
 // 表单验证规则
-const formRules = {
+const formRules = computed(() => ({
   email: [
-    { required: true, message: '请输入邮箱名', trigger: 'blur' },
-    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' },
-    { max: 80, message: '邮箱长度不能超过80个字符', trigger: 'blur' },
+    { required: true, message: t('order.groupPermission.rules.emailRequired'), trigger: 'blur' },
+    { type: 'email', message: t('order.groupPermission.rules.emailFormat'), trigger: 'blur' },
+    { max: 80, message: t('order.groupPermission.rules.emailMax'), trigger: 'blur' },
   ],
   name: [
-    { required: true, message: '请输入别名', trigger: 'blur' },
-    { max: 50, message: '别名最大长度为50个字符', trigger: 'blur' }
+    { required: true, message: t('order.groupPermission.rules.aliasRequired'), trigger: 'blur' },
+    { max: 50, message: t('order.groupPermission.rules.aliasMax'), trigger: 'blur' }
   ],
   code: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
-    { min: 6, max: 6, message: '验证码长度为 6 个字符', trigger: 'blur' }
+    { required: true, message: t('order.groupPermission.rules.mfaRequired'), trigger: 'blur' },
+    { min: 6, max: 6, message: t('order.groupPermission.rules.mfaLength'), trigger: 'blur' }
   ],
   roleCode: [
-    { required: true, message: '请选择账户类型', trigger: 'change' }
+    { required: true, message: t('order.groupPermission.rules.accountTypeRequired'), trigger: 'change' }
   ],
   merchantCodes: [
-    { 
-      required: true, 
-      message: '请至少选择一个管理商户', 
+    {
+      required: true,
+      message: t('order.groupPermission.rules.merchantRequired'),
       trigger: 'change',
       validator: (rule, value, callback) => {
         if (!value || value.length === 0) {
-          callback(new Error('请至少选择一个管理商户'));
+          callback(new Error(t('order.groupPermission.rules.merchantRequired')));
         } else {
           callback();
         }
       }
     }
   ]
-};
+}));
 
 // 加载商户列表
 const loadMerchants = async () => {
@@ -588,7 +588,7 @@ const loadMerchants = async () => {
       allMerchants.value = res.data.filter(m => !m.code?.startsWith('G'));   // 过滤掉集团商户
     }
   } catch (error) {
-    ElMessage.error('加载商户列表失败');
+    ElMessage.error(t('order.groupPermission.msg.loadMerchantsFailed'));
   }
 };
 
@@ -606,7 +606,7 @@ const loadOperators = async () => {
 
     }
   } catch (error) {
-    ElMessage.error('加载操作员列表失败');
+    ElMessage.error(t('order.groupPermission.msg.loadOperatorsFailed'));
   }
 };
 
@@ -627,9 +627,9 @@ const getRoleTagType = (roleCode) => {
 
 const getRoleDescription = (roleCode) => {
   const descriptions = {
-    admin: '超级管理员：拥有系统最高权限，可管理所有商户和操作员',
-    finance: '财务账户：可进行下发、互转、查询、导出报表对账等操作',
-    operator: '运营账户：仅能查询订单和导出报表对账，无法进行下发和互转'
+    admin: t('order.groupPermission.roleDesc.admin'),
+    finance: t('order.groupPermission.roleDesc.finance'),
+    operator: t('order.groupPermission.roleDesc.operator')
   };
   return descriptions[roleCode] || '';
 };
@@ -736,11 +736,11 @@ const updateOperator = async () => {
     });
     console.log(res);
     
-    ElMessage.success('操作员信息更新成功');
+    ElMessage.success(t('order.groupPermission.msg.updateSuccess'));
     showEditDialog.value = false;
     loadOperators();
   } catch (error) {
-    ElMessage.error(error.response?.data?.msg || '更新失败');
+    ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.updateFailed'));
   } finally {
     updating.value = false;
   }
@@ -750,16 +750,16 @@ const updateOperator = async () => {
 const deleteOperator = (operator) => {
   const currentUserEmail = userStore.roleCode || '';
   if (operator.roleCode === currentUserEmail) {
-    ElMessage.warning('不允许删除当前登录用户！');
+    ElMessage.warning(t('order.groupPermission.msg.deleteCurrentUser'));
     return;
   }
-  
+
   ElMessageBox.confirm(
-    `确定要删除操作员 "${operator.email || operator.email}" 吗？`,
-    '提示',
+    t('order.groupPermission.msg.deleteConfirm', { email: operator.email || operator.email }),
+    t('order.groupPermission.dialog.deleteTitle'),
     {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
+      confirmButtonText: t('order.groupPermission.button.confirm'),
+      cancelButtonText: t('order.groupPermission.button.cancel'),
       type: 'warning'
     }
   ).then(async () => {
@@ -769,9 +769,9 @@ const deleteOperator = (operator) => {
       if (index !== -1) {
         operators.value.splice(index, 1);
       }
-      ElMessage.success('删除成功');
+      ElMessage.success(t('order.groupPermission.msg.deleteSuccess'));
     } catch (error) {
-      ElMessage.error(error.response?.data?.msg || '删除失败');
+      ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.deleteFailed'));
     }
   }).catch(() => {});
 };
@@ -780,25 +780,25 @@ const deleteOperator = (operator) => {
 const softDeleteOperator = (operator) => {
   const currentUserEmail = userStore.roleCode || '';
   if (operator.roleCode === currentUserEmail) {
-    ElMessage.warning('不允许删除当前登录用户！');
+    ElMessage.warning(t('order.groupPermission.msg.deleteCurrentUser'));
     return;
   }
-  
+
   ElMessageBox.confirm(
-    `确定要删除操作员 "${operator.email || operator.email}" 吗？\n删除后该账号将无法登录，邮箱将被释放。`,
-    '提示',
+    t('order.groupPermission.msg.deleteConfirmMsg', { email: operator.email || operator.email }),
+    t('order.groupPermission.dialog.deleteTitle'),
     {
-      confirmButtonText: '确定删除',
-      cancelButtonText: '取消',
+      confirmButtonText: t('order.groupPermission.button.confirmDelete'),
+      cancelButtonText: t('order.groupPermission.button.cancel'),
       type: 'warning'
     }
   ).then(async () => {
     try {
       await http.softDeleteGroupUser({ userId: operator.autoId || operator.userId });
       loadOperators();
-      ElMessage.success('删除成功');
+      ElMessage.success(t('order.groupPermission.msg.deleteSuccess'));
     } catch (error) {
-      ElMessage.error(error.response?.data?.msg || '删除失败');
+      ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.deleteFailed'));
     }
   }).catch(() => {});
 };
@@ -833,11 +833,11 @@ const changeEmail = async () => {
       gcode: changeEmailForm.gcode
     });
     
-    ElMessage.success('变更邮箱成功');
+    ElMessage.success(t('order.groupPermission.msg.changeEmailSuccess'));
     showChangeEmailDialog.value = false;
     loadOperators();
   } catch (error) {
-    ElMessage.error(error.response?.data?.msg || '变更邮箱失败');
+    ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.changeEmailFailed'));
   } finally {
     changingEmail.value = false;
   }
@@ -854,10 +854,10 @@ const resetPassword = async () => {
       userId: resettingOperator.value.userId,
     });
     
-    ElMessage.success('密码重置邮件已发送');
+    ElMessage.success(t('order.groupPermission.msg.resetPasswordSuccess'));
     showResetDialog.value = false;
   } catch (error) {
-    ElMessage.error(error.response?.data?.msg || '密码重置邮件发送失败');
+    ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.resetPasswordFailed'));
   } finally {
     resetting.value = false;
   }
@@ -867,7 +867,7 @@ const resetPassword = async () => {
 const saveOperator = async () => {
   try {
     if (operators.value.length >= 50) {
-      ElMessage.warning('最多只能添加50个操作员账户！');
+      ElMessage.warning(t('order.groupPermission.msg.maxOperators'));
       return;
     }
     
@@ -893,7 +893,7 @@ const saveOperator = async () => {
 
     loadOperators();
   } catch (error) {
-    ElMessage.error(error.response?.data?.msg || '添加失败');
+    ElMessage.error(error.response?.data?.msg || t('order.groupPermission.msg.addFailed'));
   } finally {
     saving.value = false;
 

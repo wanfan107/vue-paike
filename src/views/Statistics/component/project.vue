@@ -7,11 +7,11 @@
       :lg="8"
       :xl="8"
       v-for="(item, index) in displayList"
-      :key="item.name"
+      :key="item.nameKey"
     >
       <el-card :class="['project-card', 'project-card' + index]" >
         <div class="project-card-header">
-          <div class="project-name">{{ item.name }}</div>
+          <div class="project-name">{{ t(item.nameKey) }}</div>
           <div class="project-icon" :class="['icon' + index]">
              <!-- 添加图标 --->
             <el-icon v-if="index === 0"><FolderAdd /></el-icon>
@@ -42,6 +42,9 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
 import { FolderAdd, Select, Histogram } from '@element-plus/icons-vue';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   data: {
@@ -57,17 +60,17 @@ const props = defineProps({
 // 根据props数据生成显示列表
 const displayList = computed(() => [
   {
-    name: "创建订单",
+    nameKey: "statistics.overview.createdOrders",
     amount: parseInt(props.data.orderCount || '0'),
     type: "count"
   },
   {
-    name: "成功订单",
+    nameKey: "statistics.overview.successOrders",
     amount: parseInt(props.data.successCount || '0'),
     type: "count"
   },
   {
-    name: "成功率",
+    nameKey: "statistics.overview.successRate",
     amount: parseFloat(props.data.successRate || '0'),
     type: "rate"
   },

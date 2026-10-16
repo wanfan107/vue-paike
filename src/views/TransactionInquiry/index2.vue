@@ -8,25 +8,25 @@
         <div class="search-panel">
           <div class="query-form">
             <div class="form-item">
-              <div class="form-label">订单号- 集团商户里的 - 01311110522940471237107  /  C94647：- DD006260412101107732508826</div>
+              <div class="form-label">{{ t('order.transactionInquiry2.search.orderNoLabel') }}</div>
               <el-input
                 type="textarea"
                 v-model="orderInput"
                 :rows="6"
-                placeholder="输入订单号，支持中英文逗号、换行符分隔（最多50个）&#10;支持：商户订单号、平台订单号、银行订单号"
+                :placeholder="t('order.transactionInquiry2.search.placeholder')"
               ></el-input>
             </div>
             <div class="form-item" style="margin-top: 16px;">
-              <div class="form-label">订单类型</div>
-              <el-select v-model="orderType" placeholder="请选择" style="width: 200px;">
-                <el-option label="所有" value="all"></el-option>
-                <el-option label="收款" value="payin"></el-option>
-                <el-option label="付款" value="payout"></el-option>
+              <div class="form-label">{{ t('order.transactionInquiry2.search.orderType') }}</div>
+              <el-select v-model="orderType" :placeholder="t('order.transactionInquiry2.search.orderTypePlaceholder')" style="width: 200px;">
+                <el-option :label="t('order.transactionInquiry2.search.typeAll')" value="all"></el-option>
+                <el-option :label="t('order.transactionInquiry2.search.typePayin')" value="payin"></el-option>
+                <el-option :label="t('order.transactionInquiry2.search.typePayout')" value="payout"></el-option>
               </el-select>
             </div>
             <div class="form-actions">
-              <el-button type="primary" :loading="loading" @click="onQuery">查询</el-button>
-              <el-button @click="onReset">重置</el-button>
+              <el-button type="primary" :loading="loading" @click="onQuery">{{ t('order.transactionInquiry2.search.query') }}</el-button>
+              <el-button @click="onReset">{{ t('order.transactionInquiry2.search.reset') }}</el-button>
             </div>
           </div>
         </div>
@@ -36,40 +36,40 @@
           <!-- 属于本集团的订单 -->
           <div class="table-panel" style="margin-top: 16px;">
             <div class="panel-header">
-              <span>查询到的订单（属于本集团）</span>
-              <el-tag size="small" style="margin-left: 8px;">{{ queryResult.foundOrders.length }} 条</el-tag>
+              <span>{{ t('order.transactionInquiry2.result.foundTitle') }}</span>
+              <el-tag size="small" style="margin-left: 8px;">{{ queryResult.foundOrders.length }} {{ t('order.transactionInquiry2.result.unitTiao') }}</el-tag>
             </div>
             <el-table
               v-loading="loading"
               max-height="500px"
               :data="queryResult.foundOrders"
             >
-              <el-table-column align="center" prop="inputOrderNo" label="输入订单号" width="180"></el-table-column>
-              <el-table-column align="center" prop="orderTypeText" label="订单类型" width="80">
+              <el-table-column align="center" prop="inputOrderNo" :label="t('order.transactionInquiry2.table.inputOrderNo')" width="180"></el-table-column>
+              <el-table-column align="center" prop="orderTypeText" :label="t('order.transactionInquiry2.table.orderType')" width="80">
                 <template #default="{ row }">
                   <StatusPill :type="orderTypeTag(row.orderType)" :text="row.orderTypeText" />
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="merchant" label="商户号" width="80"></el-table-column>
-              <el-table-column align="center" prop="merchantOrder" label="商户订单号" width="180"></el-table-column>
-              <el-table-column align="center" prop="serialNo" label="平台订单号" width="180"></el-table-column>
-              <el-table-column align="center" prop="supplierOrder" label="银行订单号" width="180">
+              <el-table-column align="center" prop="merchant" :label="t('order.transactionInquiry2.table.merchant')" width="80"></el-table-column>
+              <el-table-column align="center" prop="merchantOrder" :label="t('order.transactionInquiry2.table.merchantOrder')" width="180"></el-table-column>
+              <el-table-column align="center" prop="serialNo" :label="t('order.transactionInquiry2.table.serialNo')" width="180"></el-table-column>
+              <el-table-column align="center" prop="supplierOrder" :label="t('order.transactionInquiry2.table.bankOrderNo')" width="180">
                 <template #default="{ row }">
                   {{ row.supplierOrder || '-' }}
                 </template>
               </el-table-column>
-              <el-table-column align="center" label="银行单号" width="180">
+              <el-table-column align="center" :label="t('order.transactionInquiry2.table.bankNo')" width="180">
                 <template #default="{ row }">
                   {{ row.billingCity || row.bankArea || '-' }}
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="statusText" label="状态" width="110">
+              <el-table-column align="center" prop="statusText" :label="t('order.transactionInquiry2.table.status')" width="110">
                 <template #default="{ row }">
                   <StatusPill v-if="row.statusText" :type="statusTagType(row)" :text="row.statusText" />
                   <span v-else>-</span>
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="createdOn" label="创建时间" width="180">
+              <el-table-column align="center" prop="createdOn" :label="t('order.transactionInquiry2.table.createdOn')" width="180">
                 <template #default="{ row }">
                   {{ formatTime(row.createdOn) }}
                 </template>
@@ -80,8 +80,8 @@
           <!-- 不属于本集团的订单 -->
           <div v-if="queryResult.notGroupOrders.length" class="table-panel" style="margin-top: 16px;">
             <div class="panel-header">
-              <span style="color: var(--color-status-warn);">订单存在但不属于本集团</span>
-              <el-tag type="warning" size="small" style="margin-left: 8px;">{{ queryResult.notGroupOrders.length }} 个</el-tag>
+              <span style="color: var(--color-status-warn);">{{ t('order.transactionInquiry2.result.notGroupTitle') }}</span>
+              <el-tag type="warning" size="small" style="margin-left: 8px;">{{ queryResult.notGroupOrders.length }} {{ t('order.transactionInquiry2.result.unitGe') }}</el-tag>
             </div>
             <div class="order-list">
               <el-tag
@@ -97,8 +97,8 @@
           <!-- 完全查不到的订单 -->
           <div v-if="queryResult.notFoundOrders.length" class="table-panel" style="margin-top: 16px;">
             <div class="panel-header">
-              <span style="color: var(--color-send);">未查询到的订单</span>
-              <el-tag type="danger" size="small" style="margin-left: 8px;">{{ queryResult.notFoundOrders.length }} 个</el-tag>
+              <span style="color: var(--color-send);">{{ t('order.transactionInquiry2.result.notFoundTitle') }}</span>
+              <el-tag type="danger" size="small" style="margin-left: 8px;">{{ queryResult.notFoundOrders.length }} {{ t('order.transactionInquiry2.result.unitGe') }}</el-tag>
             </div>
             <div class="order-list">
               <el-tag
@@ -149,11 +149,11 @@ const parseOrders = () => {
 const onQuery = async () => {
   const orders = parseOrders();
   if (!orders.length) {
-    ElMessage.warning('请输入订单号');
+    ElMessage.warning(t('order.transactionInquiry2.msg.inputRequired'));
     return;
   }
   if (orders.length > 50) {
-    ElMessage.warning('单次最多查询50个订单号');
+    ElMessage.warning(t('order.transactionInquiry2.msg.max50'));
     return;
   }
 
@@ -169,13 +169,13 @@ const onQuery = async () => {
       const notGroup = res.data.notGroupOrders.length;
       const notFound = res.data.notFoundOrders.length;
       ElMessage.success(
-        `查询完成：找到${found}条，不属于本集团${notGroup}个，未找到${notFound}个`
+        t('order.transactionInquiry2.msg.summary', { found, notGroup, notFound })
       );
     } else {
-      ElMessage.error(res.msg || '查询失败');
+      ElMessage.error(res.msg || t('order.transactionInquiry2.msg.queryFailed'));
     }
   } catch (err) {
-    ElMessage.error('查询异常');
+    ElMessage.error(t('order.transactionInquiry2.msg.queryError'));
   } finally {
     loading.value = false;
   }

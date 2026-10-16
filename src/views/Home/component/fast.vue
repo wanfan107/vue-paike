@@ -18,7 +18,7 @@
                   <component :is="item.elIcon"></component>
                 </el-icon>
               </div>
-              <div class="fast-text">{{ item.text }}</div>
+              <div class="fast-text">{{ t(item.labelKey) }}</div>
             </div>
           </el-card>
         </div>
@@ -30,44 +30,46 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { Wallet, WalletFilled, CreditCard, InfoFilled, Download } from '@element-plus/icons-vue'
 import useUserStore from '@/stores/user'
 
 const userStore = useUserStore()
 const router = useRouter()
+const { t } = useI18n()
 
 const baseItems = ref([
-  { 
-    name: 'withdraw', 
-    path: '/withdraw', 
-    elIcon: 'Postcard', 
-    text: '下发订单', 
+  {
+    name: 'withdraw',
+    path: '/withdraw',
+    elIcon: 'Postcard',
+    labelKey: 'menu.withdraw',
   },
-  { 
-    name: 'ReceiptOrder', 
-    path: '/ReceiptOrder', 
-    elIcon: 'WalletFilled', 
-    text: '收款订单', 
+  {
+    name: 'ReceiptOrder',
+    path: '/ReceiptOrder',
+    elIcon: 'WalletFilled',
+    labelKey: 'menu.ReceiptOrder',
   },
-  { 
-    name: 'payment', 
-    path: '/payment', 
-    elIcon: 'CreditCard', 
-    text: '付款订单', 
+  {
+    name: 'payment',
+    path: '/payment',
+    elIcon: 'CreditCard',
+    labelKey: 'menu.payment',
   },
-  { 
-    name: 'info', 
-    path: '/account/info', 
-    elIcon: 'InfoFilled', 
-    text: '基本信息', 
+  {
+    name: 'info',
+    path: '/account/info',
+    elIcon: 'InfoFilled',
+    labelKey: 'menu.info',
   },
 ])
 
-const exportRecordItem = { 
-  name: 'exportRecord', 
-  path: '/ExportRecord', 
-  elIcon: 'Download', 
-  text: '导出记录', 
+const exportRecordItem = {
+  name: 'exportRecord',
+  path: '/ExportRecord',
+  elIcon: 'Download',
+  labelKey: 'menu.exportRecord',
 }
 
 const fastItems = computed(() => {

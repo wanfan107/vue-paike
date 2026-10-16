@@ -19,21 +19,21 @@
         <!-- <el-card class="form-card" shadow="never"> -->
           <!-- 账户信息描述 -->
           <div class="account-info">
-            <h3 class="section-title">账户信息</h3>
+            <h3 class="section-title">{{ t('order.groupApplyU.account.title') }}</h3>
             <el-descriptions border>
-              <!-- <el-descriptions-item label="可用余额" :span="1">
+              <!-- <el-descriptions-item :label="t('order.groupApplyU.account.available')" :span="1">
                 <span class="balance-value">({{ detail.balance }})</span>
               </el-descriptions-item>
-              <el-descriptions-item label="待结算余额" :span="1">
+              <el-descriptions-item :label="t('order.groupApplyU.account.unsettled')" :span="1">
                 <span class="balance-value">({{ detail.unsettledBalance }})</span>
               </el-descriptions-item> -->
-              <el-descriptions-item label="方式" :span="4">
-                商户确认/人工审核
+              <el-descriptions-item :label="t('order.groupApplyU.account.method')" :span="4">
+                {{ t('order.groupApplyU.account.methodText') }}
               </el-descriptions-item>
-              <el-descriptions-item label="周期" :span="4">
+              <el-descriptions-item :label="t('order.groupApplyU.account.cycle')" :span="4">
                 {{ detail.type }}
               </el-descriptions-item>
-              <el-descriptions-item label="汇率" :span="4">
+              <el-descriptions-item :label="t('order.groupApplyU.account.rate')" :span="4">
                 {{ detail.rate }}
               </el-descriptions-item>
             </el-descriptions>
@@ -42,8 +42,8 @@
           <!-- 表单区域 -->
           <div class="form-section">
             <div class="section-header">
-              <h3 class="section-title">开始申请</h3>
-              <el-button type="primary"  @click="showWalletDialog = true">新增钱包地址</el-button>
+              <h3 class="section-title">{{ t('order.groupApplyU.form.sectionTitle') }}</h3>
+              <el-button type="primary"  @click="showWalletDialog = true">{{ t('order.groupApplyU.form.addWallet') }}</el-button>
             </div>
             <div class="form-container">
               <el-form
@@ -57,11 +57,11 @@
               >
                 <el-row :gutter="10">
                                    <el-col :span="24">
-                    <el-form-item label="商户号" prop="merchantCode">
+                    <el-form-item :label="t('order.groupApplyU.form.merchantCode')" prop="merchantCode">
                       <div class="merchant-select-container">
                         <el-select
                           v-model="ruleForm.merchantCode"
-                          placeholder="请选择商户号"
+                          :placeholder="t('order.groupApplyU.form.merchantCodePlaceholder')"
                           style="width: 100%"
                           filterable
                         >
@@ -72,85 +72,85 @@
                           >
                             <div class="option-content">
                               <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
-                              <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
+                              <span class="option-balance">{{ t('order.groupApplyU.form.balanceLabel') }} {{ merchant.balance || 0 }}</span>
                             </div>
                           </el-option>
                         </el-select>
                         <span v-if="ruleForm.merchantCode" class="balance-label">
-                          余额: {{ getMerchantBalance(ruleForm.merchantCode) }}
+                          {{ t('order.groupApplyU.form.balanceLabel') }} {{ getMerchantBalance(ruleForm.merchantCode) }}
                         </span>
                       </div>
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="金额(法币)" prop="amount">
+                    <el-form-item :label="t('order.groupApplyU.form.amount')" prop="amount">
                       <el-input
                         v-model="ruleForm.amount"
                         type="number"
-                        placeholder="手续费：0.00 + 0%"
+                        :placeholder="t('order.groupApplyU.form.amountPlaceholder')"
                         @input="() => convertAmountToU()"
                         @blur="() => blur({ key: 'amount', val: ruleForm.amount })"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="到账U数" prop="uAmount">
+                    <el-form-item :label="t('order.groupApplyU.form.uAmount')" prop="uAmount">
                       <el-input
                         v-model="ruleForm.uAmount"
                         type="number"
                         min="1000"
-                        placeholder="单位：USDT"
+                        :placeholder="t('order.groupApplyU.form.uAmountPlaceholder')"
                         @input="() => convertUToAmount()"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="12">
-                    <el-form-item label="手续费" prop="fee">
+                    <el-form-item :label="t('order.groupApplyU.form.fee')" prop="fee">
                       <el-input
                         v-model="ruleForm.fee"
-                        placeholder="单位：₹"
+                        :placeholder="t('order.groupApplyU.form.feePlaceholder')"
                         disabled
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="钱包地址" prop="walletAddress">
+                    <el-form-item :label="t('order.groupApplyU.form.walletAddress')" prop="walletAddress">
                       <EditableSelect
                         v-model="ruleForm.walletAddress"
-                        :placeholder="'请选择钱包地址，如果选择错误，产生的交易不可逆转，当前仅支持TRC2.0地址提现'"
+                        :placeholder="t('order.groupApplyU.form.walletPlaceholder')"
                         :options="walletAddressOptions"
                         :merchant-id="ruleForm.merchantCode"
                       />
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="支付密码" prop="password">
+                    <el-form-item :label="t('order.groupApplyU.form.password')" prop="password">
                       <el-input
                         v-model="ruleForm.password"
                         type="password"
                         show-password
                         autocomplete="new-password"
-                        placeholder="请输入当前商户的支付密码"
+                        :placeholder="t('order.groupApplyU.form.passwordPlaceholder')"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                   <el-col :span="24">
-                    <el-form-item label="MFA2验证码" prop="code">
+                    <el-form-item :label="t('order.groupApplyU.form.mfa')" prop="code">
                       <el-input
                         v-model="ruleForm.code"
-                        placeholder="请输入MFA2验证码"
+                        :placeholder="t('order.groupApplyU.form.mfaPlaceholder')"
                       ></el-input>
                     </el-form-item>
                   </el-col>
                 </el-row>
                 <div style="text-align: center; width: 100%; padding-bottom: 20px; margin-top: 10px;">
-                  <el-button @click="reset">重置</el-button>
+                  <el-button @click="reset">{{ t('order.groupApplyU.form.reset') }}</el-button>
                   <el-button
                     :loading="loading"
                     :disabled="loading"
                     type="primary"
                     @click="onSave"
-                  >提交</el-button>
+                  >{{ t('order.groupApplyU.form.submit') }}</el-button>
                 </div>
               </el-form>
             </div>
@@ -162,14 +162,14 @@
           <!-- 钱包地址管理 -->
           <div class="transfer-history">
             <div class="history-header">
-              <h3>钱包地址管理</h3>
+              <h3>{{ t('order.groupApplyU.wallet.title') }}</h3>
               <el-button 
                 type="primary" 
                 size="small" 
                 :icon="Refresh" 
                 @click="getWalletAddresses"
               >
-                刷新
+                {{ t('order.groupApplyU.wallet.refresh') }}
               </el-button>
             </div>
             
@@ -180,21 +180,21 @@
               max-height="250"
               stripe
             >
-              <el-table-column prop="merchantCode" label="商户号" width="120" />
-              <el-table-column prop="address" label="钱包地址" min-width="300" />
-              <el-table-column prop="type" label="类型" width="120">
+              <el-table-column prop="merchantCode" :label="t('order.groupApplyU.wallet.merchantCode')" width="120" />
+              <el-table-column prop="address" :label="t('order.groupApplyU.wallet.address')" min-width="300" />
+              <el-table-column prop="type" :label="t('order.groupApplyU.wallet.type')" width="120">
                 <template #default="scope">
-                  <el-tag type="info">TRC2.0</el-tag>
+                  <el-tag type="info">{{ t('order.groupApplyU.wallet.typeTRC20') }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column label="操作" width="120">
+              <el-table-column :label="t('order.groupApplyU.wallet.action')" width="120">
                 <template #default="scope">
                   <el-button 
                     type="danger" 
                     size="small" 
                     @click="handleDeleteWallet(scope.row)"
                   >
-                    删除
+                    {{ t('order.groupApplyU.wallet.delete') }}
                   </el-button>
                 </template>
               </el-table-column>
@@ -209,7 +209,7 @@
     <!-- 授信款未还清弹窗 -->
     <el-dialog
       v-model="showPrepayDialog"
-      title="提示"
+      :title="t('order.groupApplyU.dialog.prepayTitle')"
       width="400px"
       :close-on-click-modal="false"
       :close-on-press-escape="false"
@@ -220,13 +220,13 @@
           <el-icon><Warning /></el-icon>
         </div>
         <div class="dialog-message">
-          授信款未还清，不能提U
+          {{ t('order.groupApplyU.dialog.prepayMessage') }}
         </div>
       </div>
       <template #footer>
         <span class="dialog-footer">
           <el-button type="primary" @click="handleDialogClose">
-            确定
+            {{ t('common.confirm') }}
           </el-button>
         </span>
       </template>
@@ -235,16 +235,16 @@
     <!-- 新增钱包地址弹窗 -->
     <el-dialog
       v-model="showWalletDialog"
-      title="新增钱包地址"
+      :title="t('order.groupApplyU.dialog.walletTitle')"
       width="500px"
     >
       <div class="wallet-form">
         <el-form :model="walletForm" :rules="walletRules" ref="walletFormRef" label-width="120px">
-          <el-form-item label="商户号" prop="merchantCode">
+          <el-form-item :label="t('order.groupApplyU.dialog.walletMerchantCode')" prop="merchantCode">
             <div class="merchant-select-container">
               <el-select
                 v-model="walletForm.merchantCode"
-                placeholder="请选择商户号"
+                :placeholder="t('order.groupApplyU.dialog.walletMerchantCodePlaceholder')"
                 style="width: 100%"
                 filterable
               >
@@ -255,27 +255,27 @@
                 >
                   <div class="option-content">
                     <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
-                    <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
+                    <span class="option-balance">{{ t('order.groupApplyU.form.balanceLabel') }} {{ merchant.balance || 0 }}</span>
                   </div>
                 </el-option>
               </el-select>
               <span v-if="walletForm.merchantCode" class="balance-label">
-                余额: {{ getMerchantBalance(walletForm.merchantCode) }}
+                {{ t('order.groupApplyU.form.balanceLabel') }} {{ getMerchantBalance(walletForm.merchantCode) }}
               </span>
             </div>
           </el-form-item>
-          <el-form-item label="USDT地址" prop="usdtAddress">
-            <el-input v-model="walletForm.usdtAddress"  placeholder="请输入USDT地址"></el-input>
+          <el-form-item :label="t('order.groupApplyU.dialog.walletUsdtAddress')" prop="usdtAddress">
+            <el-input v-model="walletForm.usdtAddress" :placeholder="t('order.groupApplyU.dialog.walletUsdtAddressPlaceholder')"></el-input>
           </el-form-item>
-          <el-form-item label="MFA2验证码" prop="googleCode">
-            <el-input v-model="walletForm.googleCode" placeholder="请输入MFA2验证码" ></el-input>
+          <el-form-item :label="t('order.groupApplyU.dialog.walletMfa')" prop="googleCode">
+            <el-input v-model="walletForm.googleCode" :placeholder="t('order.groupApplyU.dialog.walletMfaPlaceholder')" ></el-input>
           </el-form-item>
         </el-form>
       </div>
       <template #footer>
         <span class="dialog-footer">
-          <el-button @click="showWalletDialog = false">取消</el-button>
-          <el-button type="primary" @click="saveWalletAddress">保存</el-button>
+          <el-button @click="showWalletDialog = false">{{ t('order.groupApplyU.dialog.cancel') }}</el-button>
+          <el-button type="primary" @click="saveWalletAddress">{{ t('order.groupApplyU.dialog.save') }}</el-button>
         </span>
       </template>
     </el-dialog>
@@ -313,20 +313,20 @@ const ruleForm = reactive({
   merchantCode: "",
 });
 
-const rules = {
+const rules = computed(() => ({
   merchantCode: [
-    { required: true, message: '请选择商户号', trigger: 'change' }
+    { required: true, message: t('order.groupApplyU.rules.merchantCodeRequired'), trigger: 'change' }
   ],
   amount: [
-    { required: true, message: '请输入金额', trigger: 'blur' }
+    { required: true, message: t('order.groupApplyU.rules.amountRequired'), trigger: 'blur' }
   ],
   uAmount: [
-    { required: true, message: '请输入到账U数', trigger: 'blur' },
+    { required: true, message: t('order.groupApplyU.rules.uAmountRequired'), trigger: 'blur' },
     { 
       validator: (rule, value, callback) => {
         if (value && (!isNaN(value) && Number(value) > 0)) {
           if (Number(value) < 1000) {
-            callback(new Error('到账U数最低为1000'));
+            callback(new Error(t('order.groupApplyU.rules.uAmountMin')));
           } else {
             callback();
           }
@@ -338,15 +338,15 @@ const rules = {
     }
   ],
   walletAddress: [
-    { required: true, message: '请选择钱包地址', trigger: 'change' }
+    { required: true, message: t('order.groupApplyU.rules.walletRequired'), trigger: 'change' }
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
+    { required: true, message: t('order.groupApplyU.rules.passwordRequired'), trigger: 'blur' }
   ],
   code: [
-    { required: true, message: '请输入6位MFA2验证码', trigger: 'blur', min: 6, max: 6 }
+    { required: true, message: t('order.groupApplyU.rules.mfaRequired'), trigger: 'blur', min: 6, max: 6 }
   ],
-};
+}));
 
 const merchantOptions = ref([
 
@@ -400,22 +400,22 @@ const walletForm = reactive({
   usdtAddress: '',
   googleCode: ''
 });
-const walletRules = {
+const walletRules = computed(() => ({
   merchantCode: [
-    { required: true, message: '请选择商户号', trigger: 'change' }
+    { required: true, message: t('order.groupApplyU.rules.merchantCodeRequired'), trigger: 'change' }
   ],
   usdtAddress: [
-    { required: true, message: '请输入USDT地址', trigger: 'blur' },
+    { required: true, message: t('order.groupApplyU.rules.usdtAddressRequired'), trigger: 'blur' },
     { 
       pattern: /^T[0-9a-zA-Z]{33}$/, 
-      message: '请输入有效的TRC20地址（34位，以T开头，字母数字）', 
+      message: t('order.groupApplyU.rules.usdtAddressPattern'), 
       trigger: 'blur' 
     }
   ],
   googleCode: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' }
+    { required: true, message: t('order.groupApplyU.rules.mfaRequired'), trigger: 'blur' }
   ]
-};
+}));
 
 // 弹窗状态
 const showPrepayDialog = ref(false);
@@ -597,12 +597,12 @@ const submit = () => {
       if (res.Success) {
 ElMessageBox.alert(
   `<div style="text-align: center; padding: 8px;">
-    <div style="font-size: 18px; font-weight: bold; color: var(--color-success, #67c23a); margin-bottom: 10px;">提交成功</div>
-    <div style="font-size: 14px; color: var(--text-secondary, #909399); line-height: 1.6;">您的申请已提交，请等待审核</div>
+    <div style="font-size: 18px; font-weight: bold; color: var(--color-success, #67c23a); margin-bottom: 10px;">${t('order.groupApplyU.msg.submitSuccessTitle')}</div>
+    <div style="font-size: 14px; color: var(--text-secondary, #909399); line-height: 1.6;">${t('order.groupApplyU.msg.submitSuccessDesc')}</div>
   </div>`,
-  '提示',
+  t('order.groupApplyU.dialog.prepayTitle'),
   {
-    confirmButtonText: '确定',
+    confirmButtonText: t('common.confirm'),
     type: 'success',
     showClose: false,
     closeOnClickModal: true,
@@ -615,12 +615,12 @@ ElMessageBox.alert(
   }
 );
       } else {
-        ElMessage.error(res.ErrorMessage || '提交失败');
+        ElMessage.error(res.ErrorMessage || t('order.groupApplyU.msg.submitFailed'));
       }
     })
     .catch(() => {
       loading.value = false;
-      ElMessage.error('网络错误，请稍后重试');
+      ElMessage.error(t('order.groupApplyU.msg.networkError'));
     });
 };
 
@@ -677,14 +677,14 @@ const getWalletAddresses = () => {
         walletAddresses.value = allAddresses;
       } else {
         walletAddresses.value = [];
-        ElMessage.error(res.ErrorMessage || '获取钱包地址失败');
+        ElMessage.error(res.ErrorMessage || t('order.groupApplyU.msg.loadWalletFailed'));
       }
     })
     .finally(() => {
       historyLoading.value = false;
     })
     .catch(() => {
-      ElMessage.error('获取钱包地址失败');
+      ElMessage.error(t('order.groupApplyU.msg.loadWalletFailed'));
     });
 };
 
@@ -694,13 +694,13 @@ const getWalletAddresses = () => {
 const handleDeleteWallet = async (wallet) => {
   try {
     await ElMessageBox.prompt(
-      `请输入MFA2验证码以删除钱包地址 ${wallet.address}`,
-      '确认删除',
+      t('order.groupApplyU.msg.deleteConfirmMsg', { address: wallet.address }),
+      t('order.groupApplyU.msg.deleteConfirmTitle'),
       {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
+        confirmButtonText: t('order.groupApplyU.msg.deleteConfirmOk'),
+        cancelButtonText: t('order.groupApplyU.msg.deleteConfirmCancel'),
         inputPattern: /^\d{6}$/,
-        inputErrorMessage: '请输入6位MFA2验证码',
+        inputErrorMessage: t('order.groupApplyU.msg.deleteConfirmInputError'),
         inputValue: ''
       }
     ).then(async (googleCode) => {
@@ -712,14 +712,14 @@ const handleDeleteWallet = async (wallet) => {
         });
         
         if (res.Success) {
-          ElMessage.success(res.Data?.Message || '删除申请已提交');
+          ElMessage.success(res.Data?.Message || t('order.groupApplyU.msg.deleteSuccess'));
           // 刷新钱包地址列表
           getWalletAddresses();
         } else {
-          ElMessage.error(res.ErrorMessage || '删除失败');
+          ElMessage.error(res.ErrorMessage || t('order.groupApplyU.msg.deleteFailed'));
         }
       } catch (error) {
-        ElMessage.error('删除失败');
+        ElMessage.error(t('order.groupApplyU.msg.deleteFailed'));
       }
     }).catch(() => {});
   } catch (error) {
@@ -744,19 +744,19 @@ const saveWalletAddress = async () => {
       code: walletForm.googleCode
     });
     if(res.Success == true){
-      ElMessage.success( res.Data?.Message||"钱包地址添加成功");
+      ElMessage.success( res.Data?.Message||t('order.groupApplyU.msg.walletAddSuccess'));
           showWalletDialog.value = false;
     walletFormRef.value.resetFields();
     // initWalletAddresses();
     getWalletAddresses();
     }else{
-      ElMessage.error(res.ErrorMessage || "钱包地址添加失败");
+      ElMessage.error(res.ErrorMessage || t('order.groupApplyU.msg.walletAddFailed'));
     }
     
 
   } catch (error) {
     console.error("保存钱包地址失败:", error);
-    ElMessage.error(error.ErrorMessage || "保存失败，请稍后重试");
+    ElMessage.error(error.ErrorMessage || t('order.groupApplyU.msg.saveFailed'));
   }
 };
 

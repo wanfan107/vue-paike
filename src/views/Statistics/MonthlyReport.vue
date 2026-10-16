@@ -8,15 +8,15 @@
         <!-- 搜索和筛选区域 -->
         <div class="search-panel">
           <el-form :inline="false" :model="searchForm" class="search-form">
-            <el-form-item label="订单时间">
+            <el-form-item :label="t('statistics.monthly.orderTime')">
               <el-date-picker
                 v-model="searchForm.time"
                 type="monthrange"
                 unlink-panels
                 :disabled-date="disabledDate"
-                range-separator="至"
-                start-placeholder="开始日期"
-                end-placeholder="结束日期"
+                :range-separator="t('common.to')"
+                :start-placeholder="t('common.startDate')"
+                :end-placeholder="t('common.endDate')"
               />
             </el-form-item>
 
@@ -27,14 +27,14 @@
                 @click="handleSearch"
                 :loading="loading"
               >
-                搜索
+                {{ t('common.search') }}
               </el-button>
               <el-button
                 :icon="Refresh"
                 @click="clearSearch"
                 :loading="loading"
               >
-                刷新
+                {{ t('common.refresh') }}
               </el-button>
               <!-- <el-button
                 :icon="Download"
@@ -61,7 +61,7 @@
             </div>
           </div>
           <div v-else-if="show===true && tableData.length === 0" class="empty-chart-state">
-            <el-empty description="暂无数据" />
+            <el-empty :description="t('common.noData')" />
           </div>
         </div>
 
@@ -94,7 +94,7 @@
                         :data="scope.row.items"
                         :summary-method="getSummaries"
                         show-summary
-                        :sum-text="'总计'"
+                        :sum-text="t('statistics.monthly.sumText')"
                         border
                         style="width: 100%; margin-top: 10px"
                         size="small"
@@ -102,53 +102,53 @@
                       >
                         <el-table-column
                           prop="typeName"
-                          label="类型"
+                          :label="t('statistics.monthly.colType')"
                           align="center"
                         ></el-table-column>
                         <el-table-column
                           prop="SuccessCountPayin"
-                          label="收款笔数"
+                          :label="t('statistics.monthly.colPayinCount')"
                           align="center"
                         ></el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayin"
-                          label="收款总额"
+                          :label="t('statistics.monthly.colPayinAmount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessOrderFee"
-                          label="收款手续费"
+                          :label="t('statistics.monthly.colPayinFee')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayin"
-                          label="收款笔数成功率"
+                          :label="t('statistics.monthly.colPayinRate')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessCountPayout"
-                          label="付款笔数"
+                          :label="t('statistics.monthly.colPayoutCount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessAmountPayout"
-                          label="付款总额"
+                          :label="t('statistics.monthly.colPayoutAmount')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessFeePayout"
-                          label="付款手续费"
+                          :label="t('statistics.monthly.colPayoutFee')"
                           align="center"
                         >
                         </el-table-column>
                         <el-table-column
                           prop="SuccessRatePayout"
-                          label="付款笔数成功率"
+                          :label="t('statistics.monthly.colPayoutRate')"
                           align="center"
                         >
                         </el-table-column>
@@ -164,7 +164,7 @@
                     </div>
                   </template>
                 </el-table-column>
-                <el-table-column prop="Month" label="月份" align="center" width="120" sortable></el-table-column>
+                <el-table-column prop="Month" :label="t('statistics.monthly.colMonth')" align="center" width="120" sortable></el-table-column>
                 <el-table-column
                   min-width="140px"
                   align="right"
@@ -318,12 +318,12 @@ const searchForm = reactive({
 
 
 // 表格列配置
-const columns = reactive([
-  { prop: "PreviousMonthBalance", label: "期初余额" },
-  { prop: "SuccessAmountPayin", label: "当月收款总额" },
-  { prop: "SuccessAmountPayout", label: "当月付款总额" },
-  { prop: "TotalAmountReceived", label: "净收款总额", tooltip: "计算公式：当月 收款总额 - 当月付款总额" },
-  { prop: "CurrentMonthBalance", label: "期末余额" },
+const columns = computed(() => [
+  { prop: "PreviousMonthBalance", label: t('statistics.monthly.openingBalance') },
+  { prop: "SuccessAmountPayin", label: t('statistics.monthly.monthlyPayinTotal') },
+  { prop: "SuccessAmountPayout", label: t('statistics.monthly.monthlyPayoutTotal') },
+  { prop: "TotalAmountReceived", label: t('statistics.monthly.netReceivedTotal'), tooltip: t('statistics.monthly.netReceivedTip') },
+  { prop: "CurrentMonthBalance", label: t('statistics.monthly.closingBalance') },
 ]);
 
 // 计算属性
@@ -341,7 +341,7 @@ const realTimeChart = computed(() => {
 
   return {
     title: {
-      text: "收款金额与付款金额趋势",
+      text: t('statistics.monthly.trendTitle'),
     left: '0%',
       top: '0%',
       textStyle: {
@@ -360,7 +360,7 @@ const realTimeChart = computed(() => {
       }
     },
     legend: {
-      data: ["收款金额", "付款金额"],
+      data: [t('statistics.monthly.collectionAmount'), t('statistics.monthly.paymentAmount')],
       top: "5%",
       textStyle: {
         color: cssVar('--text-secondary','#606266'),
@@ -405,7 +405,7 @@ const realTimeChart = computed(() => {
     },
     yAxis: {
       type: "value",
-      name: "金额",
+      name: t('statistics.monthly.amountAxis'),
       axisLine: {
         show: true,
         lineStyle: {
@@ -433,7 +433,7 @@ const realTimeChart = computed(() => {
     },
     series: [
       {
-        name: "收款金额",
+        name: t('statistics.monthly.collectionAmount'),
         type: "line",
         data: collectionAmounts,
         smooth: true,
@@ -451,7 +451,7 @@ const realTimeChart = computed(() => {
         },
       },
       {
-        name: "付款金额",
+        name: t('statistics.monthly.paymentAmount'),
         type: "line",
         data: paymentAmounts,
         smooth: true,
@@ -478,7 +478,7 @@ const balanceChartOption = computed(() => {
 
   return {
     title: {
-      text: '期初余额',
+      text: t('statistics.monthly.balanceChartTitle'),
       left: '0%',
       top: '0%',
       textStyle: {
@@ -530,7 +530,7 @@ const balanceChartOption = computed(() => {
     yAxis: {
       show: true,
       type: 'value',
-      name: '余额',
+      name: t('statistics.monthly.balanceAxis'),
       axisLine: {
         show: true,
         lineStyle: {
@@ -564,7 +564,7 @@ const balanceChartOption = computed(() => {
       }
     },
     series: [{
-      name: '余额',
+      name: t('statistics.monthly.balanceAxis'),
       type: 'line',
       data: PreviousMonthBalance,
       smooth: true,
@@ -905,7 +905,7 @@ const getSummaries = (param) => {
   const sums = [];
   columns.forEach((column, index) => {
     if (index === 0) {
-      sums[index] = '总计';
+      sums[index] = t('statistics.monthly.sumText');
       return;
     }
     if (column.property === 'SuccessRatePayin' || column.property === 'SuccessRatePayout') {
@@ -941,8 +941,8 @@ const getCollectionPieChart = (row) => {
   const merchantProfitValue = Number(row.MerchantProfit) || 0;
 
   const data = [
-    { name: '手续费', value: feeValue },
-    { name: '商户分账', value: merchantProfitValue },
+    { name: t('statistics.monthly.fee'), value: feeValue },
+    { name: t('statistics.monthly.merchantProfit'), value: merchantProfitValue },
   ].filter(item => item.value > 0);
 
   // 高级渐变色方案
@@ -1016,7 +1016,7 @@ const getCollectionPieChart = (row) => {
 
   return {
     title: {
-      text: "收款金额分布",
+      text: t('statistics.monthly.collectionDistribution'),
       left: "center",
       textStyle: {
         color: cssVar('--text-primary','#303133'),
@@ -1030,7 +1030,7 @@ const getCollectionPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('statistics.monthly.shareRatio')}${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1051,7 +1051,7 @@ const getCollectionPieChart = (row) => {
     },
     series: [
       {
-        name: "收款金额",
+        name: t('statistics.monthly.collectionAmount'),
         type: "pie",
         radius: ["50%", ""],
         center: ["50%", "50%"],
@@ -1094,14 +1094,14 @@ const getPaymentPieChart = (row) => {
   // 使用后端按 bank 维度返回的代付成功金额列表
   const bankList = row.PayoutByBank || [];
   const data = bankList.map((it) => ({
-    name: it.bank || "未知",
+    name: it.bank || t('statistics.monthly.unknown'),
     value: Number(it.amount) || 0,
   })).filter(item => item.value > 0);
 
   // 追加代付手续费（= 单笔手续费 + 比例手续费，status=2）作为独立扇区，与收款饼图的"手续费"扇区对称
   const payoutFeeValue = Number(row.SuccessFeePayout) || 0;
   if (payoutFeeValue > 0) {
-    data.push({ name: '手续费', value: payoutFeeValue });
+    data.push({ name: t('statistics.monthly.fee'), value: payoutFeeValue });
   }
 
   // 高级渐变色方案（与收款不同的配色）
@@ -1186,7 +1186,7 @@ const getPaymentPieChart = (row) => {
 
   return {
     title: {
-      text: "付款金额分布",
+      text: t('statistics.monthly.paymentDistribution'),
       left: "center",
       textStyle: {
         color: cssVar('--text-primary','#303133'),
@@ -1200,7 +1200,7 @@ const getPaymentPieChart = (row) => {
       formatter: function(params) {
         let color = params.color;
         // 如果颜色是对象（渐变色），提取起始颜色
-        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (占比${Number(params.percent).toFixed(2)}%)`;
+        return `${params.seriesName}<br/>${params.name}: ${formatCurrency(params.value, currency.value)} (${t('statistics.monthly.shareRatio')}${Number(params.percent).toFixed(2)}%)`;
       },
       backgroundColor: "rgba(0, 0, 0, 0.7)",
       borderColor: "transparent",
@@ -1221,7 +1221,7 @@ const getPaymentPieChart = (row) => {
     },
     series: [
       {
-        name: "付款金额",
+        name: t('statistics.monthly.paymentAmount'),
         type: "pie",
         radius: ["50%", ""],
         center: ["50%", "50%"],
@@ -1391,7 +1391,7 @@ const formatTime = (date) => {
 const handleSearch = async () => {
   // 发起搜索请求
   if (!searchForm.time || searchForm.time.length !== 2) {
-    ElMessage.warning('请选择日期范围');
+    ElMessage.warning(t('common.selectDateRange'));
     return;
   }
 
@@ -1425,10 +1425,10 @@ const handleSearch = async () => {
           months: [],
           PreviousMonthBalance: []
         };
-        ElMessage.info('暂无数据');
+        ElMessage.info(t('common.noData'));
       }
     } else {
-      ElMessage.error(res.message || '查询失败');
+      ElMessage.error(res.message || t('statistics.monthly.queryFailed'));
     }
     
   } catch (error) {
@@ -1658,9 +1658,9 @@ const getQueryParams = () => {
 const onExport = async () => {
   try {
     // 确认对话框
-    await ElMessageBox.confirm("确定导出数据吗?", "提示", {
-      confirmButtonText: "确定",
-      cancelButtonText: "取消",
+    await ElMessageBox.confirm(t('common.exportConfirm'), t('common.tip'), {
+      confirmButtonText: t('common.confirm'),
+      cancelButtonText: t('common.cancel'),
       type: "warning",
     });
 
@@ -1672,12 +1672,12 @@ const onExport = async () => {
     // 跳转到导出记录页面
     router.push({ name: "exportRecord" });
 
-    ElMessage.success("导出请求已提交，请到导出记录页面查看");
+    ElMessage.success(t('common.exportSubmitted'));
   } catch (error) {
     if (error !== "cancel") {
       // 不是取消操作时才显示错误信息
       console.error("导出失败:", error);
-      ElMessage.error("导出失败，请稍后重试");
+      ElMessage.error(t('common.exportFailed'));
     }
   } finally {
     exportLoading.value = false;

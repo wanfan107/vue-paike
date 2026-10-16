@@ -19,24 +19,24 @@
         <!-- <el-card class="form-card" shadow="never"> -->
           <!-- 账户信息描述 -->
           <div class="account-info">
-            <h3 class="section-title">集团账户信息</h3>
+            <h3 class="section-title">{{ t('order.groupTransfer.account.title') }}</h3>
             <el-descriptions border>
-              <el-descriptions-item label="集团可用余额" :span="1">
+              <el-descriptions-item :label="t('order.groupTransfer.account.groupBalance')" :span="1">
                 <span class="balance-value">{{ groupBalance }}</span>
               </el-descriptions-item>
-              <!-- <el-descriptions-item label="集团待结算余额" :span="1">
+              <!-- <el-descriptions-item :label="t('order.groupTransfer.account.unsettled')" :span="1">
                 <span class="balance-value">-</span>
               </el-descriptions-item> -->
-              <!-- <el-descriptions-item label="集团授信余额" :span="1">
+              <!-- <el-descriptions-item :label="t('order.groupTransfer.account.credit')" :span="1">
                 <span class="balance-value">-</span>
               </el-descriptions-item>
-              <el-descriptions-item label="MFA2余额" :span="1">
+              <el-descriptions-item :label="t('order.groupTransfer.account.mfaBalance')" :span="1">
                 <span class="balance-value">-</span>
               </el-descriptions-item> -->
-              <el-descriptions-item label="互转手续费" :span="1">
+              <el-descriptions-item :label="t('order.groupTransfer.account.fee')" :span="1">
                 <span class="balance-value">0</span>
               </el-descriptions-item>
-              <el-descriptions-item label="最小转账金额" :span="2">
+              <el-descriptions-item :label="t('order.groupTransfer.account.minAmount')" :span="2">
                 <span class="balance-value">1</span>
               </el-descriptions-item>
             </el-descriptions>
@@ -45,16 +45,16 @@
           <!-- 表单区域 -->
           <div class="form-section">
             <div class="section-header">
-              <h3 class="section-title">商户互转</h3>
+              <h3 class="section-title">{{ t('order.groupTransfer.form.sectionTitle') }}</h3>
             </div>
             <div class="form-container">
               <el-form  :model="ruleForm" :rules="rules" ref="formRef" label-width="120px">
                 <!-- 转出商户 -->
-                <el-form-item label="转出商户" prop="fromMerchant">
+                <el-form-item :label="t('order.groupTransfer.form.fromMerchant')" prop="fromMerchant">
                   <div class="merchant-select-container">
                     <el-select
                       v-model="ruleForm.fromMerchant"
-                      placeholder="请选择转出商户"
+                      :placeholder="t('order.groupTransfer.form.fromMerchantPlaceholder')"
                       style="width: 100%"
                       disabled
                       @change="handleFromMerchantChange"
@@ -66,22 +66,22 @@
                       >
                         <div class="option-content">
                           <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
-                          <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
+                          <span class="option-balance">{{ t('order.groupTransfer.form.balanceLabel') }} {{ merchant.balance || 0 }}</span>
                         </div>
                       </el-option>
                     </el-select>
                     <span v-if="ruleForm.fromMerchant" class="balance-label">
-                      余额: {{ getMerchantBalance(ruleForm.fromMerchant) }}
+                      {{ t('order.groupTransfer.form.balanceLabel') }} {{ getMerchantBalance(ruleForm.fromMerchant) }}
                     </span>
                   </div>
                 </el-form-item>
                 
                 <!-- 转入商户 -->
-                <el-form-item label="转入商户" prop="toMerchant" >
+                <el-form-item :label="t('order.groupTransfer.form.toMerchant')" prop="toMerchant" >
                   <div class="merchant-select-container">
                     <el-select
                       v-model="ruleForm.toMerchant"
-                      placeholder="请选择转入商户"
+                      :placeholder="t('order.groupTransfer.form.toMerchantPlaceholder')"
                       style="width: 100%"
                     >
                       <el-option
@@ -91,21 +91,21 @@
                       >
                         <div class="option-content">
                           <span class="option-code">{{ merchant.code }} {{ merchant.qq ? ` - ${merchant.qq}` : "" }}</span>
-                          <span class="option-balance">余额: {{ merchant.balance || 0 }}</span>
+                          <span class="option-balance">{{ t('order.groupTransfer.form.balanceLabel') }} {{ merchant.balance || 0 }}</span>
                         </div>
                       </el-option>
                     </el-select>
                     <span v-if="ruleForm.toMerchant" class="balance-label">
-                      余额: {{ getMerchantBalance(ruleForm.toMerchant) }}
+                      {{ t('order.groupTransfer.form.balanceLabel') }} {{ getMerchantBalance(ruleForm.toMerchant) }}
                     </span>
                   </div>
                 </el-form-item>
                 
                 <!-- 转账金额 -->
-                <el-form-item label="转账金额" prop="amount">
+                <el-form-item :label="t('order.groupTransfer.form.amount')" prop="amount">
                   <el-input-number
                     v-model="ruleForm.amount"
-                    placeholder="请输入转账金额"
+                    :placeholder="t('order.groupTransfer.form.amountPlaceholder')"
                     :min="0"
                     :step="1"
                     style="width: 100%"
@@ -113,38 +113,38 @@
                 </el-form-item>
                 
                 <!-- 支付密码 -->
-                <el-form-item label="支付密码" prop="password">
+                <el-form-item :label="t('order.groupTransfer.form.password')" prop="password">
                   <el-input
                     v-model="ruleForm.password"
                     type="password"
-                    placeholder="请输入转出账户支付密码"
+                    :placeholder="t('order.groupTransfer.form.passwordPlaceholder')"
                   ></el-input>
                 </el-form-item>
                 
     <!-- MFA2验证码 -->
-<el-form-item label="MFA2验证码" >
+<el-form-item :label="t('order.groupTransfer.form.mfa')" >
   <el-input
     v-model="ruleForm.code"
-    placeholder="'请输入MFA2验证码'"
+    :placeholder="t('order.groupTransfer.form.mfaPlaceholder')"
   ></el-input>
-  <div style="font-size:12px;color:var(--brand-primary, #67c23a);margin-top:4px">输入正确后10分钟内无需输入</div>
+  <div style="font-size:12px;color:var(--brand-primary, #67c23a);margin-top:4px">{{ t('order.groupTransfer.form.mfaGrace') }}</div>
 </el-form-item>
                 
                 <!-- 备注 -->
-                <!-- <el-form-item label="备注" prop="remark">
+                <!-- <el-form-item :label="t('order.groupTransfer.form.remark')" prop="remark">
                   <el-input
                     v-model="ruleForm.remark"
                     type="textarea"
-                    placeholder="选填，转账备注（最多50字）"
+                    :placeholder="t('order.groupTransfer.form.remarkPlaceholder')"
                   ></el-input>
                 </el-form-item>
                  -->
                 <!-- 操作按钮 -->
                 <el-form-item>
                   <div class="form-actions">
-                    <el-button @click="reset">重置</el-button>
+                    <el-button @click="reset">{{ t('order.groupTransfer.form.reset') }}</el-button>
                     <el-button type="primary" @click="submit" :loading="loading">
-                      确认转账
+                      {{ t('order.groupTransfer.form.submit') }}
                     </el-button>
                   </div>
                 </el-form-item>
@@ -157,39 +157,39 @@
           
           <!-- 转账记录 -->
           <div class="transfer-history">
-              <h3 style="color: var(--text-primary, #000000);">转账记录</h3>
+              <h3 style="color: var(--text-primary, #000000);">{{ t('order.groupTransfer.history.title') }}</h3>
             <div class="history-header">
             
             <el-form :inline="true">
-              <el-form-item label="状态">
+              <el-form-item :label="t('order.groupTransfer.history.searchStatus')">
                 <el-select
                   v-model="searchForm.status"
-                  placeholder="全部"
+                  :placeholder="t('order.groupTransfer.history.statusAll')"
                   style="width: 100px"
                   size="small"
                 >
-                  <el-option label="全部" :value="null" />
-                  <el-option label="待处理" :value="0" />
-                  <el-option label="处理中" :value="1" />
-                  <el-option label="成功" :value="2" />
-                  <el-option label="失败" :value="3" />
-                  <el-option label="取消" :value="4" />
+                  <el-option :label="t('order.groupTransfer.history.statusAll')" :value="null" />
+                  <el-option :label="t('order.groupTransfer.history.statusPending')" :value="0" />
+                  <el-option :label="t('order.groupTransfer.history.statusProcessing')" :value="1" />
+                  <el-option :label="t('order.groupTransfer.history.statusSuccess')" :value="2" />
+                  <el-option :label="t('order.groupTransfer.history.statusFailed')" :value="3" />
+                  <el-option :label="t('order.groupTransfer.history.statusCancelled')" :value="4" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="订单号">
+              <el-form-item :label="t('order.groupTransfer.history.searchOrderNo')">
                 <el-input
                   v-model="searchForm.bizNo"
-                  placeholder="转账单号"
+                  :placeholder="t('order.groupTransfer.history.searchOrderNoPlaceholder')"
                   style="width: 180px"
                   clearable
                   size="small"
                 />
               </el-form-item>
 
-              <el-form-item label="转入方">
+              <el-form-item :label="t('order.groupTransfer.history.searchCounterparty')">
                 <el-select
                   v-model="searchForm.counterparty"
-                  placeholder="请选择转入商户"
+                  :placeholder="t('order.groupTransfer.history.searchCounterpartyPlaceholder')"
                   style="width: 200px"
                   clearable
                   size="small"
@@ -203,22 +203,22 @@
                   </el-option>
                 </el-select>
               </el-form-item>
-              <el-form-item label="时间范围">
+              <el-form-item :label="t('order.groupTransfer.history.searchTimeRange')">
                 <el-date-picker
                   v-model="historyTimeRange"
                   type="datetimerange"
-                  range-separator="至"
-                  start-placeholder="开始日期"
-                  end-placeholder="结束日期"
+                  :range-separator="t('common.to')"
+                  :start-placeholder="t('common.startDate')"
+                  :end-placeholder="t('common.endDate')"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   size="small"
                 />
               </el-form-item>
             <el-form-item>
               <el-button type="primary" size="small" @click="getTransferHistory">
-                查询
+                {{ t('order.groupTransfer.history.searchBtn') }}
               </el-button>
-              <el-button size="small" @click="resetSearch">重置</el-button>
+              <el-button size="small" @click="resetSearch">{{ t('order.groupTransfer.history.resetBtn') }}</el-button>
             </el-form-item>
 
 
@@ -233,39 +233,39 @@
               max-height="250"
               stripe
             >
-              <el-table-column label="转账单号" width="220" align="center">
+              <el-table-column :label="t('order.groupTransfer.table.orderNo')" width="220" align="center">
                 <template #default="{ row }">
                   <CopyText 
                     :text="row.orderNo" 
                     :id="'orderno-' + row.orderNo"
-                    title="点击复制转账单号"
+                    :title="t('order.groupTransfer.table.copyOrderNo')"
                   />
                 </template>
               </el-table-column>
-              <el-table-column prop="type" label="类型" width="100" align="center">
+              <el-table-column prop="type" :label="t('order.groupTransfer.table.type')" width="100" align="center">
                 <template #default="scope">
                   <!-- 0=空，1=转入，2=转出，3内部互转 -->
                   <el-tag :type="scope.row.type === 3 ? 'primary' : scope.row.type === 1 ? 'success' : scope.row.type === 2 ? 'danger' : 'default' ">
-                    {{ scope.row.type === 3 ? '内部互转' : scope.row.type === 1 ? '转入' : scope.row.type === 2 ? '转出' : '' }}
+                    {{ scope.row.type === 3 ? t('order.groupTransfer.table.typeInternal') : scope.row.type === 1 ? t('order.groupTransfer.table.typeIn') : scope.row.type === 2 ? t('order.groupTransfer.table.typeOut') : '' }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="fromAccount" label="转出商户号" width="150" align="center" />
-              <el-table-column prop="toAccount" label="转入商户号" width="150" align="center" />
-              <el-table-column prop="amount" label="转账金额" width="140" align="center">
+              <el-table-column prop="fromAccount" :label="t('order.groupTransfer.table.fromMerchant')" width="150" align="center" />
+              <el-table-column prop="toAccount" :label="t('order.groupTransfer.table.toMerchant')" width="150" align="center" />
+              <el-table-column prop="amount" :label="t('order.groupTransfer.table.amount')" width="140" align="center">
                 <template #default="scope">
                   {{ formatCurrency(scope.row.amount, scope.row.currency || currency.value) }}
                 </template>
               </el-table-column>
-              <el-table-column prop="status" label="状态" width="100" align="center">
+              <el-table-column prop="status" :label="t('order.groupTransfer.table.status')" width="100" align="center">
                 <template #default="scope">
-                  <el-tag :type="{ '待处理': 'warning', '处理中': 'info', '成功': 'success', '失败': 'danger', '取消': 'default' }[scope.row.status] || 'default'">
+                  <el-tag :type="statusTagType(scope.row.statusIdx)">
                     {{ scope.row.status }}
                   </el-tag>
                 </template>
               </el-table-column>
-              <el-table-column prop="createTime" label="转账时间" width="180" align="center" />
-              <el-table-column prop="ErrorMsg" label="备注" align="center"  />            
+              <el-table-column prop="createTime" :label="t('order.groupTransfer.table.time')" width="180" align="center" />
+              <el-table-column prop="ErrorMsg" :label="t('order.groupTransfer.table.remark')" align="center"  />            
             </el-table>
             
             <div class="history-pagination" v-if="!historyLoading && transferHistory.length > 0" style="display: flex; justify-content: center; margin-top: 10px;">
@@ -338,31 +338,35 @@ const mfaRemainingText = computed(() => {
   const sec = Math.max(0, Math.floor((mfaGraceUntil.value - nowTick.value) / 1000));
   const m = String(Math.floor(sec / 60)).padStart(2, '0');
   const s = String(sec % 60).padStart(2, '0');
-  return `MFA 免验 ${m}:${s}`;
+  return t('order.groupTransfer.form.mfaCountdown', { time: `${m}:${s}` });
 });
 
 // 表单验证规则（code 在 grace 内不强制）
 const rules = computed(() => ({
   fromMerchant: [
-    { required: true, message: '请选择转出商户', trigger: 'change' }
+    { required: true, message: t('order.groupTransfer.rules.fromMerchantRequired'), trigger: 'change' }
   ],
   toMerchant: [
-    { required: true, message: '请选择转入商户', trigger: 'change' }
+    { required: true, message: t('order.groupTransfer.rules.toMerchantRequired'), trigger: 'change' }
   ],
   amount: [
-    { required: true, message: '请输入转账金额', trigger: 'blur' },
-    { type: 'number', min: 1, message: '转账金额不能小于1', trigger: 'blur' }
+    { required: true, message: t('order.groupTransfer.rules.amountRequired'), trigger: 'blur' },
+    { type: 'number', min: 1, message: t('order.groupTransfer.rules.amountMin'), trigger: 'blur' }
   ],
   password: [
-    { required: true, message: '请输入支付密码', trigger: 'blur' }
+    { required: true, message: t('order.groupTransfer.rules.passwordRequired'), trigger: 'blur' }
   ],
   code: mfaInGrace.value
     ? []
     : [
-        { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
-        { pattern: /^\d{6}$/, message: '请输入6位数字验证码', trigger: 'blur' }
+        { required: true, message: t('order.groupTransfer.rules.mfaRequired'), trigger: 'blur' },
+        { pattern: /^\d{6}$/, message: t('order.groupTransfer.rules.mfaPattern'), trigger: 'blur' }
       ]
 }));
+
+// 状态标签类型映射：直接用原始索引（后端 Status 0-4）映射 tag type，避免 i18n 文本匹配问题
+const STATUS_TAG_TYPES = ['warning', 'info', 'success', 'danger', 'default'];
+const statusTagType = (statusIdx) => STATUS_TAG_TYPES[statusIdx] || 'default';
 
 
 // 获取商户列表
@@ -375,7 +379,7 @@ const getMerchantList = () => {
       }
     })
     .catch(() => {
-      ElMessage.error("获取商户列表失败");
+      ElMessage.error(t('order.groupTransfer.msg.loadMerchantFailed'));
     });
 };
 
@@ -411,19 +415,19 @@ const submit = async () => {
           .then((res) => {
             loading.value = false;
             if (res.Success) {
-              ElMessage.success(res.Data?.Message || '余额互转申请已提交');
+              ElMessage.success(res.Data?.Message || t('order.groupTransfer.msg.submitSuccess'));
               // 记录 MFA grace 失效时刻，10 分钟内、限 N 次免再输入验证码
               if (res.Data?.MfaGraceUntil) {
                 mfaGraceUntil.value = new Date(res.Data.MfaGraceUntil).getTime();
               }
               reset();
             } else {
-              ElMessage.error(res.ErrorMessage || '转账失败');
+              ElMessage.error(res.ErrorMessage || t('order.groupTransfer.msg.submitFailed'));
             }
           })
           .catch((error) => {
             loading.value = false;
-            ElMessage.error("转账失败，请稍后重试");
+            ElMessage.error(t('order.groupTransfer.msg.retryLater'));
           });
       }
     });
@@ -518,14 +522,21 @@ const getTransferHistory = async () => {
         toAccount: item.Counterparty || '-',
         amount: item.Amount || 0,
         currency: item.Currency || 'BRL',
-        status: ['待处理', '处理中', '成功', '失败', '取消'][item.Status] || '-',
+        status: [
+          t('order.groupTransfer.history.statusPending'),
+          t('order.groupTransfer.history.statusProcessing'),
+          t('order.groupTransfer.history.statusSuccess'),
+          t('order.groupTransfer.history.statusFailed'),
+          t('order.groupTransfer.history.statusCancelled')
+        ][item.Status] || '-',
+        statusIdx: item.Status, // 保留原始索引供 tag type 判断
         type: item.Direction,
         createTime: item.CreatedOn ? item.CreatedOn.replace('T', ' ').slice(0, 19) : '-',
         ErrorMsg: item.ErrorMsg || '-'
       }));
     }
   } catch (error) {
-    ElMessage.error('获取转账记录失败');
+    ElMessage.error(t('order.groupTransfer.msg.loadHistoryFailed'));
   } finally {
     historyLoading.value = false;
   }

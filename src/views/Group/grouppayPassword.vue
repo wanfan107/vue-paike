@@ -1,9 +1,9 @@
-﻿<template>
+<template>
   <div class="pay-password-container">
     <el-card class="pay-password-card">
       <div class="card-header">
-        <div class="header-title">修改支付密码</div>
-        <div class="header-subtitle">使用集团账户MFA2验证修改商户支付密码</div>
+        <div class="header-title">{{ t('order.groupPayPassword.header.title') }}</div>
+        <div class="header-subtitle">{{ t('order.groupPayPassword.header.subtitle') }}</div>
       </div>
       <div class="form-container">
         <SubmitForm
@@ -17,15 +17,16 @@
     </el-card>
     <SuccessDialog
       v-model="showSuccessDialog"
-      title="操作成功"
-      message="修改商户支付密码成功"
-      description="下次支付请使用新密码"
+      :title="t('order.groupPayPassword.success.title')"
+      :message="t('order.groupPayPassword.success.message')"
+      :description="t('order.groupPayPassword.success.description')"
       @confirm="handleSuccessConfirm"
     />
   </div>
 </template>
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import useUserStore from '@/stores/user';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
@@ -35,6 +36,8 @@ import SuccessDialog from '@/components/SuccessDialog.vue';
 // 获取用户 store
 const userStore = useUserStore();
 
+const { t } = useI18n();
+
 // 定义响应式数据
 const showSuccessDialog = ref(false);
 const loading = ref(false);
@@ -42,57 +45,58 @@ const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
 const passwordStrengthColor = ref("#ff0000"); // 默认红色
 const passwordStrengthWidth = ref("0%");
-const formList = ref([
+const merchantOptions = ref([]);
+const formList = computed(() => [
   {
-    label: "修改商户支付密码",
+    label: t('order.groupPayPassword.form.sectionTitle'),
     name: "title",
   },
     {
-          label: "商户号",
+          label: t('order.groupPayPassword.form.merchantCode'),
           prop: "merchantCode",
           name: "select",
-          placeholder: "请选择商户号",
-          options: [],
+          placeholder: t('order.groupPayPassword.form.merchantCodePlaceholder'),
+          options: merchantOptions.value,
           rules: [
-            { required: true, message: "请选择商户号", trigger: "change" },
+            { required: true, message: t('order.groupPayPassword.rules.merchantCodeRequired'), trigger: "change" },
           ],
     },
   {
-    label: "原始支付密码",
+    label: t('order.groupPayPassword.form.oldPassword'),
     prop: "oldPassword",
-    placeholder: "请输入当前商户的原始支付密码",
+    placeholder: t('order.groupPayPassword.form.oldPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入当前商户的原始支付密码", trigger: "blur" },
+      { required: true, message: t('order.groupPayPassword.rules.oldPasswordRequired'), trigger: "blur" },
     ],
   },
   {
-    label: "新密码",
+    label: t('order.groupPayPassword.form.newPassword'),
     prop: "newPassword",
-    placeholder: "请输入新密码",
+    placeholder: t('order.groupPayPassword.form.newPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入新密码", trigger: "blur" },
+      { required: true, message: t('order.groupPayPassword.rules.newPasswordRequired'), trigger: "blur" },
       {
         validator: (rule, value, callback) => {
           if (!value) {
-            callback(new Error("请输入新密码"));
+            callback(new Error(t('order.groupPayPassword.rules.newPasswordRequired')));
           } else if (value.length < 6) {
-            callback(new Error("密码长度至少6位"));
+            callback(new Error(t('order.groupPayPassword.rules.min6')));
           } else if (/\s/.test(value)) {  // 新增：检查是否包含空格
-      callback(new Error('密码不能包含空格'));
+      callback(new Error(t('order.groupPayPassword.rules.noSpace')));
     } else if (!/[a-zA-Z]/.test(value)) {
-            callback(new Error("密码必须包含字母"));
+            callback(new Error(t('order.groupPayPassword.rules.needLetter')));
           } else if (!/\d/.test(value)) {
-            callback(new Error("密码必须包含数字"));
+            callback(new Error(t('order.groupPayPassword.rules.needNumber')));
           } else if (!/[^A-Za-z0-9]/.test(value)) {
-            callback(new Error("密码必须包含特殊字符"));
+            callback(new Error(t('order.groupPayPassword.rules.needSpecial')));
           } else if (passwordStrength.value < 3) {
-            callback(new Error("密码强度需达到中高及以上"));
+            callback(new Error(t('order.groupPayPassword.rules.strengthLow')));
           } else {
             callback();
           }
@@ -140,23 +144,23 @@ const formList = ref([
     },
   },
   {
-    label: "确认新密码",
+    label: t('order.groupPayPassword.form.confirmPassword'),
     prop: "confirmPassword",
-    placeholder: "请输入确认新密码",
+    placeholder: t('order.groupPayPassword.form.confirmPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入确认新密码", trigger: "blur" },
+      { required: true, message: t('order.groupPayPassword.rules.confirmPasswordRequired'), trigger: "blur" },
     ],
   },
   {
-    label: "MFA2验证码",
+    label: t('order.groupPayPassword.form.mfa'),
     prop: "emailCode",
     name: "input",
-    placeholder: "请输入MFA2验证码",
+    placeholder: t('order.groupPayPassword.form.mfaPlaceholder'),
     rules: [
-      { required: true, message: "请输入MFA2验证码", trigger: "blur" },
+      { required: true, message: t('order.groupPayPassword.rules.mfaRequired'), trigger: "blur" },
     ],
   },
 ]);
@@ -174,7 +178,7 @@ const merchantInfo = computed(() => userStore.merchantInfo);
 // 计算密码强度的方法
 const calculatePasswordStrength = (password) => {
   let strength = 0;
-  let text = "强度低";
+  let text = t('order.groupPayPassword.strength.low');
   let color = "#ff0000"; // 红色
   let width = "0%";
 
@@ -208,16 +212,16 @@ const calculatePasswordStrength = (password) => {
 
   // 根据强度设置文本和颜色
   if (strength <= 1) {
-    text = "强度低";
+    text = t('order.groupPayPassword.strength.low');
     color = "#ff0000"; // 红色
   } else if (strength <= 2) {
-    text = "强度中";
+    text = t('order.groupPayPassword.strength.mid');
     color = "#ff8800"; // 橙色
   } else if (strength <= 3) {
-    text = "强度中高";
+    text = t('order.groupPayPassword.strength.midHigh');
     color = "#aabb00"; // 黄绿色
   } else {
-    text = "强度高";
+    text = t('order.groupPayPassword.strength.high');
     color = "#00ff00"; // 绿色
   }
 
@@ -236,17 +240,17 @@ const isPasswordValid = (password) => {
 // 提交表单
 const submit = () => {
   if (ruleForm.value.newPassword !== ruleForm.value.confirmPassword) {
-    ElMessage.error("两次输入的密码不一致");
+    ElMessage.error(t('order.groupPayPassword.msg.notMatch'));
     return;
   }
 
   if (passwordStrength.value < 3) {
-    ElMessage.error("密码强度需达到中高及以上");
+    ElMessage.error(t('order.groupPayPassword.msg.strengthLow'));
     return;
   }
 
   if (ruleForm.value.newPassword.length < 6) {
-    ElMessage.error("密码长度至少6位");
+    ElMessage.error(t('order.groupPayPassword.msg.min6'));
     return;
   }
 
@@ -287,9 +291,7 @@ onMounted(() => {
   const loadMerchants = () => {
       http.getGroupMerchants().then((res) => {
         if (res.code === 200 && res.data) {
-          formList.value.find(
-            (item) => item.prop === "merchantCode"
-          ).options = res.data .filter(m => !m.code?.startsWith('G')).map((m) => ({
+          merchantOptions.value = res.data .filter(m => !m.code?.startsWith('G')).map((m) => ({
             value: m.code,
             name: m.code + (m.qq ? ` - ${m.qq}` : ""),
           }));

@@ -1,7 +1,7 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>登录记录</h1>
+      <h1>{{ t('menu.logs') }}</h1>
     </header>
 
     <main>
@@ -49,8 +49,11 @@
   </div>
 </template>
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { http } from "@/api";
+
+const { t } = useI18n();
 
 // 定义响应式数据
 const loading = ref(false);
@@ -61,9 +64,9 @@ const pageSizes = ref([10, 20, 50, 100]);
 const totalSize = ref(0);
 
 // 搜索相关数据
-const searchList = ref([
+const searchList = computed(() => [
   {
-    label: "登录时间",
+    label: t('account.loginRecord.searchTime'),
     prop: "timeValue",
     name: "date",
     dateType: "datetimerange",
@@ -77,11 +80,11 @@ const searchParams = ref({
 });
 
 // 表格列配置
-const columns = ref([
+const columns = computed(() => [
   // 登录IP、IP归属地、登录时间
-  { label: "登录IP", prop: "ip" },
-  { label: "IP归属地", prop: "ipLocation" },
-  { label: "登录时间", prop: "loginTime" },
+  { label: t('account.loginRecord.loginIp'), prop: "ip" },
+  { label: t('account.loginRecord.ipLocation'), prop: "ipLocation" },
+  { label: t('account.loginRecord.colLoginTime'), prop: "loginTime" },
 ]);
 
 // 选择的数据

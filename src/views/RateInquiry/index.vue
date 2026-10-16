@@ -1,27 +1,27 @@
 <template>
   <div class="app-page">
     <header class="app-page-header">
-      <h1>{{ t('menu.rateInquiry') }}</h1>
+      <h1>{{ t('menu.RateInquiry') }}</h1>
     </header>
 
     <main>
       <el-skeleton v-if="loading" :rows="10" animated />
-      <div v-else-if="!projectList.products || projectList.products.length === 0">暂无费率信息</div>
+      <div v-else-if="!projectList.products || projectList.products.length === 0">{{ t('rateInquiry.noData') }}</div>
       <template v-else>
         <div class="app-panel">
           <div v-for="(item, index) in projectList.products" :key="index" class="product-row">
             <div class="rate-card rate-card-receive">
               <div class="card-header">
-                <span>{{ item.productName }} - 收款费率</span>
+                <span>{{ item.productName }} - {{ t('rateInquiry.receiveRate') }}</span>
                 <button class="btn-add">+</button>
               </div>
               <div class="card-body">
                 <div class="rate-item">
-                  <span class="label">百分比:</span>
+                  <span class="label">{{ t('rateInquiry.percent') }}</span>
                   <span class="value">{{ item.productRate }}</span>
                 </div>
                 <div class="rate-item">
-                  <span class="label">固定费率:</span>
+                  <span class="label">{{ t('rateInquiry.fixedFee') }}</span>
                   <span class="value">{{ getCurrencySymbol(projectList.currency) }} {{ item.minFee || '0' }}</span>
                 </div>
               </div>
@@ -29,16 +29,16 @@
 
             <div class="rate-card rate-card-pay">
               <div class="card-header">
-                <span>{{ item.productName }} - 付款费率</span>
+                <span>{{ item.productName }} - {{ t('rateInquiry.payRate') }}</span>
                 <button class="btn-minus">-</button>
               </div>
               <div class="card-body">
                 <div class="rate-item">
-                  <span class="label">百分比:</span>
+                  <span class="label">{{ t('rateInquiry.percent') }}</span>
                   <span class="value">{{ item.settlementFee1 }}</span>
                 </div>
                 <div class="rate-item">
-                  <span class="label">固定费率:</span>
+                  <span class="label">{{ t('rateInquiry.fixedFee') }}</span>
                   <span class="value">{{ getCurrencySymbol(projectList.currency) }} {{ item.settlementFee2 || '0' }}</span>
                 </div>
               </div>

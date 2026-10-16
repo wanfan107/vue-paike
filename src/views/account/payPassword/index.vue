@@ -24,9 +24,9 @@
 
     <SuccessDialog
       v-model="showSuccessDialog"
-      title="操作成功"
-      message="支付密码设置成功"
-      description="下次支付请使用新密码"
+      :title="t('account.payPassword.resultSuccess')"
+      :message="t('account.payPassword.resultMessage')"
+      :description="t('account.payPassword.resultDesc')"
       @confirm="handleSuccessConfirm"
     />
   </div>
@@ -50,17 +50,17 @@ const showSuccessDialog = ref(false);  // 成功弹窗是否显示
 const loading = ref(false);
 const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
-const passwordStrengthColor = ref("#ff0000"); // 默认红色
+const passwordStrengthColor = ref("var(--color-send)"); // 默认红色
 const passwordStrengthWidth = ref("0%");
 const formList = ref([
   {
-    label: "支付密码",
+    label: t('account.payPassword.form.title'),
     name: "title",
   },
   {
-    label: "原始支付密码",
+    label: t('account.payPassword.form.oldPassword'),
     prop: "oldPassword",
-    placeholder: "请输入原始支付密码",
+    placeholder: t('account.payPassword.form.oldPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
@@ -69,9 +69,9 @@ const formList = ref([
     ],
   },
   {
-    label: "新密码",
+    label: t('account.payPassword.form.newPassword'),
     prop: "newPassword",
-    placeholder: "请输入新密码",
+    placeholder: t('account.payPassword.form.newPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
@@ -138,9 +138,9 @@ const formList = ref([
     },
   },
   {
-    label: "确认新密码",
+    label: t('account.payPassword.form.confirmPassword'),
     prop: "confirmPassword",
-    placeholder: "请输入确认新密码",
+    placeholder: t('account.payPassword.form.confirmPasswordPlaceholder'),
     name: "input",
     type: "password",
     showPassword: true,
@@ -149,10 +149,10 @@ const formList = ref([
     ],
   },
   {
-    label: "MFA2验证码",
+    label: t('account.payPassword.form.mfa'),
     prop: "emailCode",
     name: "input",
-    placeholder: "请输入MFA2验证码",
+    placeholder: t('account.payPassword.form.mfaPlaceholder'),
     rules: [
       { required: true, message: t('account.payPassword.rules.mfaRequired'), trigger: "blur" },
     ],
@@ -172,14 +172,14 @@ const merchantInfo = computed(() => userStore.merchantInfo);
 // 计算密码强度的方法
 const calculatePasswordStrength = (password) => {
   let strength = 0;
-  let text = "强度低";
-  let color = "#ff0000"; // 红色
+  let text = t('login.strength.low');
+  let color = "var(--color-send)"; // 红色
   let width = "0%";
 
   if (!password) {
     passwordStrength.value = 0;
     passwordStrengthText.value = "";
-    passwordStrengthColor.value = "#ff0000";
+    passwordStrengthColor.value = "var(--color-send)";
     passwordStrengthWidth.value = "0%";
     return;
   }
@@ -206,17 +206,17 @@ const calculatePasswordStrength = (password) => {
 
   // 根据强度设置文本和颜色
   if (strength <= 1) {
-    text = "强度低";
-    color = "#ff0000"; // 红色
+    text = t('login.strength.low');
+    color = "var(--color-send)"; // 红色
   } else if (strength <= 2) {
-    text = "强度中";
-    color = "#ff8800"; // 橙色
+    text = t('login.strength.mid');
+    color = "var(--color-status-warn)"; // 橙色
   } else if (strength <= 3) {
-    text = "强度中高";
-    color = "#aabb00"; // 黄绿色
+    text = t('login.strength.midHigh');
+    color = "var(--brand-primary)"; // 品牌绿
   } else {
-    text = "强度高";
-    color = "#00ff00"; // 绿色
+    text = t('login.strength.high');
+    color = "var(--color-receive)"; // 绿色
   }
 
   passwordStrengthText.value = text;

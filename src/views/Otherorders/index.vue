@@ -82,7 +82,7 @@
                 type="primary"
                 :loading="exportLoading"
               >
-                导出
+                {{ t('common.export') }}
               </el-button>
             </el-form-item>
           </el-form>

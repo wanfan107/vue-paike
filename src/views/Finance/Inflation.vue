@@ -299,7 +299,7 @@ const submit = () => {
             }
           })
           .catch(() => {
-            ElMessage.error("获取二维码失败");
+            ElMessage.error(t('order.inflation.msg.qrFailed'));
             reset();
           });
       }

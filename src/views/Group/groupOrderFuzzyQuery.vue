@@ -12,22 +12,22 @@
             type="textarea"
             v-model="orderInput"
             :rows="6"
-            placeholder="输入订单号，支持中英文逗号、换行符分隔（最多50个）&#10;支持：商户订单号、平台订单号、银行订单号"
+            :placeholder="t('order.groupOrderFuzzyQuery.search.placeholder')"
           ></el-input>
         </div>
         
         <div class="form-row">
           <div class="form-item">
-            <div class="form-label">订单类型</div>
-            <el-select v-model="orderType" placeholder="请选择" style="width: 200px;">
-              <el-option label="所有" value="all"></el-option>
-              <el-option label="收款" value="payin"></el-option>
-              <el-option label="付款" value="payout"></el-option>
+            <div class="form-label">{{ t('order.groupOrderFuzzyQuery.search.orderType') }}</div>
+            <el-select v-model="orderType" :placeholder="t('order.groupOrderFuzzyQuery.search.orderTypePlaceholder')" style="width: 200px;">
+              <el-option :label="t('order.groupOrderFuzzyQuery.search.typeAll')" value="all"></el-option>
+              <el-option :label="t('order.groupOrderFuzzyQuery.search.typePayin')" value="payin"></el-option>
+              <el-option :label="t('order.groupOrderFuzzyQuery.search.typePayout')" value="payout"></el-option>
             </el-select>
           </div>
           <div class="form-actions">
-            <el-button type="primary" :loading="loading" @click="onQuery">查询</el-button>
-            <el-button @click="onReset">重置</el-button>
+            <el-button type="primary" :loading="loading" @click="onQuery">{{ t('order.groupOrderFuzzyQuery.search.query') }}</el-button>
+            <el-button @click="onReset">{{ t('order.groupOrderFuzzyQuery.search.reset') }}</el-button>
           </div>
         </div>
 
@@ -36,15 +36,15 @@
           <!-- 空状态提示 -->
           <div class="empty-state" v-if="queryResult.foundOrders.length === 0 && queryResult.notGroupOrders.length === 0 && queryResult.notFoundOrders.length === 0">
             <div class="empty-icon">📋</div>
-            <h2>未查询到订单</h2>
-            <p>请尝试其他搜索条件</p>
+            <h2>{{ t('order.groupOrderFuzzyQuery.result.emptyTitle') }}</h2>
+            <p>{{ t('order.groupOrderFuzzyQuery.result.emptyDesc') }}</p>
           </div>
 
           <!-- 属于本集团的订单 -->
           <div v-if="queryResult.foundOrders.length" class="result-section">
             <div class="section-header">
-              <span>查询到的订单（属于本集团）</span>
-              <el-tag size="medium" style="margin-left: 8px;font-size: 16px;">{{ queryResult.foundOrders.length }} 条</el-tag>
+              <span>{{ t('order.groupOrderFuzzyQuery.result.foundTitle') }}</span>
+              <el-tag size="medium" style="margin-left: 8px;font-size: 16px;">{{ queryResult.foundOrders.length }} {{ t('order.groupOrderFuzzyQuery.result.unitTiao') }}</el-tag>
             </div>
             <el-table
               border
@@ -53,32 +53,32 @@
               :data="queryResult.foundOrders"
               stripe
             >
-              <el-table-column align="center" prop="inputOrderNo" label="输入订单号" width="180"></el-table-column>
-              <el-table-column align="center" prop="orderTypeText" label="订单类型" width="80">
+              <el-table-column align="center" prop="inputOrderNo" :label="t('order.groupOrderFuzzyQuery.table.inputOrderNo')" width="180"></el-table-column>
+              <el-table-column align="center" prop="orderTypeText" :label="t('order.groupOrderFuzzyQuery.table.orderType')" width="80">
                 <template #default="{ row }">
                   <el-tag :type="orderTypeTag(row.orderType)" size="small">{{ row.orderTypeText }}</el-tag>
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="merchant" label="商户号" width="80"></el-table-column>
-              <el-table-column align="center" prop="merchantOrder" label="商户订单号" width="180"></el-table-column>
-              <el-table-column align="center" prop="serialNo" label="平台订单号" width="180"></el-table-column>
+              <el-table-column align="center" prop="merchant" :label="t('order.groupOrderFuzzyQuery.table.merchant')" width="80"></el-table-column>
+              <el-table-column align="center" prop="merchantOrder" :label="t('order.groupOrderFuzzyQuery.table.merchantOrder')" width="180"></el-table-column>
+              <el-table-column align="center" prop="serialNo" :label="t('order.groupOrderFuzzyQuery.table.serialNo')" width="180"></el-table-column>
               <!-- <el-table-column align="center" prop="supplierOrder" label="银行订单号" width="180">
                 <template #default="{ row }">
                   {{ row.supplierOrder || '-' }}
                 </template>
               </el-table-column> -->
-              <el-table-column align="center" label="银行单号" width="180">
+              <el-table-column align="center" :label="t('order.groupOrderFuzzyQuery.table.bankNo')" width="180">
                 <template #default="{ row }">
                   {{ row.billingCity || row.bankArea || '-' }}
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="statusText" label="状态" width="110">
+              <el-table-column align="center" prop="statusText" :label="t('order.groupOrderFuzzyQuery.table.status')" width="110">
                 <template #default="{ row }">
                   <el-tag v-if="row.statusText" :type="statusTagType(row)" size="small">{{ row.statusText }}</el-tag>
                   <span v-else>-</span>
                 </template>
               </el-table-column>
-              <el-table-column align="center" prop="createdOn" label="创建时间" width="180">
+              <el-table-column align="center" prop="createdOn" :label="t('order.groupOrderFuzzyQuery.table.createdOn')" width="180">
                 <template #default="{ row }">
                   {{ formatTime(row.createdOn) }}
                 </template>
@@ -89,8 +89,8 @@
           <!-- 不属于本集团的订单 -->
           <div v-if="queryResult.notGroupOrders.length" class="result-section">
             <div class="section-header warning">
-              <span>订单存在但不属于本集团</span>
-              <el-tag type="warning" size="small" style="margin-left: 8px;font-size: 16px;">{{ queryResult.notGroupOrders.length }} 个</el-tag>
+              <span>{{ t('order.groupOrderFuzzyQuery.result.notGroupTitle') }}</span>
+              <el-tag type="warning" size="small" style="margin-left: 8px;font-size: 16px;">{{ queryResult.notGroupOrders.length }} {{ t('order.groupOrderFuzzyQuery.result.unitGe') }}</el-tag>
             </div>
             <div class="order-list">
               <el-tag
@@ -105,8 +105,8 @@
           <!-- 完全查不到的订单 -->
           <div v-if="queryResult.notFoundOrders.length" class="result-section">
             <div class="section-header danger">
-              <span>未查询到的订单</span>
-              <el-tag type="danger" size="small" style="margin-left: 8px;font-size: 16px;">{{ queryResult.notFoundOrders.length }} 个</el-tag>
+              <span>{{ t('order.groupOrderFuzzyQuery.result.notFoundTitle') }}</span>
+              <el-tag type="danger" size="small" style="margin-left: 8px;font-size: 16px;">{{ queryResult.notFoundOrders.length }} {{ t('order.groupOrderFuzzyQuery.result.unitGe') }}</el-tag>
             </div>
             <div class="order-list">
               <el-tag
@@ -123,7 +123,7 @@
         <div class="empty-state" v-if="!queryResult">
           <div class="empty-icon">📋</div>
           <h2>{{ title }}</h2>
-          <p>请输入订单号进行查询</p>
+          <p>{{ t('order.groupOrderFuzzyQuery.result.initialDesc') }}</p>
         </div>
       </div>
     </main>
@@ -163,11 +163,11 @@ const parseOrders = () => {
 const onQuery = async () => {
   const orders = parseOrders();
   if (!orders.length) {
-    ElMessage.warning('请输入订单号');
+    ElMessage.warning(t('order.groupOrderFuzzyQuery.msg.inputRequired'));
     return;
   }
   if (orders.length > 50) {
-    ElMessage.warning('单次最多查询50个订单号');
+    ElMessage.warning(t('order.groupOrderFuzzyQuery.msg.max50'));
     return;
   }
 
@@ -183,13 +183,13 @@ const onQuery = async () => {
       const notGroup = res.data.notGroupOrders.length;
       const notFound = res.data.notFoundOrders.length;
       ElMessage.success(
-        `查询完成：找到${found}条，不属于本集团${notGroup}个，未找到${notFound}个`
+        t('order.groupOrderFuzzyQuery.msg.summary', { found, notGroup, notFound })
       );
     } else {
-      ElMessage.error(res.msg || '查询失败');
+      ElMessage.error(res.msg || t('order.groupOrderFuzzyQuery.msg.queryFailed'));
     }
   } catch (err) {
-    ElMessage.error('查询异常');
+    ElMessage.error(t('order.groupOrderFuzzyQuery.msg.queryError'));
   } finally {
     loading.value = false;
   }
