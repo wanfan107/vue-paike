@@ -198,7 +198,7 @@ const transferForm = reactive({
 });
 
 // 表单验证规则
-const rules = {
+const rules = computed(() => ({
   amount: [
     { required: true, message: t('order.rotation.rules.amountRequired'), trigger: 'blur' },
     { type: 'number', min: 0.01, message: t('order.rotation.rules.amountMin'), trigger: 'blur' },
@@ -219,7 +219,7 @@ const rules = {
   mfaCode: [
     { required: true, message: t('order.rotation.rules.mfaRequired'), trigger: 'blur' }
   ]
-};
+}));
 
 // 重置表单
 const resetForm = () => {

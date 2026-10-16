@@ -193,6 +193,7 @@ const handleClose = (key, keyPath) => {}
   flex: 1;
   overflow-y: auto;
   background-color: transparent;
+  padding: 8px 0 12px;
 }
 
 :deep(.el-menu) {
@@ -204,11 +205,11 @@ const handleClose = (key, keyPath) => {}
   background-color: transparent;
   position: relative;
   padding-right: 16px !important;
-  height: 40px;
-  line-height: 40px;
+  height: 44px;
+  line-height: 44px;
   font-size: 13px;
   font-weight: 500;
-  margin: 2px 14px;
+  margin: 4px 14px;
   border-radius: 10px;
   color: var(--text-regular, #52525b);
   transition: all 0.2s ease;
@@ -253,12 +254,12 @@ const handleClose = (key, keyPath) => {}
 }
 
 :deep(.el-sub-menu__children) {
-  padding: 4px 0;
+  padding: 2px 0;
 }
 
 :deep(.el-sub-menu__children .el-menu-item) {
   padding-left: 46px !important;
-  margin: 2px 14px;
+  margin: 4px 14px;
   height: 40px;
   line-height: 40px;
   font-size: 13px;
@@ -269,7 +270,7 @@ const handleClose = (key, keyPath) => {}
   background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.1)) !important;
   border-radius: 8px !important;
   box-shadow: none !important;
-  margin: 2px 14px !important;
+  margin: 4px 14px !important;
   padding: 0 16px 0 46px !important;
 }
 

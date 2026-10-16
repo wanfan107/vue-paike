@@ -132,7 +132,7 @@ export default {
     switchSame: '当前已是该账户',
     switchFailed: '切换失败',
     selectAccount: '请选择',
-    selectPlaceholder: 'Selecione a conta',
+    selectPlaceholder: '选择商户',
     current: '当前',
     balance: '余额',
     createdAt: '创建时间',

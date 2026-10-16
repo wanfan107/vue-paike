@@ -442,7 +442,6 @@ const searchForm = reactive({
         merchantOrderNo: "",
         platformOrderNo: "",
 });
-const timeRangeOptions = []; // 已移至 useI18n 之后定义
 
 // 当前选中的时间范围
 const currentTimeRange = ref('today');
@@ -475,28 +474,27 @@ const router = useRouter();
 const { t } = useI18n();
 
 // 状态筛选项
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: t('order.payment.status.all'), value: -1 },
   { label: t('order.payment.status.processing'), value: 0 },
   { label: t('order.payment.status.success'), value: 1 },
   { label: t('order.payment.status.failed'), value: 2 },
-];
+]);
 
 // 通知筛选项
-const options = [
+const options = computed(() => [
   { label: t('order.payment.notify.all'), value: -1 },
   { label: t('order.payment.notify.success'), value: 1 },
   { label: t('order.payment.notify.failed'), value: 2 },
-];
+]);
 
 // 快捷时间选项
-timeRangeOptions.length = 0;
-timeRangeOptions.push(
+const timeRangeOptions = computed(() => [
   { label: t('order.timeRange.yesterday'), value: "yesterday" },
   { label: t('order.timeRange.today'), value: "today" },
   { label: t('order.timeRange.threeDays'), value: "3days" },
   { label: t('order.timeRange.sevenDays'), value: "7days" },
-);
+]);
 
 // 快捷时间药丸回调（昨天 / 今天 / 3天 / 7天，按商户币种时区计算，逻辑与原 TimeRangeSelector 一致）
 const onQuickRange = (range) => {

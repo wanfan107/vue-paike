@@ -234,7 +234,7 @@ const ruleForm = reactive({
 });
 
 // 表单验证规则
-const rules = {
+const rules = computed(() => ({
   amount: [
     { required: true, message: t('order.transfer.rules.amountRequired'), trigger: 'blur' },
     { type: 'number', min: 5, message: t('order.transfer.rules.amountMin'), trigger: 'blur' }
@@ -254,7 +254,7 @@ const rules = {
   googleCode: [
     { required: true, message: t('order.transfer.rules.mfaRequired'), trigger: 'blur' }
   ]
-};
+}));
 
 // 计算到账金额和手续费
 const calculateAmounts = () => {

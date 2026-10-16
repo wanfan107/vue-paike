@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="app-page">
     <header class="app-page-header">
       <h1>{{ title || t('order.receipt.pageTitle') }}</h1>
@@ -322,13 +322,13 @@ const props = defineProps({
 });
 
 // 状态筛选项（值与后端约定一致：2 全部 / 0 处理中 / 1 成功）
-const statusOptions = [
+const statusOptions = computed(() => [
   { label: t('order.receipt.status.all'), value: 2 },
   { label: t('order.receipt.status.processing'), value: 0 },
   { label: t('order.receipt.status.success'), value: 1 },
-];
+]);
 
-const options = [
+const options = computed(() => [
   {
     label: t('order.receipt.notify.all'),
     value: -1,
@@ -341,7 +341,7 @@ const options = [
     label: t('order.receipt.notify.failed'),
     value: 2,
   },
-];
+]);
 
 
 
@@ -354,12 +354,12 @@ const searchForm = reactive({
         status: 2,
         notifyStatus: -1,
 });
-const timeRangeOptions = [
+const timeRangeOptions = computed(() => [
   { label: t('order.timeRange.yesterday'), value: "yesterday" },
   { label: t('order.timeRange.today'), value: "today" },
   { label: t('order.timeRange.threeDays'), value: "3days" },
   { label: t('order.timeRange.sevenDays'), value: "7days" },
-];
+]);
 
 // 当前选中的时间范围
 const currentTimeRange = ref('today');

@@ -280,7 +280,7 @@ const ruleForm = reactive({
   remark: "",
 });
 
-const rules = {
+const rules = computed(() => ({
   amount: [
     { required: true, message: t('order.applyU.rules.amountRequired'), trigger: 'blur' }
   ],
@@ -320,7 +320,7 @@ const rules = {
       trigger: 'blur' 
     }
   ],
-};
+}));
 
 // 钱包地址选项
 const walletAddressOptions = computed(() => {

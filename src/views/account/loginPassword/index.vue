@@ -55,7 +55,7 @@ const passwordStrength = ref(0); // 0-4 表示密码强度等级
 const passwordStrengthText = ref("");
 const passwordStrengthColor = ref("var(--color-send)"); // 默认红色
 const passwordStrengthWidth = ref("0%");
-const formList = ref([
+const formList = computed(() => [
   {
     label: t('account.loginPassword.form.title'),
     name: "title",

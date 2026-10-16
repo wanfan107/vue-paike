@@ -132,7 +132,7 @@ export default {
     switchSame: 'Already using this account',
     switchFailed: 'Switch failed',
     selectAccount: 'Select account',
-    selectPlaceholder: 'Selecione a conta',
+    selectPlaceholder: 'Select merchant',
     current: 'Current',
     balance: 'Balance',
     createdAt: 'Created',

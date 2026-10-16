@@ -10,7 +10,7 @@
       </button>
       <el-dropdown trigger="click" @command="handleLocaleCommand">
         <button class="icon-btn lang-btn" :title="t('header.language')">
-          <el-icon :size="16"><Operation /></el-icon>
+          <el-icon :size="16"><GlobeIcon /></el-icon>
           <span class="lang-label">{{ currentLocaleLabel }}</span>
           <el-icon class="lang-arrow" :size="12"><ArrowDown /></el-icon>
         </button>
@@ -142,35 +142,31 @@
     <el-dialog
       :z-index="1002"
       top="10vh"
-      width="600px"
-      :title="t('login.mfaBindTitle')"
+      width="480px"
       v-model="dialogValue"
       :close-on-click-modal="false"
-      custom-class="account-dialog"
+      class="account-dialog"
       append-to-body
       :show-close="false"
       @opened="handleDialogOpen"
     >
-    <div class="dialog-close"  @click="closeDialog">×</div>
-      <div style="display: flex; flex-direction: column; align-items: center">
-        <el-image :src="qrcode" style="width: 200px; height: 200px"></el-image>
-        <div style="margin: 10px 0">{{ t('login.mfaBindDesc') }}</div>
-        <div style="text-align: center">
-          <!-- MFA2验证码输入框 -->
-            <div class="code-inputs">
-              <input
-                v-for="(item, index) in 6"
-                :key="index"
-                type="text"
-                class="code-input"
-                maxlength="1"
-                @input="handleCodeInput($event, index)"
-                @keydown="handleCodeKeydown($event, index)"
-                @paste="handleCodePaste($event)"
-              />
-            </div>
-            <!-- <div class="code-hint">如未绑定请输入：000000</div> -->
-          <!-- <el-button type="primary" @click="dialogValue = false,isVerifyPass = true">重新输入验证码</el-button> -->
+      <div class="dialog-close" @click="closeDialog">×</div>
+      <div class="mfa-dialog-body">
+        <div class="dialog-title">{{ t('login.mfaBindTitle') }}</div>
+        <el-image :src="qrcode" class="mfa-qrcode"></el-image>
+        <div class="code-label">{{ t('login.mfaBindDesc') }}</div>
+        <!-- MFA2验证码输入框 -->
+        <div class="code-inputs">
+          <input
+            v-for="(item, index) in 6"
+            :key="index"
+            type="text"
+            class="code-input"
+            maxlength="1"
+            @input="handleCodeInput($event, index)"
+            @keydown="handleCodeKeydown($event, index)"
+            @paste="handleCodePaste($event)"
+          />
         </div>
       </div>
     </el-dialog>
@@ -183,12 +179,11 @@
       v-model="isVerifyPass"
       :close-on-click-modal="false"
       append-to-body
-      custom-class="account-dialog"
+      class="account-dialog"
       :show-close="false"
-      style="padding: 0 20px"
       @opened="handleDialogOpen"
     >
-    <div class="dialog-close"  @click="closeDialog">×</div>
+      <div class="dialog-close" @click="closeDialog">×</div>
       <div class="dialog-header">
         <div class="logo-container">
           <img
@@ -197,23 +192,18 @@
             class="dialog-logo"
           />
         </div>
-        <div class="dialog-title1">{{ t('login.mfaVerifyTitle') }}</div>
-        <div class="dialog-title1">
-          <div class="verification-code-container">
-            <div class="code-inputs">
-              <input
-                v-for="(item, index) in 6"
-                :key="index"
-                type="text"
-                class="code-input"
-                maxlength="1"
-                @input="handleCodeInput($event, index)"
-                @keydown="handleCodeKeydown($event, index)"
-                @paste="handleCodePaste($event)"
-              />
-            </div>
-            <!-- <div class="code-hint">如未绑定请输入：000000</div> -->
-          </div>
+        <div class="code-label">{{ t('login.mfaVerifyTitle') }}</div>
+        <div class="code-inputs">
+          <input
+            v-for="(item, index) in 6"
+            :key="index"
+            type="text"
+            class="code-input"
+            maxlength="1"
+            @input="handleCodeInput($event, index)"
+            @keydown="handleCodeKeydown($event, index)"
+            @paste="handleCodePaste($event)"
+          />
         </div>
       </div>
       <!-- 登录动画 -->
@@ -231,7 +221,7 @@
       v-model="dialogValue1"
       :close-on-click-modal="false"
       append-to-body
-      custom-class="account-dialog"
+      class="account-dialog"
       :show-close="false"
     >
     <div         v-loading="loading"
@@ -247,23 +237,22 @@
             class="dialog-logo"
           />
         </div>
-        <div class="dialog-title">Selecione a conta</div>
-        <div class="dialog-title">
-          <el-select
-            v-model="searchKey"
-            filterable
-            :placeholder="t('common.select')"
-            clearable
+        <div class="dialog-title">{{ t('header.selectPlaceholder') }}</div>
+        <el-select
+          class="dialog-search"
+          v-model="searchKey"
+          filterable
+          :placeholder="t('header.selectAccount')"
+          clearable
+        >
+          <el-option
+            v-for="item in accounts"
+            :key="item.id"
+            :label="item.id"
+            :value="item.id"
           >
-            <el-option
-              v-for="item in accounts"
-              :key="item.id"
-              :label="item.id"
-              :value="item.id"
-            >
-            </el-option>
-          </el-select>
-        </div>
+          </el-option>
+        </el-select>
       </div>
       <div class="account-list">
         <div
@@ -274,12 +263,12 @@
         >
           <div class="left-column">
             <div class="account-id">{{ account.id }}</div>
-             <el-tooltip :content="account.type" placement="left">
-              <div class="account-type">{{ account.type }}</div>
+             <el-tooltip :content="account.type || t('header.unconfiguredSite')" placement="left">
+              <div class="account-type">{{ account.type || t('header.unconfiguredSite') }}</div>
             </el-tooltip>
           </div>
           <div class="right-column">
-<div class="account-company"><span>{{ t('login.balanceLabel') }}</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
+<div class="account-company"><span class="balance-label">{{ t('login.balanceLabel') }}</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
             <div class="account-number">{{ t('login.createdTimeLabel') }}{{ account.createdOn }}</div>
           </div>
         </div>
@@ -352,7 +341,8 @@
 import { ref, computed, onMounted, nextTick, watch, onBeforeUnmount } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { ArrowDown, Sunny, Moon, Operation } from '@element-plus/icons-vue';
+import { ArrowDown, Sunny, Moon } from '@element-plus/icons-vue';
+import GlobeIcon from '@/components/GlobeIcon.vue';
 import { useTheme } from '@/composables/useTheme';
 import { LOCALES, setLocale } from '@/i18n';
 import { ElMessage } from 'element-plus';
@@ -783,7 +773,7 @@ async function _groupLogin() {
                   id: m.code,
                   code: m.code,
                   // siteUrl: m.siteUrl || '',
-                  type: m.qq || t('header.unconfiguredSite'),
+                  type: m.qq || '',
                       balance: m.balance || '0.00',
     createdOn: formatDateTime(m.createdOn) || '',
                 }));
@@ -1559,29 +1549,29 @@ async function confirmBind(account) {
 // ---------- 验证码输入 ----------
 .code-inputs {
   display: flex;
+  justify-content: center;
   gap: 10px;
-  margin-bottom: 10px;
 }
 .code-input {
   width: 50px;
-  height: 50px;
+  height: 54px;
+  padding: 0;
   border: 1px solid var(--color-border, #dcdce0);
-  border-radius: 10px;
+  border-radius: 12px;
   background-color: var(--color-surface, #ffffff);
   color: var(--text-primary, #18181b);
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 600;
   text-align: center;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
   outline: none;
-  box-shadow: var(--shadow-xs, 0 1px 3px rgba(0, 0, 0, 0.06));
+  caret-color: var(--brand-primary, #16a34a);
 
   &:focus {
     border-color: var(--brand-primary, #16a34a);
     box-shadow: 0 0 0 3px var(--brand-primary-soft, rgba(22, 163, 74, 0.15));
-    transform: translateY(-1px);
   }
-  &:hover { border-color: var(--text-faint, #a1a1aa); }
+  &:hover:not(:focus) { border-color: var(--text-faint, #a1a1aa); }
 }
 
 // ---------- 响应式：窄屏隐藏品牌区 ----------
@@ -1590,45 +1580,57 @@ async function confirmBind(account) {
   .login-main { flex: 1; padding: 24px; }
 }
 
-/* 内容区域 */
-.account-dialog {
-  border-radius: 16px;
-  background-color: var(--color-surface, #ffffff);
-  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
-  border: none;
-  padding-bottom: 20px;
-}
-
+/* 内容区域（弹窗外壳规则见文件末尾的非 scoped 块） */
 .dialog-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding:  25px 0;
-  margin-bottom: 10px;
+  gap: 16px;
+  padding: 24px 0 18px;
 }
 
 .logo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
 }
 
 .dialog-logo {
-  width: 120px;
-  // height: 50px;
-  border-radius: 8px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.08));
 }
 
 .dialog-title {
   font-size: 16px;
-  color: var(--text-secondary, #71717a);
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text-primary, #18181b);
   text-align: center;
 }
-.dialog-title1 {
-  font-size: 12px;
+
+.dialog-search {
+  width: 100%;
+}
+.code-label {
+  font-size: 13px;
+  line-height: 1.5;
   color: var(--text-regular, #52525b);
-  // font-weight: 700;
+  text-align: center;
+}
+
+/* MFA 绑定弹窗内容（标题 + 二维码 + 说明 + 验证码框） */
+.mfa-dialog-body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding-top: 24px;
+}
+
+.mfa-qrcode {
+  width: 200px;
+  height: 200px;
+  border-radius: 12px;
 }
 
 /* 登录动画 */
@@ -1671,29 +1673,40 @@ async function confirmBind(account) {
   }
 }
 
-.dialog-title1 {
-  // text-align: center;
-  width: 100%;
-  input {
-    border-radius: 15px;
-    // margin-top: 10px;
-  }
-}
-
 .account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   padding: 0;
   margin: 0;
   min-height: 150px; /* 确保loading能看到 */
   max-height: 220px; /* 大约3个账户的高度 */
   overflow-y: auto; /* 超出部分滚动 */
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border, #dcdce0) transparent;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border, #dcdce0);
+    border-radius: 999px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 .account-item {
   display: flex;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-divider, #e8e8e8);
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
   cursor: pointer;
+  background-color: transparent;
   transition: background-color 0.2s ease;
 
   &:hover {
@@ -1705,44 +1718,67 @@ async function confirmBind(account) {
 .right-column {
   display: flex;
   flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.left-column {
+  flex: 1;
+  max-width: 62%;
+}
+
+.right-column {
+  flex-shrink: 0;
+  text-align: right;
 }
 
 .account-id {
-  font-size: 16px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 600;
   color: var(--text-primary, #333);
 }
 
 .account-type {
-  width: 90%;
-  font-size: 14px;
-  color: var(--text-secondary, #71717a);
+  font-size: 13px;
+  color: var(--text-faint, #9ca3af);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  max-width: 100%;
 }
 
 .account-company {
-  font-size: 16px;
-  font-weight: bold;
-  color: var(--text-primary, #18181b);
+  font-size: 13px;
+  color: var(--text-regular, #6b7280);
+  white-space: nowrap;
 }
 
 .account-number {
-  font-size: 14px;
-  color: var(--text-secondary, #71717a);
+  font-size: 12px;
+  color: var(--text-faint, #9ca3af);
+  white-space: nowrap;
 }
 
 .dialog-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 30px;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 8px;
   cursor: pointer;
   color: var(--text-faint, #a1a1aa);
-  transition: color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 
-  &:hover { color: var(--text-primary, #18181b); }
+  &:hover {
+    background-color: var(--color-hover, #f9f9f9);
+    color: var(--text-primary, #18181b);
+  }
 }
 :deep(.login-form .el-form-item__label) {
   font-size: 13px !important;
@@ -1836,14 +1872,6 @@ async function confirmBind(account) {
     margin-left: 2px;
   }
 }
-.el-dialog__body {
-  padding: 0 20px;
-}
-.el-dialog__footer {
-  padding: 0;
-  padding-right: 40px;
-  padding-bottom: 20px;
-}
 :deep(.el-input__inner:-webkit-autofill),
 :deep(.el-input__inner:-webkit-autofill:hover),
 :deep(.el-input__inner:-webkit-autofill:focus),
@@ -1855,9 +1883,13 @@ async function confirmBind(account) {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+.balance-label {
+  color: var(--text-faint, #a1a1aa);
+}
+
 .balance-value {
-  // color: #67c23a;  // Element Plus 绿色主题色
   font-weight: 600;
+  color: var(--brand-primary, #16a34a);
 }
 
 
@@ -1890,5 +1922,23 @@ async function confirmBind(account) {
 }
 :deep(.el-input-group__append) {
  padding: 0  !important;
+}
+</style>
+
+<style lang="scss">
+/* 弹窗外壳：EP 2.12 已移除 custom-class，故改用真实 class + 全局块保证生效；
+   选择器带 .el-dialog 前缀提高优先级，覆盖 element-plus-overrides.scss 的默认值 */
+.el-dialog.account-dialog {
+  border-radius: 16px;
+  border: none;
+  box-shadow: var(--shadow-xl, 0 24px 64px rgba(15, 23, 42, 0.18));
+  overflow: hidden;
+}
+/* 弹窗自带 header 区（在 body 内），隐藏 EP 空 header —— 消除顶部空白与多余分隔线 */
+.el-dialog.account-dialog .el-dialog__header {
+  display: none;
+}
+.el-dialog.account-dialog .el-dialog__body {
+  padding: 0 22px 20px;
 }
 </style>

@@ -4,8 +4,36 @@
     <div class="header-left">
       <button class="collapse-btn" @click="$emit('toggle-sidebar')" :title="collapsed ? t('header.expandMenu') : t('header.collapseMenu')">
         <el-icon :size="20">
-          <Expand v-if="collapsed" />
-          <Fold v-else />
+          <!-- 折叠态：点击可展开（面板在右，箭头朝右） -->
+          <svg
+            v-if="collapsed"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4.5" width="18" height="15" rx="2.5" />
+            <path d="M14.5 4.5v15" />
+            <path d="M7.5 9.5 10.5 12l-3 2.5" />
+          </svg>
+          <!-- 展开态：点击可收起（面板在左，箭头朝左） -->
+          <svg
+            v-else
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="3" y="4.5" width="18" height="15" rx="2.5" />
+            <path d="M9.5 4.5v15" />
+            <path d="M16.5 9.5 13.5 12l3 2.5" />
+          </svg>
         </el-icon>
       </button>
     </div>
@@ -21,7 +49,7 @@
 
       <el-dropdown class="lang-switcher" trigger="click" @command="handleLocaleCommand">
         <button class="icon-btn lang-btn" :title="t('header.language')">
-          <el-icon :size="18"><Operation /></el-icon>
+          <el-icon :size="18"><GlobeIcon /></el-icon>
           <span class="lang-label">{{ currentLocaleLabel }}</span>
           <el-icon class="lang-arrow" :size="12"><ArrowDown /></el-icon>
         </button>
@@ -69,7 +97,7 @@
       v-model="dialogValue1"
       :close-on-click-modal="false"
       append-to-body
-      custom-class="account-dialog"
+      class="account-dialog"
       :show-close="false"
     >
       <div class="dialog-close" @click="dialogValue1 = false; searchKey = ''">×</div>
@@ -78,16 +106,20 @@
           <img src="@/assets/image/pix-payment-logo.png" alt="Logo" class="dialog-logo" />
         </div>
         <div class="dialog-title">{{ t('header.selectPlaceholder') }}</div>
-        <div class="dialog-title">
-          <el-select v-model="searchKey" filterable :placeholder="t('header.selectAccount')" clearable>
-            <el-option
-              v-for="item in accounts"
-              :key="item.id"
-              :label="item.id"
-              :value="item.id"
-            />
-          </el-select>
-        </div>
+        <el-select
+          class="dialog-search"
+          v-model="searchKey"
+          filterable
+          :placeholder="t('header.selectAccount')"
+          clearable
+        >
+          <el-option
+            v-for="item in accounts"
+            :key="item.id"
+            :label="item.id"
+            :value="item.id"
+          />
+        </el-select>
       </div>
       <div class="account-list">
         <div
@@ -102,12 +134,12 @@
               {{ account.id }}
               <el-tag v-if="account.id === userStore.currentMerchantCode" type="success" size="small" effect="light">{{ t('header.current') }}</el-tag>
             </div>
-            <el-tooltip :content="account.type" placement="left">
-              <div class="account-type">{{ account.type }}</div>
+            <el-tooltip :content="account.type || t('header.unconfiguredSite')" placement="left">
+              <div class="account-type">{{ account.type || t('header.unconfiguredSite') }}</div>
             </el-tooltip>
           </div>
           <div class="right-column">
-            <div class="account-company"><span>{{ t('header.balance') }}：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
+            <div class="account-company"><span class="balance-label">{{ t('header.balance') }}：</span><span class="balance-value">{{ account.balance || ' ' }}</span></div>
             <div class="account-number">{{ t('header.createdAt') }}：{{ account.createdOn }}</div>
           </div>
         </div>
@@ -123,7 +155,8 @@ import { useI18n } from 'vue-i18n'
 import router from '../router/index.js'
 import useUserStore from '../stores/user.js'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { ArrowDown, Switch, SwitchButton, Fold, Expand, Sunny, Moon, Operation } from '@element-plus/icons-vue'
+import { ArrowDown, Switch, SwitchButton, Sunny, Moon } from '@element-plus/icons-vue'
+import GlobeIcon from './GlobeIcon.vue'
 import { http } from '@/api'
 import { useTheme } from '@/composables/useTheme'
 import { LOCALES, setLocale } from '@/i18n'
@@ -173,7 +206,7 @@ const getUserList = async () => {
         id: m.code,
         code: m.code,
         siteUrl: m.siteUrl || '',
-        type: m.qq || t('header.unconfiguredSite'),
+        type: m.qq || '',
         balance: m.balance || '0.00',
         createdOn: formatDateTime(m.createdOn) || '',
       }))
@@ -420,56 +453,69 @@ function confirmBind(account) {
 }
 
 /* ---------- 账户选择弹窗 ---------- */
-.account-dialog {
-  border-radius: 16px;
-  background-color: var(--color-surface, #ffffff);
-  box-shadow: var(--shadow-lg, 0 4px 12px rgba(0, 0, 0, 0.1));
-  border: none;
-  padding-bottom: 20px;
-}
 .dialog-header {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 0;
-  margin-bottom: 20px;
+  gap: 16px;
+  padding: 24px 0 18px;
 }
 .logo-container {
   display: flex;
   justify-content: center;
-  margin-bottom: 12px;
 }
 .dialog-logo {
-  width: 80px;
-  border-radius: 16px;
+  width: 72px;
+  height: 72px;
+  border-radius: 18px;
+  box-shadow: var(--shadow-sm, 0 2px 8px rgba(15, 23, 42, 0.08));
 }
 .dialog-title {
   font-size: 16px;
-  color: var(--text-secondary, #666);
-  font-weight: 500;
+  font-weight: 600;
+  color: var(--text-primary, #18181b);
   text-align: center;
 }
+.dialog-search {
+  width: 100%;
+}
 .account-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   padding: 0;
   margin: 0;
   max-height: 320px;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border, #dcdce0) transparent;
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+  &::-webkit-scrollbar-thumb {
+    background: var(--color-border, #dcdce0);
+    border-radius: 999px;
+  }
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 .account-item {
   display: flex;
   justify-content: space-between;
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--color-divider, #f0f1f3);
-  cursor: pointer;
+  gap: 12px;
+  padding: 12px 14px;
   border-radius: 10px;
-  margin-bottom: 4px;
-  transition: background-color 0.2s ease;
+  cursor: pointer;
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px transparent;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
   &:hover {
     background-color: var(--color-hover, #f8f9fb);
   }
   &.current-account {
     background-color: var(--brand-primary-soft, rgba(22, 163, 74, 0.06));
-    border: 1px solid var(--brand-primary-light, rgba(22, 163, 74, 0.2));
+    box-shadow: inset 0 0 0 1px var(--brand-primary-light, rgba(22, 163, 74, 0.25));
   }
 }
 .left-column,
@@ -481,19 +527,19 @@ function confirmBind(account) {
 }
 .left-column {
   flex: 1;
-  max-width: 60%;
+  max-width: 62%;
 }
 .right-column {
   flex-shrink: 0;
   text-align: right;
 }
 .account-id {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--text-primary, #1f2937);
   display: flex;
   align-items: center;
   gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary, #1f2937);
 }
 .account-type {
   font-size: 13px;
@@ -504,9 +550,12 @@ function confirmBind(account) {
   max-width: 100%;
 }
 .account-company {
-  font-size: 14px;
-  color: var(--text-secondary, #6b7280);
+  font-size: 13px;
+  color: var(--text-regular, #6b7280);
   white-space: nowrap;
+}
+.balance-label {
+  color: var(--text-faint, #9ca3af);
 }
 .balance-value {
   font-weight: 600;
@@ -519,17 +568,40 @@ function confirmBind(account) {
 }
 .dialog-close {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 24px;
+  top: 14px;
+  right: 14px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  line-height: 1;
+  border-radius: 8px;
   cursor: pointer;
   color: var(--text-faint, #9ca3af);
-  line-height: 1;
+  transition: background-color 0.2s ease, color 0.2s ease;
   &:hover {
+    background-color: var(--color-hover, #f8f9fb);
     color: var(--text-primary, #374151);
   }
 }
-:deep(.el-dialog__body) {
-  padding: 0 20px;
+</style>
+
+<style lang="scss">
+/* 弹窗外壳：EP 2.12 已移除 custom-class，故改用真实 class + 全局块保证生效；
+   选择器带 .el-dialog 前缀提高优先级，覆盖 element-plus-overrides.scss 的默认值 */
+.el-dialog.account-dialog {
+  border-radius: 16px;
+  border: none;
+  box-shadow: var(--shadow-xl, 0 24px 64px rgba(15, 23, 42, 0.18));
+  overflow: hidden;
+}
+/* 弹窗自带 header 区（在 body 内），隐藏 EP 空 header —— 消除顶部空白与多余分隔线 */
+.el-dialog.account-dialog .el-dialog__header {
+  display: none;
+}
+.el-dialog.account-dialog .el-dialog__body {
+  padding: 0 22px 20px;
 }
 </style>
