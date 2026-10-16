@@ -25,6 +25,9 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
+import { useI18n } from 'vue-i18n';
+
+const { t } = useI18n();
 
 const props = defineProps({
   text: {
@@ -61,14 +64,14 @@ const handleCopy = () => {
   
   const copySuccess = () => {
     isCopied.value = true;
-    ElMessage.success('复制成功');
+    ElMessage.success(t('common.copySuccess'));
     setTimeout(() => {
       isCopied.value = false;
     }, 2000);
   };
   
   const copyFail = () => {
-    ElMessage.error('复制失败，请手动复制');
+    ElMessage.error(t('common.copyFailed'));
   };
   
   if (navigator.clipboard && window.isSecureContext) {

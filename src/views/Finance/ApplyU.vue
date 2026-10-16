@@ -282,15 +282,15 @@ const ruleForm = reactive({
 
 const rules = {
   amount: [
-    { required: true, message: '请输入金额', trigger: 'blur' }
+    { required: true, message: t('order.applyU.rules.amountRequired'), trigger: 'blur' }
   ],
   uAmount: [
-    { required: true, message: '请输入到账U数', trigger: 'blur' },
+    { required: true, message: t('order.applyU.rules.uAmountRequired'), trigger: 'blur' },
     { 
       validator: (rule, value, callback) => {
         if (value && (!isNaN(value) && Number(value) > 0)) {
           if (Number(value) < 1000) {
-            callback(new Error('到账U数最低为1000'));
+            callback(new Error(t('order.applyU.rules.uAmountMin')));
           } else {
             callback();
           }
@@ -302,19 +302,19 @@ const rules = {
     }
   ],
   walletAddress: [
-    { required: true, message: '请选择钱包地址', trigger: 'change' }
+    { required: true, message: t('order.applyU.rules.walletRequired'), trigger: 'change' }
   ],
   password: [
-    { required: true, message: '请输入支付密码', trigger: 'blur' }
+    { required: true, message: t('order.applyU.rules.passwordRequired'), trigger: 'blur' }
   ],
   code: [
-    { required: true, message: '请输入MFA2验证码', trigger: 'blur' },
+    { required: true, message: t('order.applyU.rules.mfaRequired'), trigger: 'blur' },
     { 
       validator: (rule, value, callback) => {
         if (value && value.length === 6) {
           callback();
         } else {
-          callback(new Error('MFA2验证码长度必须为6位'));
+          callback(new Error(t('order.applyU.rules.mfaLen')));
         }
       }, 
       trigger: 'blur' 

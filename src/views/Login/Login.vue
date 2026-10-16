@@ -622,13 +622,13 @@ const rules = ref({
   username: [
     {
       required: true,
-      message: "请输入您的商户号或邮箱",
+      message: t('login.rules.usernameRequired'),
       trigger: "blur",
     },
   ],
   password: [
-    { required: true, message: "请输入您的密码", trigger: "blur" },
-    { min: 6, message: "密码长度不能小于 6 位", trigger: "blur" },
+    { required: true, message: t('login.rules.passwordRequired'), trigger: "blur" },
+    { min: 6, message: t('login.rules.passwordMin6'), trigger: "blur" },
   ],
 });
 
@@ -763,7 +763,7 @@ async function _groupLogin() {
         groupNeedBindGoogle.value = true;
         // dialogValue.value = true;  // dialogValue.value 为 true 时，显示MFA2验证码弹窗
       } else if (isVerified === false) {
-        ElMessage.error("MFA2验证码错误，请重新输入");
+        ElMessage.error(t('login.msg.mfaWrong'));
       }
     }
     //  else if (error.code === 401) {
@@ -823,10 +823,10 @@ async function checkHuman() {
 if (loginForm.value.username.includes('@')) {
   // 集团商户登录
   if(EmailVerifyshow.value==true&&loginForm.value.EmailCode==""){
-    ElMessage.error("请输入邮箱验证码");
+    ElMessage.error(t('login.msg.emailCodeRequired'));
     return;
   } else if(EmailVerifyshow.value==true&&loginForm.value.EmailCode.length !== 6){
-    ElMessage.error("邮箱验证码长度不正确");
+    ElMessage.error(t('login.msg.emailCodeLen'));
     return;
   } else if(EmailVerifyshow.value==true&&loginForm.value.EmailCode) {
         // if (loginForm.value.EmailCode) {

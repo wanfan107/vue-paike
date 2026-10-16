@@ -1,8 +1,8 @@
-﻿<!-- AWS WAF CAPTCHA 全局弹窗（由 axios 拦截器在收到 WAF 405 时驱动） -->
+<!-- AWS WAF CAPTCHA 全局弹窗（由 axios 拦截器在收到 WAF 405 时驱动） -->
 <template>
   <el-dialog
     v-model="visible"
-    title="安全验证"
+    :title="t('captcha.title')"
     :close-on-click-modal="false"
     :close-on-press-escape="false"
     :show-close="false"
@@ -12,7 +12,7 @@
     <div class="captcha-body">
       <div ref="captchaContainer" class="captcha-container"></div>
       <p v-if="loadError" class="captcha-error">{{ loadError }}</p>
-      <p class="captcha-tip">请完成安全验证以继续操作</p>
+      <p class="captcha-tip">{{ t('captcha.tip') }}</p>
     </div>
 
     <template #footer>
@@ -26,7 +26,10 @@
 <script setup>
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useI18n } from 'vue-i18n'
 import CaptchaController from '@/utils/CaptchaController'
+
+const { t } = useI18n()
 
 const visible = ref(false)
 const rendering = ref(false)
@@ -92,7 +95,7 @@ const renderCaptcha = async () => {
       },
       onError: (error) => {
         console.error('CAPTCHA验证失败:', error)
-        ElMessage.error('验证加载失败，请重试')
+        ElMessage.error(t('captcha.loadFailed'))
         if (settled) return
         settled = true
         rendering.value = false
@@ -102,7 +105,7 @@ const renderCaptcha = async () => {
   } catch (error) {
     console.error('渲染CAPTCHA时出错:', error)
     rendering.value = false
-    ElMessage.error('安全验证初始化失败')
+    ElMessage.error(t('captcha.initFailed'))
     CaptchaController.onClose()
   }
 }

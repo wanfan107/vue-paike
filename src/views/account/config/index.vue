@@ -106,7 +106,7 @@ const formList = ref([
     name: "input",
     type: "textarea",
     disabled: true, // 修改函数返回值为布尔类型   禁用
-    rules: [{ required: true, message: "请输入付款IP", trigger: "blur" }],
+    rules: [{ required: true, message: t('account.config.rules.paymentIP'), trigger: "blur" }],
   },
   {
     label: "登陆IP白名单",
@@ -115,7 +115,7 @@ const formList = ref([
     name: "input",
     type: "textarea",
     disabled: true,  // 修改函数返回值为布尔类型   启用
-    rules: [{ required: true, message: "登陆IP白名单", trigger: "blur" }],
+    rules: [{ required: true, message: t('account.config.rules.loginIP'), trigger: "blur" }],
   },
 ]);
 
@@ -165,7 +165,7 @@ const submit = () => {
     .then((res) => {
       loading.value = false;
       if (res.code === 200) {
-        ElMessage.success("保存成功");
+        ElMessage.success(t('common.saveSuccess'));
         ruleForm.value.paymentIP = "";
         ruleForm.value.code = "";
       }

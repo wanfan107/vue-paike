@@ -293,7 +293,7 @@ const submit = () => {
               qrCodeUrl.value = qrRes.data.qrCodeUrl;
               showQrCodeDialog.value = true;
             } else {
-              ElMessage.error("获取二维码失败");
+              ElMessage.error(t('order.inflation.msg.qrFailed'));
               reset();
             }
           })
@@ -362,7 +362,7 @@ const getTransferHistory = async () => {
       // }
     ];
   } catch (error) {
-    ElMessage.error('获取转账记录失败');
+    ElMessage.error(t('order.inflation.msg.historyFailed'));
   } finally {
     historyLoading.value = false;
   }

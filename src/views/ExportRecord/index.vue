@@ -187,7 +187,7 @@ const handleDownload = (row) => {
   } catch (error) {
     console.error('下载失败:', error);
     // 可以添加错误提示
-    ElMessage.error('文件下载失败，请稍后重试');
+    ElMessage.error(t('common.downloadFailed'));
   }
 };
 

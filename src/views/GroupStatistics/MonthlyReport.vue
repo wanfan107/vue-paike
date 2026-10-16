@@ -563,7 +563,7 @@ const formatMonth = (d) => {
 // 搜索
 const handleSearch = async () => {
   if (!searchForm.time || searchForm.time.length !== 2) {
-    ElMessage.warning("请选择月份范围");
+    ElMessage.warning(t('common.selectMonthRange'));
     return;
   }
   await loadData();

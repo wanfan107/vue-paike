@@ -573,7 +573,7 @@ const handleResize = () => {
 // 搜索
 const handleSearch = async () => {
   if (!searchForm.time || searchForm.time.length !== 2) {
-    ElMessage.warning("请选择日期范围");
+    ElMessage.warning(t('common.selectDateRange'));
     return;
   }
   await loadData();

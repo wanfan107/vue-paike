@@ -68,7 +68,7 @@ const formList = ref([
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入原始登录密码", trigger: "blur" },
+      { required: true, message: t('account.loginPassword.rules.oldRequired'), trigger: "blur" },
     ],
   },
   {
@@ -79,21 +79,21 @@ const formList = ref([
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入新密码", trigger: "blur" },
+      { required: true, message: t('account.loginPassword.rules.newRequired'), trigger: "blur" },
       {
         validator: (rule, value, callback) => {
           if (!value) {
-            callback(new Error("请输入新密码"));
+            callback(new Error(t('account.loginPassword.rules.newRequired')));
           } else if (value.length < 6) {
-            callback(new Error("密码长度至少6位"));
+            callback(new Error(t('account.loginPassword.rules.min6')));
           } else if (!/[a-zA-Z]/.test(value)) {
-            callback(new Error("密码必须包含字母"));
+            callback(new Error(t('account.loginPassword.rules.needLetter')));
           } else if (!/\d/.test(value)) {
-            callback(new Error("密码必须包含数字"));
+            callback(new Error(t('account.loginPassword.rules.needNumber')));
           } else if (!/[^A-Za-z0-9]/.test(value)) {
-            callback(new Error("密码必须包含特殊字符"));
+            callback(new Error(t('account.loginPassword.rules.needSpecial')));
           } else if (passwordStrength.value < 3) {
-            callback(new Error("密码强度需达到中高及以上"));
+            callback(new Error(t('account.loginPassword.rules.strength')));
           } else {
             callback();
           }
@@ -148,7 +148,7 @@ const formList = ref([
     type: "password",
     showPassword: true,
     rules: [
-      { required: true, message: "请输入确认新密码", trigger: "blur" },
+      { required: true, message: t('account.loginPassword.rules.confirmRequired'), trigger: "blur" },
     ],
   },
   {
@@ -157,7 +157,7 @@ const formList = ref([
     name: "input",
     placeholder: "请输入MFA2验证码",
     rules: [
-      { required: true, message: "请输入MFA2验证码", trigger: "blur" },
+      { required: true, message: t('account.loginPassword.rules.mfaRequired'), trigger: "blur" },
     ],
   },
 ]);
@@ -234,17 +234,17 @@ const isPasswordValid = (password) => {
 // 提交表单
 const submit = () => {
   if (ruleForm.value.newPassword !== ruleForm.value.confirmPassword) {
-    ElMessage.error("两次输入的密码不一致");
+    ElMessage.error(t('account.loginPassword.msg.mismatch'));
     return;
   }
 
   if (passwordStrength.value < 3) {
-    ElMessage.error("密码强度需达到中高及以上");
+    ElMessage.error(t('account.loginPassword.msg.strengthLow'));
     return;
   }
 
   if (ruleForm.value.newPassword.length < 6) {
-    ElMessage.error("密码长度至少6位");
+    ElMessage.error(t('account.loginPassword.msg.minLength'));
     return;
   }
 
