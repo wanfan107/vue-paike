@@ -294,6 +294,7 @@ import { ref, reactive, onMounted, onUnmounted, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import { http } from "@/api";
 import useUserStore from "@/stores/user";
+import { useI18n } from 'vue-i18n';
 const { t } = useI18n();
 import CopyText from '@/components/CopyText.vue';
 import { formatCurrency } from '@/utils/currency';
